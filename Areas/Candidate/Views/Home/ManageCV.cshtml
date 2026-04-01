@@ -1,0 +1,186 @@
+﻿@model IEnumerable<JobPortal.Models.CV>
+
+@{
+    ViewData["Title"] = "Quản lý CV";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .manage-box {
+        border: none;
+        border-radius: 12px;
+        background: #fff;
+        padding: 15px;
+        height: fit-content;
+    }
+
+    .menu-item {
+        color: #555;
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        margin-bottom: 2px;
+        transition: 0.2s;
+    }
+
+        .menu-item:hover {
+            background-color: #f8f9fa;
+            color: #000;
+        }
+
+        .menu-item.active {
+            background-color: #ecefff;
+            color: #4460ef;
+            font-weight: 600;
+        }
+
+    .cv-card {
+        border: none;
+        border-radius: 12px;
+        transition: 0.3s;
+        background: #fff;
+        overflow: hidden;
+    }
+
+        .cv-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08) !important;
+        }
+
+    .cv-preview-img {
+        height: 160px;
+        object-fit: cover;
+        width: 100%;
+        border-bottom: 1px solid #eee;
+    }
+
+    .border-dashed {
+        border: 2px dashed #dee2e6 !important;
+        background: #fafafa;
+    }
+
+    .fs-7 {
+        font-size: 0.8rem;
+    }
+</style>
+
+<div class="container-fluid px-4 py-3">
+    <div class="row g-3">
+        <div class="col-lg-3">
+            <div class="manage-box shadow-sm mb-3">
+                <div class="d-flex align-items-center mb-3">
+                    <img src="https://ui-avatars.com/api/?name=Thao+Anh&background=4460ef&color=fff" class="rounded-circle" width="45" />
+                    <div class="ms-3">
+                        <h6 class="mb-0 fw-bold">Thảo Anh</h6>
+                        <small class="text-muted fs-7">Lập trình viên</small>
+                    </div>
+                </div>
+
+                <nav class="nav flex-column border-bottom pb-2 mb-2">
+                    <a href="#" class="menu-item active"><i class="bi bi-magic me-2"></i> Trang trí CV</a>
+                    <a href="#" class="menu-item"><i class="bi bi-briefcase me-2"></i> Việc làm</a>
+                </nav>
+
+                <h6 class="fw-bold mb-2 small">Tải CV (.pdf)</h6>
+                <form asp-action="UploadCV" method="post" enctype="multipart/form-data">
+                    <input type="file" name="fileCV" class="form-control form-control-sm border-dashed mb-2" accept=".pdf" required />
+                    <button type="submit" class="btn btn-primary btn-sm w-100 rounded-pill fw-bold">Tải lên ngay</button>
+                </form>
+            </div>
+
+            <div class="manage-box shadow-sm">
+                <h6 class="fw-bold mb-3 small">CV của tôi (@(Model?.Count() ?? 0))</h6>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <div class="d-flex align-items-center p-2 mb-2 bg-light rounded-3">
+                                <i class="bi bi-file-pdf text-danger fs-5 me-2"></i>
+                                <div class="flex-grow-1 overflow-hidden">
+                                    <div class="text-truncate fw-bold fs-7">@item.FileName</div>
+                                    <div class="text-muted" style="font-size: 10px;">@item.UploadDate.ToString("dd/MM/yy")</div>
+                                </div>
+                                <a href="~/uploads/cvs/@item.FileName" target="_blank" class="text-primary mx-1"><i class="bi bi-eye"></i></a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted fs-7">Chưa có CV</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Mẫu CV chuyên nghiệp</h5>
+                <div class="btn-group border rounded-pill bg-white p-1">
+                    <button class="btn btn-sm btn-dark rounded-pill px-3">Tất cả</button>
+                    <button class="btn btn-sm btn-white rounded-pill px-3">Hiện đại</button>
+                </div>
+            </div>
+            <div class="row g-3">
+                @if (ViewBag.Templates != null)
+                {
+                    foreach (var item in (List<JobPortal.Models.CVTemplate>)ViewBag.Templates)
+                    {
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm border-0">
+                                @* Chuẩn hoá đường dẫn thumbnail trước khi render *@
+                                @{
+                                    var thumbRaw = (item.Thumbnail ?? "").Trim();
+                                    string resolvedSrc;
+                                    if (string.IsNullOrEmpty(thumbRaw))
+                                    {
+                                        resolvedSrc = Url.Content("~/images/templates/default.jpg");
+                                    }
+                                    else
+                                    {
+                                        // đảm bảo luôn bắt đầu từ root: ~/images/...
+
+                                        var cleaned = thumbRaw.TrimStart('/', '\\', '~');
+                                        resolvedSrc = Url.Content("~/" + cleaned);
+                                    }
+                                }
+                                <img src="@resolvedSrc" class="card-img-top" alt="@item.Name"
+                                     style="height: 200px; object-fit: cover;"
+                                     onerror="this.onerror=null;this.src='@(Url.Content("~/images/templates/default.jpg"))'">
+
+                                <div class="card-body p-2 text-center">
+                                    <h6 class="fw-bold mb-1">@item.Name</h6>
+                                    <small class="text-muted d-block mb-2">Loại: @item.Category</small>
+                                    <button class="btn btn-sm btn-primary w-100 rounded-pill">Dùng mẫu này</button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+                <div class="col-md-4">
+                    <div class="card cv-card shadow-sm h-100">
+                        <div class="cv-preview-img bg-light d-flex align-items-center justify-content-center">
+                            <i class="bi bi-plus-circle text-muted fs-1"></i>
+                        </div>
+                        <div class="card-body p-2 text-center">
+                            <div class="fw-bold fs-7 mb-2">Thiết kế mẫu mới</div>
+                            <button class="btn btn-sm btn-light w-100 rounded-pill">Bắt đầu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

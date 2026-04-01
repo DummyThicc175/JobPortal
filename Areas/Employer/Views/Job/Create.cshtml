@@ -1,0 +1,40 @@
+@model JobPortal.Models.JobPost
+@{
+    ViewData["Title"] = "Tạo chiến dịch tuyển dụng";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Tiêu đề vị trí tuyển dụng</label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Ví dụ: Nhân viên Marketing Full-time" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">Tên công ty</label>
+                            <input asp-for="CompanyName" class="form-control" placeholder="Tên hiển thị..." />
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label fw-bold">Địa điểm làm việc</label>
+                            <input class="form-control" placeholder="Hà Nội, TP.HCM..." />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Mô tả công việc & Yêu cầu</label>
+                        <textarea asp-for="Description" class="form-control" rows="8"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-light px-4">Hủy</a>
+                        <button type="submit" class="btn btn-primary px-5">Đăng bài ngay</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

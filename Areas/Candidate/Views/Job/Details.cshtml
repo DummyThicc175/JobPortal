@@ -1,0 +1,53 @@
+﻿@model JobPortal.Models.JobPost
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Chi tiết công việc";
+}
+
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">@Model.Title</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="text-primary"><i class="bi bi-info-circle"></i> Mô tả công việc</h5>
+                    <p class="text-justify" style="white-space: pre-line;">@Model.Description</p>
+
+                    <hr />
+                    <p><strong>Công ty:</strong> <span class="badge bg-info text-dark">@Model.CompanyName</span></p>
+                    <p><strong>Ngày đăng:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+                </div>
+
+                <div class="col-md-4 border-start">
+                    <div class="d-grid gap-2">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <form asp-area="Candidate" asp-controller="Job" asp-action="Apply" method="post">
+                                <input type="hidden" name="jobId" value="@Model.Id" />
+                                <input type="hidden" name="candidateId" value="@UserManager.GetUserId(User)" />
+
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="bi bi-send-fill"></i> Ứng tuyển ngay
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning text-center">
+                                <p>Vui lòng đăng nhập để ứng tuyển</p>
+                                <a href="/Identity/Account/Login" class="btn btn-primary">Đăng nhập</a>
+                            </div>
+                        }
+                        <a asp-area="Candidate" asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                            Quay lại danh sách
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
