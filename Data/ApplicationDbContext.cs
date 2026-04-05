@@ -18,5 +18,20 @@ namespace JobPortal.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<CVTemplate> CVTemplates { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<CVTemplate>().HasData(
+                new CVTemplate {
+                    Id = 1,
+                    Name = "Mẫu 1",
+                    Category = "Hiện đại",
+                    Thumbnail = "images/templates/t1.jpg",
+                    TemplateViewPath = "~/Areas/Candidate/Views/Home/Template_1.cshtml"
+                }
+            );
+        }
     }
 }

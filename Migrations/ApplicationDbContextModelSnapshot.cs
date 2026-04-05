@@ -94,20 +94,32 @@ namespace JobPortal.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Thumbnail")
+                    b.Property<string>("TemplateViewPath")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Thumbnail")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("CVTemplates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "Hiện đại",
+                            Name = "Mẫu 1",
+                            TemplateViewPath = "~/Areas/Candidate/Views/Home/Template_1.cshtml",
+                            Thumbnail = "images/templates/t1.jpg"
+                        });
                 });
 
             modelBuilder.Entity("JobPortal.Models.ChatMessage", b =>
