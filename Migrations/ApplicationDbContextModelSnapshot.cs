@@ -190,6 +190,100 @@ namespace JobPortal.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("JobPortal.Models.EditCVViewModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TemplatePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserCVs");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.EducationVM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Duration")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EditCVViewModelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Major")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("School")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EditCVViewModelId");
+
+                    b.ToTable("UserEducations");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.ExperienceVM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Company")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Duration")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EditCVViewModelId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Role")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EditCVViewModelId");
+
+                    b.ToTable("UserExperiences");
+                });
+
             modelBuilder.Entity("JobPortal.Models.JobPost", b =>
                 {
                     b.Property<int>("Id")
@@ -446,6 +540,24 @@ namespace JobPortal.Migrations
                     b.Navigation("JobPost");
                 });
 
+            modelBuilder.Entity("JobPortal.Models.EducationVM", b =>
+                {
+                    b.HasOne("JobPortal.Models.EditCVViewModel", null)
+                        .WithMany("Educations")
+                        .HasForeignKey("EditCVViewModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("JobPortal.Models.ExperienceVM", b =>
+                {
+                    b.HasOne("JobPortal.Models.EditCVViewModel", null)
+                        .WithMany("Experiences")
+                        .HasForeignKey("EditCVViewModelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -495,6 +607,13 @@ namespace JobPortal.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("JobPortal.Models.EditCVViewModel", b =>
+                {
+                    b.Navigation("Educations");
+
+                    b.Navigation("Experiences");
                 });
 #pragma warning restore 612, 618
         }

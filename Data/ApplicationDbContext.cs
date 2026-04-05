@@ -24,7 +24,8 @@ namespace JobPortal.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<CVTemplate>().HasData(
-                new CVTemplate {
+                new CVTemplate
+                {
                     Id = 1,
                     Name = "Mẫu 1",
                     Category = "Hiện đại",
@@ -32,6 +33,13 @@ namespace JobPortal.Data
                     TemplateViewPath = "~/Areas/Candidate/Views/Home/Template_1.cshtml"
                 }
             );
+        }
+
+        public DbSet<EditCVViewModel> UserCVs { get; set; }
+        public DbSet<ExperienceVM> UserExperiences { get; set; }
+        public DbSet<EducationVM> UserEducations
+        {
+            get; set;
         }
     }
 }

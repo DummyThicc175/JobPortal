@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - JobPortal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Navbar Custom */
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid #eef2ff;
+            padding: 12px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,.04);
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 24px;
+            color: #4460ef;
+            text-decoration: none;
+        }
+
+        .logo-hub {
+            color: #1e293b;
+        }
+
+        .nav-link {
+            color: #475569 !important;
+            font-weight: 500;
+            margin-right: 15px;
+        }
+
+            .nav-link:hover {
+                color: #4460ef !important;
+            }
+
+        /* Style cho Dropdown Menu Tài Khoản */
+        .user-dropdown-menu {
+            min-width: 280px;
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 12px;
+            margin-top: 10px !important;
+        }
+
+            .user-dropdown-menu .dropdown-item {
+                padding: 10px 12px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                color: #334155;
+                font-weight: 500;
+            }
+
+                .user-dropdown-menu .dropdown-item i {
+                    width: 24px;
+                    margin-right: 12px;
+                    font-size: 1.1rem;
+                }
+
+                .user-dropdown-menu .dropdown-item:hover {
+                    background-color: #f1f5f9;
+                    color: #4460ef;
+                }
+
+        .submenu-item {
+            padding-left: 48px !important;
+            font-size: 0.9rem;
+            color: #64748b !important;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light mb-3">
+            <div class="container">
+                <!-- LOGO -->
+                <a class="logo-text" asp-area="" asp-controller="Home" asp-action="Index">
+                    JOB<span class="logo-hub">HUB</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1 ms-4">
+                        <li class="nav-item"><a class="nav-link" href="#">Việc làm</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Công ty</a></li>
+                    </ul>
+
+                    <div class="d-flex align-items-center gap-3">
+                        @* Nút đăng tin tuyển dụng *@
+                        @{
+                            var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+                        }
+                        @if (currentArea != "Candidate")
+                        {
+                            <a href="#" class="btn btn-outline-primary rounded-pill px-4 fw-bold">Đăng tin tuyển dụng</a>
+                        }
+
+                        <!-- Dropdown Tài Khoản (ĐÃ ĐƯA VÀO ĐÚNG VỊ TRÍ) -->
+                        <div class="dropdown">
+                            <div class="d-flex align-items-center bg-light rounded-pill p-1 pe-3 border" data-bs-toggle="dropdown" style="cursor: pointer;">
+                                <img src="https://ui-avatars.com/api/?name=Thao+Anh&background=4460ef&color=fff" class="rounded-circle me-2" width="32" height="32" />
+                                <span class="small fw-bold text-dark">thaoanhtranthach</span>
+                                <i class="fa-solid fa-chevron-down ms-2 small text-muted"></i>
+                            </div>
+
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu shadow">
+                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-address-card text-primary"></i>Hồ sơ của tôi</a></li>
+                                <li><a class="dropdown-item" asp-area="Candidate" asp-controller="Home" asp-action="ManageCV"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i>Trang trí CV</a></li>
+
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#jobManagement">
+                                        <span><i class="fa-solid fa-briefcase text-primary"></i>Quản lý việc làm</span>
+                                        <i class="fa-solid fa-chevron-down small"></i>
+                                    </a>
+                                    <div class="collapse show" id="jobManagement">
+                                        <a class="dropdown-item submenu-item" href="#">• Việc làm đã ứng tuyển</a>
+                                        <a class="dropdown-item submenu-item" href="#">• Việc làm đã lưu</a>
+                                        <a class="dropdown-item submenu-item" href="#">• Việc làm chờ ứng tuyển</a>
+                                        <a class="dropdown-item submenu-item" href="#">• Nhà tuyển dụng xem hồ sơ</a>
+                                    </div>
+                                </li>
+
+                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-bell text-primary"></i>Hỗ trợ và thông báo</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-circle-user text-primary"></i>Quản lý tài khoản</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-arrows-rotate text-primary"></i>Chuyển tài khoản</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger fw-bold" href="#"><i class="fa-solid fa-power-off"></i>Đăng xuất</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid p-0">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-5 py-3">
+        <div class="container text-center">
+            &copy; 2026 - **JobHub** - Kết nối sự nghiệp
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -20,12 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\images\templates\mau-cv-new.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\uploads\cvs\" />
   </ItemGroup>
 
