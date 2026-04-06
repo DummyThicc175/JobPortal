@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using JobPortal.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace JobPortal.Areas.Admin.Controllers
 {
@@ -16,37 +17,56 @@ namespace JobPortal.Areas.Admin.Controllers
         }
 
         // 1. Trang danh sách tin CHƯA DUYỆT
-        public IActionResult Pending()
+        public async Task<IActionResult> Pending()
         {
-            // Lấy các tin có IsApproved == false
-            var pendingJobs = _context.JobPosts.Where(j => !j.IsApproved).ToList();
+            // Thêm Include để hiển thị sơ bộ tên công ty/địa điểm ngoài danh sách nếu cần
+            var pendingJobs = await _context.JobPosts
+                .Include(j => j.JobLocation)
+                .Include(j => j.Category)
+                .Where(j => !j.IsApproved)
+                .OrderByDescending(j => j.CreatedAt)
+                .ToListAsync();
+
             return View(pendingJobs);
         }
 
-        // 2. Xử lý Duyệt tin (Dùng POST để bảo mật)
+        // 2. Xử lý Duyệt tin
         [HttpPost]
-        public IActionResult Approve(int id)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Approve(int id)
         {
-            var job = _context.JobPosts.Find(id);
+            var job = await _context.JobPosts.FindAsync(id);
             if (job != null)
             {
                 job.IsApproved = true;
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã duyệt bài đăng thành công!";
             }
-            return RedirectToAction("Pending");
+            return RedirectToAction(nameof(Pending));
         }
-        // 3. Lấy thông tin chi tiết để xem trước (Dùng cho Modal)
-        public IActionResult GetDetails(int id)
+
+        // 3. Lấy thông tin CHI TIẾT ĐẦY ĐỦ (Dùng cho Modal)
+        [HttpGet]
+        public async Task<IActionResult> GetDetails(int id)
         {
-            var job = _context.JobPosts.Find(id);
+            // Phải có .Include để tránh lỗi Null Reference
+            var job = await _context.JobPosts
+                .Include(j => j.Category)
+                .Include(j => j.JobLocation)
+                .Include(j => j.Company)
+                .FirstOrDefaultAsync(j => j.Id == id);
+
             if (job == null) return NotFound();
 
-            // Trả về một PartialView hoặc Json (Ở đây ta dùng Json cho đơn giản với Modal)
             return Json(new
             {
                 title = job.Title,
-                description = job.Description,
-                createdAt = job.CreatedAt.ToString("dd/MM/yyyy")
+                company = job.CompanyName ?? job.Company?.Name ?? "Chưa rõ",
+                category = job.Category?.Name ?? "Chưa phân loại",
+                location = job.JobLocation?.Name ?? "Toàn quốc",
+                salary = job.SalaryRange ?? "Thỏa thuận",
+                createdAt = job.CreatedAt.ToString("dd/MM/yyyy"),
+                description = job.Description
             });
         }
     }

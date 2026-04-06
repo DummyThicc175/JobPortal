@@ -46,7 +46,7 @@
                                     </button>
 
                                     <form action="/Admin/JobManager/Approve" method="post" class="m-0">
-                                        <input type="hidden" name="id" value="@item.Id" />
+                                        @Html.AntiForgeryToken() <input type="hidden" name="id" value="@item.Id" />
                                         <button type="submit" class="btn btn-success btn-sm px-3 rounded-pill shadow-sm">
                                             <i class="fa fa-check me-1"></i> Duyệt
                                         </button>
@@ -66,17 +66,32 @@
         <div class="modal-content rounded-4 border-0 shadow">
             <div class="modal-header border-0 bg-light rounded-top-4">
                 <h5 class="modal-title fw-bold text-primary" id="modalTitle"></h5>
+                <small class="text-muted">Ngày đăng: <span id="modalDate"></span></small>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="mb-3">
-                    <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
-                        <i class="fa fa-calendar-alt me-1"></i> Ngày đăng: <span id="modalDate"></span>
-                    </span>
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Công ty</small>
+                        <span class="fw-bold text-dark" id="modalCompany"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Mức lương</small>
+                        <span class="text-danger fw-bold" id="modalSalary"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Ngành nghề</small>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle" id="modalCategory"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Địa điểm</small>
+                        <span class="text-dark fw-bold"><i class="fa fa-map-marker-alt text-danger me-1"></i><span id="modalLocation"></span></span>
+                    </div>
                 </div>
-                <div class="job-content">
-                    <h6 class="fw-bold border-bottom pb-2">Mô tả công việc:</h6>
-                    <div id="modalDescription" style="white-space: pre-line; color: #4a5568; line-height: 1.6;"></div>
+
+                <div class="job-content bg-light p-3 rounded-3">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fa fa-file-alt me-2"></i>Mô tả chi tiết:</h6>
+                    <div id="modalDescription" style="white-space: pre-line; color: #4a5568; line-height: 1.6; font-size: 0.95rem;"></div>
                 </div>
             </div>
             <div class="modal-footer border-0">
@@ -90,21 +105,26 @@
     <script>
         function showDetails(id) {
             // Hiển thị loading (tùy chọn) hoặc gọi fetch ngay
-            fetch(`/Admin/JobManager/GetDetails/${id}`)
+                    // Thay đổi dòng fetch thành:
+        fetch('/Admin/JobManager/GetDetails?id=' + id)
                 .then(response => {
                     if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu");
                     return response.json();
                 })
-                .then(data => {
-                    // Đổ dữ liệu vào các phần tử trong Modal
-                    document.getElementById('modalTitle').innerText = data.title;
-                    document.getElementById('modalDate').innerText = data.createdAt;
-                    document.getElementById('modalDescription').innerText = data.description;
+                        .then(data => {
+            // Đổ dữ liệu vào các phần tử
+            document.getElementById('modalTitle').innerText = data.title;
+            document.getElementById('modalDate').innerText = data.createdAt;
+            document.getElementById('modalCompany').innerText = data.company;
+            document.getElementById('modalSalary').innerText = data.salary;
+            document.getElementById('modalCategory').innerText = data.category;
+            document.getElementById('modalLocation').innerText = data.location;
+            document.getElementById('modalDescription').innerText = data.description;
 
-                    // Kích hoạt hiển thị Modal
-                    var myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
-                    myModal.show();
-                })
+            // Kích hoạt hiển thị Modal
+            var myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            myModal.show();
+        })
                 .catch(error => {
                     alert("Không thể tải chi tiết công việc. Vui lòng thử lại!");
                     console.error(error);
