@@ -1,0 +1,114 @@
+﻿@model IEnumerable<JobPortal.Models.JobPost>
+
+@{
+    ViewData["Title"] = "Danh sách tin chờ duyệt";
+}
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-primary"><i class="fa fa-clock me-2"></i>Tin tuyển dụng đang chờ duyệt</h5>
+    </div>
+    <div class="card-body px-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4" style="width: 50%;">Nội dung tin</th>
+                        <th style="width: 25%;">Ngày đăng</th>
+                        <th class="text-center" style="width: 25%;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-5">
+                                <i class="fa fa-inbox fa-3x mb-3 d-block opacity-25"></i>
+                                Không có tin nào đang chờ duyệt.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark fs-6">@item.Title</div>
+                                <small class="text-muted"><i class="fa fa-tag me-1"></i> ID: #@item.Id</small>
+                            </td>
+                            <td>
+                                <span class="text-secondary">@item.CreatedAt.ToString("dd/MM/yyyy")</span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex gap-2">
+                                    <button class="btn btn-info btn-sm px-3 rounded-pill text-white shadow-sm"
+                                            onclick="showDetails(@item.Id)">
+                                        <i class="fa fa-eye me-1"></i> Xem
+                                    </button>
+
+                                    <form action="/Admin/JobManager/Approve" method="post" class="m-0">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm px-3 rounded-pill shadow-sm">
+                                            <i class="fa fa-check me-1"></i> Duyệt
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <span class="badge bg-soft-primary text-primary px-3 py-2 rounded-pill">
+                        <i class="fa fa-calendar-alt me-1"></i> Ngày đăng: <span id="modalDate"></span>
+                    </span>
+                </div>
+                <div class="job-content">
+                    <h6 class="fw-bold border-bottom pb-2">Mô tả công việc:</h6>
+                    <div id="modalDescription" style="white-space: pre-line; color: #4a5568; line-height: 1.6;"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showDetails(id) {
+            // Hiển thị loading (tùy chọn) hoặc gọi fetch ngay
+            fetch(`/Admin/JobManager/GetDetails/${id}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Lỗi khi lấy dữ liệu");
+                    return response.json();
+                })
+                .then(data => {
+                    // Đổ dữ liệu vào các phần tử trong Modal
+                    document.getElementById('modalTitle').innerText = data.title;
+                    document.getElementById('modalDate').innerText = data.createdAt;
+                    document.getElementById('modalDescription').innerText = data.description;
+
+                    // Kích hoạt hiển thị Modal
+                    var myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                    myModal.show();
+                })
+                .catch(error => {
+                    alert("Không thể tải chi tiết công việc. Vui lòng thử lại!");
+                    console.error(error);
+                });
+        }
+    </script>
+}

@@ -1,29 +1,32 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using JobPortal.Data;
+using JobPortal.Data; // Đảm bảo đúng namespace chứa ApplicationDbContext
+using System.Linq;
 
-[Area("Admin")]
-public class DashboardController : Controller
+namespace JobPortal.Areas.Admin.Controllers
 {
-    private readonly ApplicationDbContext _context;
-    public DashboardController(ApplicationDbContext context) => _context = context;
-
-    // Liệt kê các tin chưa duyệt
-    public async Task<IActionResult> PendingJobs()
+    [Area("Admin")]
+    public class DashboardController : Controller
     {
-        var pending = await _context.JobPosts.Where(j => !j.IsApproved).ToListAsync();
-        return View(pending);
-    }
+        private readonly ApplicationDbContext _context;
 
-    [HttpPost]
-    public async Task<IActionResult> Approve(int id)
-    {
-        var job = await _context.JobPosts.FindAsync(id);
-        if (job != null)
+        // Constructor để lấy DbContext từ hệ thống
+        public DashboardController(ApplicationDbContext context)
         {
-            job.IsApproved = true;
-            await _context.SaveChangesAsync();
+            _context = context;
         }
-        return RedirectToAction(nameof(PendingJobs));
+
+        public IActionResult Index()
+        {
+            // Lấy số liệu thật từ các bảng trong Database
+            ViewBag.TotalJobs = _context.JobPosts.Count();
+
+            // Đếm các tin có IsApproved là false (Chờ duyệt)
+            ViewBag.PendingJobs = _context.JobPosts.Count(j => j.IsApproved == false);
+
+            // Đếm tổng số tài khoản người dùng
+            ViewBag.TotalUsers = _context.Users.Count();
+
+            return View();
+        }
     }
 }
