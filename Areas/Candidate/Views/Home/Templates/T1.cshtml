@@ -155,15 +155,20 @@
     }
 </style>
 
-<div class="cv-container">
-    <div class="avatar-container">
-        <!-- Đã thêm ID display-avatar -->
-        <img id="display-avatar"
-             src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "" : Model.AvatarPath)"
-             alt="Avatar"
-             style="width: 100%; height: 100%; object-fit: cover; @(string.IsNullOrEmpty(Model.AvatarPath) ? "display:none;" : "")"
-             onerror="this.style.display='none'" />
-    </div>
+<div class="avatar-container" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+    <!-- Thẻ img sẽ ẩn đi hoàn toàn nếu Model.AvatarPath rỗng -->
+    <img id="display-avatar"
+         src="@Model.AvatarPath"
+         alt="Avatar"
+         style="width: 100%; height: 100%; object-fit: cover; @(string.IsNullOrEmpty(Model.AvatarPath) ? "display: none;" : "display: block;")"
+         onerror="this.style.display='none'" />
+
+    <!-- Hiển thị một icon người dùng nhẹ nhàng khi chưa có ảnh (Tùy chọn) -->
+    @if (string.IsNullOrEmpty(Model.AvatarPath))
+    {
+        <i id="avatar-placeholder-icon" class="fa fa-user" style="font-size: 80px; color: #ccc;"></i>
+    }
+</div>
 
     <div class="cv-header">
         <h1 id="display-name">@(string.IsNullOrEmpty(Model.FullName) ? "HỌ VÀ TÊN CỦA BẠN" : Model.FullName)</h1>

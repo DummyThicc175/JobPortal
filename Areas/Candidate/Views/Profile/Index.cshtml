@@ -1,0 +1,138 @@
+﻿@model JobPortal.Models.CandidateProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ của tôi";
+    Layout = "~/Views/Shared/_LayoutCV.cshtml";
+}
+
+<div class="container-fluid bg-light py-4">
+    <!-- Form gửi dữ liệu và FILE (enctype) -->
+    <form asp-area="Candidate" asp-controller="Profile" asp-action="SaveProfile" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="row px-md-5">
+            <!-- CỘT 1: SIDEBAR TRÁI -->
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                    <h6 class="fw-bold mb-3">@Model.FullName</h6>
+                    <div class="form-check form-switch d-flex justify-content-between align-items-center mb-3">
+                        <label class="small text-muted">Cho phép tìm bạn</label>
+                        <input class="form-check-input" type="checkbox" checked>
+                    </div>
+                    <div class="list-group list-group-flush border-top">
+                        <a href="#" class="list-group-item list-group-item-action border-0 py-3 text-primary fw-bold">
+                            <i class="bi bi-person-circle me-2"></i>Hồ sơ của tôi
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 py-3">
+                            <i class="bi bi-briefcase me-2"></i>Quản lý việc làm
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action border-0 py-3">
+                            <i class="bi bi-gear me-2"></i>Quản lý tài khoản
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CỘT 2: NỘI DUNG CHÍNH -->
+            <div class="col-lg-6">
+                <!-- Card Thông tin & Avatar -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold">Hồ sơ của tôi</h5>
+                        <i class="bi bi-pencil-square text-muted" style="cursor:pointer"></i>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-3 text-center">
+                            <div class="position-relative d-inline-block">
+                                <img src="@(string.IsNullOrEmpty(Model.AvatarUrl) ? "/images/default-avatar.png" : Model.AvatarUrl)"
+                                     id="previewAvatar" class="rounded-circle border"
+                                     style="width:110px; height:110px; object-fit:cover; border: 3px solid #eee !important;">
+                                <label for="avatarInput" class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                       style="cursor:pointer; width:32px; height:32px;">
+                                    <i class="bi bi-camera-fill"></i>
+                                </label>
+                                <input type="file" asp-for="AvatarFile" id="avatarInput" class="d-none" onchange="document.getElementById('previewAvatar').src = window.URL.createObjectURL(this.files[0])">
+                            </div>
+                        </div>
+                        <div class="col-md-9 mt-3 mt-md-0">
+                            <input asp-for="FullName" class="form-control fw-bold border-0 fs-5 mb-1 p-0 shadow-none" style="background:transparent" />
+                            <p class="text-muted small mb-2"><i class="bi bi-envelope me-2"></i>@Model.Email <i class="bi bi-check-circle-fill text-success ms-1"></i></p>
+                            <input asp-for="Phone" class="form-control form-control-sm w-75 rounded-pill" placeholder="+ Thêm số điện thoại" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Tiêu chí tìm việc -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <h5 class="fw-bold">Tiêu chí tìm việc</h5>
+                        <i class="bi bi-pencil-square text-muted"></i>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted mb-1">Ngành nghề</label>
+                            <input asp-for="Industry" class="form-control border-0 bg-light rounded-3" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-muted mb-1">Địa điểm</label>
+                            <input asp-for="DesiredLocation" class="form-control border-0 bg-light rounded-3" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small text-muted mb-1">Mức lương mong muốn</label>
+                            <input asp-for="ExpectedSalary" class="form-control border-0 bg-light rounded-3" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nút LƯU cố định -->
+                <div class="d-grid gap-2 mt-4 mb-5">
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill shadow fw-bold py-3">
+                        LƯU THÔNG TIN HỒ SƠ
+                    </button>
+                </div>
+            </div>
+
+            <!-- CỘT 3: VIỆC LÀM GỢI Ý -->
+            <div class="col-lg-3">
+                <h6 class="fw-bold mb-3">Việc làm gợi ý cho bạn</h6>
+                @if (Model.SuggestedJobs != null && Model.SuggestedJobs.Any())
+                {
+                    @foreach (var job in Model.SuggestedJobs)
+                    {
+                        <div class="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-light text-dark border">@job.CompanyName</span>
+                                <i class="bi bi-heart text-muted"></i>
+                            </div>
+                            <p class="fw-bold mt-2 mb-1">@job.Title</p>
+                            <p class="text-danger small fw-bold mb-1">@job.SalaryRange triệu</p>
+                            <p class="text-muted small"><i class="bi bi-geo-alt me-1"></i> @job.Location</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted small">Chưa có việc làm phù hợp.</p>
+                }
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .rounded-4 {
+        border-radius: 12px !important;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border: 1px solid #0d6efd;
+    }
+
+    .list-group-item.active {
+        background-color: transparent !important;
+        color: #0d6efd !important;
+        border-left: 4px solid #0d6efd !important;
+        border-radius: 0;
+    }
+</style>

@@ -23,6 +23,7 @@
     <Folder Include="Areas\Admin\Models\" />
     <Folder Include="Areas\Candidate\Models\" />
     <Folder Include="wwwroot\uploads\cvs\" />
+    <Folder Include="wwwroot\uploads\avatars\" />
   </ItemGroup>
 
 </Project>

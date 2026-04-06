@@ -112,7 +112,10 @@
                             </div>
 
                             <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu shadow">
-                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-address-card text-primary"></i>Hồ sơ của tôi</a></li>
+                                <!-- Tìm thẻ <a> của mục Hồ sơ của tôi và sửa thành: -->
+                                <a class="dropdown-item" asp-area="Candidate" asp-controller="Profile" asp-action="Index">
+                                    <i class="bi bi-file-earmark-person me-2"></i> Hồ sơ của tôi
+                                </a>
                                 <li><a class="dropdown-item" asp-area="Candidate" asp-controller="Home" asp-action="ManageCV"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i>Trang trí CV</a></li>
 
                                 <li>

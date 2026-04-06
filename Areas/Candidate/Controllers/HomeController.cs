@@ -172,5 +172,46 @@ namespace JobPortal.Areas.Candidate.Controllers
             }
             return Json(new { success = false, message = "Lỗi dữ liệu!" });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile avatarFile) // Thêm [FromForm]
+        {
+            if (avatarFile != null && avatarFile.Length > 0)
+            {
+                try
+                {
+                    // 1. Kiểm tra định dạng ảnh
+                    var extension = Path.GetExtension(avatarFile.FileName).ToLower();
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        return Json(new { success = false, message = "Chỉ chấp nhận file .jpg hoặc .png" });
+                    }
+
+                    // 2. Đường dẫn lưu file trỏ đúng vào thư mục Anh vừa tạo
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/avatars");
+                    if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+                    // 3. Đặt tên file duy nhất
+                    var fileName = Guid.NewGuid().ToString() + extension;
+                    var filePath = Path.Combine(uploadPath, fileName);
+
+                    // 4. Lưu file vào đĩa cứng
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await avatarFile.CopyToAsync(stream);
+                    }
+
+                    // 5. Trả về đường dẫn để hiển thị (bắt đầu bằng dấu /)
+                    var dbPath = "/uploads/avatars/" + fileName;
+                    return Json(new { success = true, url = dbPath });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "Lỗi: " + ex.Message });
+                }
+            }
+            return Json(new { success = false, message = "Không nhận được file." });
+        }
     }
 }
