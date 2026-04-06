@@ -36,8 +36,12 @@ namespace JobPortal.Areas.Employer.Controllers
         }
 
         // 2. Trang Đăng tin mới (GET)
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            // Lấy danh sách để hiển thị trong ô chọn (Dropdown)
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+
             return View();
         }
 
@@ -48,21 +52,21 @@ namespace JobPortal.Areas.Employer.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Gán các giá trị mặc định hệ thống
-                job.CreatedAt = DateTime.Now;
-                job.IsApproved = false; // Luôn để false để Admin kiểm duyệt
-                
-                // Gán ID người đăng (Lấy từ User đang đăng nhập)
+                // Gán ID người dùng đang đăng nhập
                 job.EmployerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                job.CreatedAt = DateTime.Now;
+                job.IsApproved = false; // Chờ Admin duyệt
 
                 _context.Add(job);
                 await _context.SaveChangesAsync();
 
-                // Thông báo thành công (Dùng cho giao diện)
                 TempData["Success"] = "Đăng tin tuyển dụng thành công! Vui lòng chờ Admin duyệt.";
-                
                 return RedirectToAction(nameof(Index));
             }
+
+            // Nếu lỗi, phải load lại danh sách Dropdown trước khi trả về View
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
             return View(job);
         }
 
