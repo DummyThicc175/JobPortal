@@ -36,10 +36,10 @@ namespace JobPortal.Data
         }
 
         public DbSet<EditCVViewModel> UserCVs { get; set; }
-        public DbSet<ExperienceVM> UserExperiences { get; set; }
-        public DbSet<EducationVM> UserEducations
-        {
-            get; set;
-        }
+        public DbSet<ExperienceVM> Experiences { get; set; }
+        public DbSet<EducationVM> Educations { get; set; }
+        public DbSet<LanguageVM> Languages { get; set; }
+        public DbSet<ITSkillVM> ITSKills { get; set; }
+        public DbSet<ReferenceVM> References { get; set; }
     }
 }

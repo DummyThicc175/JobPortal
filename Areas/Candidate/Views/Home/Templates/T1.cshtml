@@ -1,15 +1,260 @@
 ﻿@model JobPortal.Models.EditCVViewModel
 
-<div class="p-4" style="font-family: 'Arial'; color: #333;">
-    <h1 class="cv-name text-uppercase" style="color: #0056b3;">@Model?.FullName</h1>
-    <h4 class="cv-job text-secondary">@Model?.JobTitle</h4>
+<style>
+    /* Giữ nguyên các Style của bạn, chỉ thêm một chút để hiển thị mượt hơn */
+    .cv-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 297mm;
+        width: 210mm;
+        background-color: white;
+        font-family: 'Arial', sans-serif;
+        color: #333;
+        margin: 0 auto;
+        position: relative;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
 
-    <hr />
+    .cv-header {
+        background-color: #7a0012;
+        color: white;
+        height: 180px;
+        padding-left: 320px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
 
-    <div class="section">
-        <h5 class="text-primary border-bottom pb-2">KINH NGHIỆM LÀM VIỆC</h5>
-        <div class="cv-exp-list">
-            <!-- Dữ liệu JS sẽ tự nhảy vào đây -->
+        .cv-header h1 {
+            font-size: 30pt;
+            font-weight: bold;
+            margin: 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .cv-header h4 {
+            font-size: 14pt;
+            margin: 5px 0 0 0;
+            font-weight: 300;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+    .avatar-container {
+        width: 220px;
+        height: 250px;
+        border-radius: 60px;
+        overflow: hidden;
+        border: 10px solid white;
+        position: absolute;
+        top: 30px;
+        left: 50px;
+        background: #eee;
+        z-index: 10;
+    }
+
+    .cv-main {
+        display: flex;
+        flex: 1;
+    }
+
+    .cv-sidebar {
+        width: 38%;
+        padding: 120px 40px 40px 50px;
+        background-color: white;
+    }
+
+    .cv-content {
+        width: 62%;
+        padding: 40px 50px 40px 20px;
+    }
+
+    .cv-section-title {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: 14pt;
+        letter-spacing: 2px;
+        margin-top: 25px;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        color: #000;
+    }
+
+        .cv-section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #ccc;
+            margin-left: 15px;
+        }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 10pt;
+    }
+
+        .contact-item i {
+            background-color: #333;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 10px;
+        }
+
+    .edu-item, .exp-item, .ref-item {
+        margin-bottom: 15px;
+    }
+
+    .edu-title, .exp-title {
+        font-weight: bold;
+        font-size: 11pt;
+    }
+
+    .text-block {
+        font-size: 10pt;
+        line-height: 1.6;
+        text-align: justify;
+        white-space: pre-line;
+    }
+
+    .exp-list {
+        border-left: 1px solid #ccc;
+        padding-left: 20px;
+        margin-left: 5px;
+    }
+
+    .exp-item {
+        position: relative;
+    }
+
+        .exp-item::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            left: -26px;
+            top: 5px;
+        }
+
+    .cv-footer-stripe {
+        height: 15px;
+        background-color: #7a0012;
+        width: 100%;
+    }
+</style>
+
+<div class="cv-container">
+    <div class="avatar-container">
+        <!-- Đã thêm ID display-avatar -->
+        <img id="display-avatar"
+             src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "" : Model.AvatarPath)"
+             alt="Avatar"
+             style="width: 100%; height: 100%; object-fit: cover; @(string.IsNullOrEmpty(Model.AvatarPath) ? "display:none;" : "")"
+             onerror="this.style.display='none'" />
+    </div>
+
+    <div class="cv-header">
+        <h1 id="display-name">@(string.IsNullOrEmpty(Model.FullName) ? "HỌ VÀ TÊN CỦA BẠN" : Model.FullName)</h1>
+        <h4 id="display-job">@(string.IsNullOrEmpty(Model.JobTitle) ? "VỊ TRÍ ỨNG TUYỂN" : Model.JobTitle)</h4>
+    </div>
+
+    <div class="cv-main">
+        <!-- Sidebar -->
+        <div class="cv-sidebar">
+            <div class="cv-section-title">CONTACT</div>
+            <!-- Đã bọc ID cho các thông tin liên hệ -->
+            <div class="contact-item"><i class="fa fa-phone"></i> <span id="display-phone">@Model.Phone</span></div>
+            <div class="contact-item"><i class="fa fa-envelope"></i> <span id="display-email">@Model.Email</span></div>
+            <div class="contact-item"><i class="fa fa-globe"></i> <span id="display-website">@Model.Website</span></div>
+            <div class="contact-item"><i class="fa fa-map-marker"></i> <span id="display-address">@Model.Address</span></div>
+
+            <div class="cv-section-title">EDUCATION</div>
+            <!-- Thêm container ID cho học vấn -->
+            <div id="display-edu-list">
+                @if (Model.Educations != null)
+                {
+                    @foreach (var edu in Model.Educations)
+                    {
+                        <div class="edu-item">
+                            <div class="edu-title">@edu.School</div>
+                            <div class="edu-info">@edu.Major</div>
+                            <div class="edu-info">@edu.Duration</div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="cv-section-title">LANGUAGES</div>
+            <!-- Thêm container ID cho ngoại ngữ -->
+            <div id="display-languages">
+                @if (Model.Languages != null)
+                {
+                    @foreach (var lang in Model.Languages)
+                    {
+                        <div class="list-item">• @lang.LanguageName (@lang.Level)</div>
+                    }
+                }
+            </div>
+
+            <div class="cv-section-title">IT SKILLS</div>
+            <!-- Thêm container ID cho tin học -->
+            <div id="display-it">
+                @if (Model.ITSKills != null)
+                {
+                    @foreach (var it in Model.ITSKills)
+                    {
+                        <div class="list-item">• @it.SkillName</div>
+                    }
+                }
+            </div>
+
+            <div class="cv-section-title">HOBBIES</div>
+            <div id="display-hobbies" class="text-block">@Model.Interests</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="cv-content">
+            <div class="cv-section-title">ABOUT ME</div>
+            <div id="display-summary" class="text-block">@Model.Summary</div>
+
+            <div class="cv-section-title">EXPERIENCE</div>
+            <!-- Thêm container ID cho kinh nghiệm -->
+            <div id="display-exp-list" class="exp-list">
+                @if (Model.Experiences != null)
+                {
+                    @foreach (var exp in Model.Experiences)
+                    {
+                        <div class="exp-item">
+                            <div class="exp-title">@exp.Role</div>
+                            <div class="exp-info">@exp.Company | @exp.Duration</div>
+                            <div class="text-block">@exp.Description</div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <div class="cv-section-title">ACTIVITIES</div>
+            <div id="display-activities" class="text-block">@Model.Activities</div>
+
+            <div class="cv-section-title">CERTIFICATIONS</div>
+            <div id="display-certs" class="text-block">@Model.Certifications</div>
+
+            <div class="cv-section-title">SKILLS</div>
+            <div id="display-skills-list" class="text-block">@Model.ITSKills?.FirstOrDefault()?.SkillName</div>
         </div>
     </div>
+
+    <div class="cv-footer-stripe"></div>
 </div>

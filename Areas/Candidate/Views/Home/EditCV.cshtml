@@ -1,109 +1,465 @@
 ﻿@model JobPortal.Models.EditCVViewModel
 
-<div class="container-fluid bg-light">
-    <div class="row" style="height: 100vh;">
-        <!-- CỘT TRÁI: FORM NHẬP LIỆU -->
-        <div class="col-md-5 bg-white shadow-sm overflow-auto p-4">
-            <h4 class="fw-bold mb-4">Thông tin CV</h4>
+@{
+    ViewData["Title"] = "Thiết kế CV";
+    Layout = "~/Views/Shared/_LayoutCV.cshtml";
+}
 
-            <!-- Thông tin cơ bản -->
-            <div class="mb-4 border-bottom pb-3">
-                <h6><i class="bi bi-person-circle"></i> Thông tin cá nhân</h6>
-                <input type="text" id="inName" class="form-control mb-2" placeholder="Họ và tên" asp-for="FullName">
-                <input type="text" id="inJob" class="form-control mb-2" placeholder="Vị trí ứng tuyển">
-                <textarea id="inSummary" class="form-control" rows="3" placeholder="Giới thiệu bản thân"></textarea>
-            </div>
+<!-- Thư viện hỗ trợ Cắt ảnh & Icon -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-            <!-- Kinh nghiệm làm việc -->
-            <div id="exp-container" class="mb-4">
-                <h6><i class="bi bi-briefcase"></i> Kinh nghiệm làm việc</h6>
-                <!-- Item mẫu đầu tiên -->
-                <div class="exp-item border rounded p-2 mb-2 bg-light position-relative">
-                    <input type="text" class="form-control mb-1 inExpCompany" placeholder="Tên công ty" oninput="updateExpPreview()">
-                    <input type="text" class="form-control mb-1 inExpRole" placeholder="Vị trí (VD: Dev .NET)" oninput="updateExpPreview()">
-                    <textarea class="form-control inExpDesc" placeholder="Mô tả chi tiết công việc" oninput="updateExpPreview()"></textarea>
+<style>
+    .edit-container {
+        margin-top: 0;
+        height: calc(100vh - 60px);
+        overflow: hidden;
+    }
+
+    .sidebar-edit {
+        background: #f4f7fa;
+        border-right: 1px solid #e0e0e0;
+        overflow-y: auto;
+        padding: 25px;
+        height: 100%;
+    }
+
+    .preview-section {
+        background: #525659;
+        overflow-y: auto;
+        padding: 50px;
+        display: flex;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .cv-paper {
+        width: 210mm;
+        min-height: 297mm;
+        background: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        transform: scale(0.75);
+        transform-origin: top center;
+        margin-bottom: 50px;
+    }
+
+    .section-title {
+        border-left: 4px solid #7a0012;
+        padding-left: 10px;
+        margin: 20px 0 15px 0;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 15px;
+        color: #7a0012;
+    }
+
+    .form-label-sm {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #333;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #dce0e4;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #7a0012;
+            box-shadow: 0 0 0 3px rgba(122, 0, 18, 0.1);
+        }
+
+    .img-container {
+        background-color: #f7f7f7;
+        width: 100%;
+        height: 350px;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .item-header {
+        background-color: #fff;
+        cursor: pointer;
+        user-select: none;
+    }
+
+        .item-header:hover {
+            background-color: #f8f9fa;
+        }
+</style>
+
+<div class="container-fluid edit-container">
+    <div class="row h-100">
+        <!-- BÊN TRÁI: FORM NHẬP LIỆU -->
+        <div class="col-md-4 col-lg-3 sidebar-edit">
+            <div class="section-title">Thông tin cơ bản</div>
+
+            <div class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label-sm">Tiêu đề hồ sơ</label>
+                        <input type="text" id="inJob" class="form-control" placeholder="VD: Full-stack Developer" oninput="updateCV()">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-sm">Họ và tên</label>
+                        <input type="text" id="inName" class="form-control" value="@Model.FullName" oninput="updateCV()">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-sm">Ảnh hồ sơ</label>
+                        <div class="d-flex align-items-center gap-3 bg-light p-2 rounded-3 border">
+                            <img id="edit-avatar-preview" src="https://via.placeholder.com/80" class="rounded-circle border" style="width: 70px; height: 70px; object-fit: cover;">
+                            <div class="flex-grow-1">
+                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="triggerFileInput()">
+                                    <i class="bi bi-upload me-1"></i>Tải lên
+                                </button>
+                                <div id="avatar-action-buttons" class="d-none mt-1">
+                                    <small class="text-primary cursor-pointer me-2" onclick="triggerFileInput()">Sửa</small>
+                                    <small class="text-danger cursor-pointer" onclick="deleteAvatar()">Xóa</small>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" id="inAvatar" class="d-none" accept="image/*">
+                    </div>
+
+                    <div class="col-6">
+                        <label class="form-label-sm">Email</label>
+                        <input type="email" id="inEmail" class="form-control" placeholder="Email..." oninput="updateCV()">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label-sm">Số điện thoại</label>
+                        <input type="text" id="inPhone" class="form-control" placeholder="SĐT..." oninput="updateCV()">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-sm">Địa chỉ</label>
+                        <input type="text" id="inAddress" class="form-control" placeholder="Địa chỉ..." oninput="updateCV()">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label-sm">Mục tiêu nghề nghiệp</label>
+                        <textarea id="inSummary" class="form-control" rows="4" oninput="updateCV()">@Model.Summary</textarea>
+                    </div>
                 </div>
             </div>
 
-            <!-- Nút thêm kinh nghiệm -->
-            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-3" onclick="addExperience()">+ Thêm kinh nghiệm</button>
+            <!-- MỤC HỌC VẤN -->
+            <div class="section-title">Học vấn</div>
+            <div id="edu-container">
+                <div class="edu-item bg-white border rounded-3 mb-3 shadow-sm overflow-hidden">
+                    <div class="item-header d-flex justify-content-between align-items-center p-3 border-bottom bg-light" onclick="toggleSection(this)">
+                        <span class="fw-bold" style="font-size: 14px;"><i class="bi bi-chevron-down me-2"></i>Học vấn</span>
+                        <button class="btn btn-sm btn-outline-danger border-0" onclick="removeItem(this, 'edu-container', event)"><i class="bi bi-trash"></i></button>
+                    </div>
+                    <div class="p-3">
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label-sm">Chuyên ngành học</label>
+                                <input type="text" class="form-control inEduMajor" placeholder="VD: Công nghệ thông tin" oninput="updateCV()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label-sm">Tên trường</label>
+                                <input type="text" class="form-control inEduSchool" placeholder="VD: HUTECH" oninput="updateCV()">
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label-sm">Loại tốt nghiệp</label>
+                                <select class="form-select inEduType" onchange="updateCV()">
+                                    <option value="">Chọn loại</option>
+                                    <option value="Xuất sắc">Xuất sắc</option>
+                                    <option value="Giỏi">Giỏi</option>
+                                    <option value="Khá">Khá</option>
+                                    <option value="Trung bình">Trung bình</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label-sm">Thời gian học</label>
+                                <div class="d-flex gap-1">
+                                    <input type="text" class="form-control inEduStart" placeholder="Bắt đầu" oninput="updateCV()">
+                                    <input type="text" class="form-control inEduEnd" placeholder="Kết thúc" oninput="updateCV()">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label-sm">Thành tích đạt được</label>
+                            <textarea class="form-control inEduDesc" rows="3" placeholder="Mô tả thành tích..." oninput="updateCV()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-primary fw-bold cursor-pointer mb-4 small" onclick="addEdu()">
+                <i class="bi bi-plus-lg me-1"></i> Thêm học vấn
+            </div>
 
-            <button type="button" class="btn btn-success w-100 py-2 mt-3" onclick="saveFullCV()">HOÀN TẤT & LƯU CV</button>
+            <!-- MỤC KINH NGHIỆM -->
+            <div class="section-title">Kinh nghiệm làm việc</div>
+            <div id="exp-container">
+                <div class="exp-item bg-white border rounded-3 mb-3 shadow-sm overflow-hidden">
+                    <div class="item-header d-flex justify-content-between align-items-center p-3 border-bottom bg-light" onclick="toggleSection(this)">
+                        <span class="fw-bold" style="font-size: 14px;"><i class="bi bi-chevron-down me-2"></i>Kinh nghiệm làm việc</span>
+                        <button class="btn btn-sm btn-outline-danger border-0" onclick="removeItem(this, 'exp-container', event)"><i class="bi bi-trash"></i></button>
+                    </div>
+                    <div class="p-3">
+                        <div class="mb-3">
+                            <label class="form-label-sm">Tên công ty</label>
+                            <input type="text" class="form-control inExpCompany" placeholder="Tên công ty..." oninput="updateCV()">
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label-sm">Vị trí công việc</label>
+                                <input type="text" class="form-control inExpRole" placeholder="Vị trí..." oninput="updateCV()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label-sm">Thời gian</label>
+                                <div class="d-flex gap-1">
+                                    <input type="text" class="form-control inExpStart" placeholder="Bắt đầu" oninput="updateCV()">
+                                    <input type="text" class="form-control inExpEnd" placeholder="Kết thúc" oninput="updateCV()">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label-sm">Mô tả công việc</label>
+                            <textarea class="form-control inExpDesc" rows="4" placeholder="Mô tả công việc..." oninput="updateCV()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-primary fw-bold cursor-pointer mb-4 small" onclick="addExp()">
+                <i class="bi bi-plus-lg me-1"></i> Thêm kinh nghiệm làm việc
+            </div>
+
+            <!-- MỤC KỸ NĂNG (MỚI THÊM THEO HÌNH) -->
+            <div class="section-title">Kỹ năng</div>
+            <div class="bg-white p-3 rounded-3 shadow-sm border mb-4">
+                <div class="mb-2">
+                    <label class="form-label-sm">Mô tả kỹ năng</label>
+                    <textarea id="inSkills" class="form-control" rows="5"
+                              placeholder="Nhập kỹ năng của bạn..." oninput="updateCV()"></textarea>
+                </div>
+            </div>
+            <div class="cv-section-box">
+                <h5>Ngoại ngữ</h5>
+                <div id="language-container">
+                    <!-- Template sẽ được render vào đây -->
+                </div>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="addLanguage()">+ Thêm ngoại ngữ</button>
+
+                <h5 class="mt-4">Tin học</h5>
+                <div id="computing-container"></div>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="addComputing()">+ Thêm tin học</button>
+            </div>
+
+            <!-- PHẦN NGƯỜI LIÊN HỆ (Form chi tiết) -->
+            <div class="cv-section-box mt-4">
+                <h5>Người liên hệ</h5>
+                <div id="reference-container"></div>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="addReference()">+ Thêm người liên hệ</button>
+            </div>
+
+            <!-- PHẦN HOẠT ĐỘNG -->
+            <div class="cv-section-box mt-4">
+                <h5>Hoạt động</h5>
+                <div id="activity-container"></div>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="addActivity()">+ Thêm hoạt động</button>
+            </div>
+
+
+                        <!-- CHỨNG CHỈ & SỞ THÍCH (Textarea) -->
+            <h5>Chứng chỉ</h5>
+            <textarea id="inCert" class="form-control mb-3" rows="3" oninput="updateCV()"></textarea>
+
+            <h5>Sở thích</h5>
+            <textarea id="inHobby" class="form-control" rows="3" oninput="updateCV()"></textarea>
+
+            <hr>
+            <button class="btn btn-primary w-100 py-2 fw-bold shadow-lg mb-5" onclick="saveCV()">LƯU CV NGAY</button>
         </div>
 
-        <!-- CỘT PHẢI: BẢN XEM TRƯỚC (LIVE PREVIEW) -->
-        <div class="col-md-7 d-flex justify-content-center align-items-start p-5" style="background: #525659; overflow-y: auto;">
-            <div id="cv-preview-paper" class="bg-white shadow-lg p-5" style="width: 210mm; min-height: 297mm;">
-                <!-- Load nội dung Template từ Partial View -->
-                @Html.Partial(Model.TemplatePath, Model)
+        <!-- BÊN PHẢI: BẢN XEM TRƯỚC -->
+        <div class="col-md-8 col-lg-9 preview-section">
+            <div id="cv-preview" class="cv-paper">
+                @await Html.PartialAsync(Model.TemplatePath, Model)
             </div>
         </div>
     </div>
 </div>
 
-<!-- SCRIPT "GÕ ĐÂU HIỆN ĐÓ" NÂNG CẤP -->
+<!-- MODAL CẮT ẢNH -->
+<div class="modal fade" id="cropperModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">Cập nhật ảnh đại diện</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container mb-3">
+                    <img id="image-to-crop" src="">
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label class="small text-muted">Phóng thu</label>
+                        <input type="range" class="form-range" id="zoomRange" min="0.1" max="3" step="0.1" value="1">
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-muted">Xoay</label>
+                        <input type="range" class="form-range" id="rotateRange" min="-180" max="180" step="1" value="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Huỷ</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="cropAndSave()">Hoàn tất</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // 1. Đồng bộ thông tin cơ bản
-    document.getElementById('inName').addEventListener('input', function() {
-        document.querySelector('.cv-name').innerText = this.value || "HỌ TÊN CỦA BẠN";
-    });
+    let cropper;
 
-    document.getElementById('inJob').addEventListener('input', function() {
-        document.querySelector('.cv-job').innerText = this.value || "Vị trí ứng tuyển";
-    });
+    $(document).ready(function() {
+        // Cập nhật dữ liệu mặc định từ Model lên Preview khi vừa load trang
+        updateCV();
 
-    // 2. Hàm thêm mới khối kinh nghiệm
-    function addExperience() {
-        const container = document.getElementById('exp-container');
-        const newItem = `
-            <div class="exp-item border rounded p-2 mb-2 bg-light position-relative">
-                <button type="button" class="btn-close position-absolute end-0 top-0 m-1" style="font-size: 10px;" onclick="this.parentElement.remove(); updateExpPreview();"></button>
-                <input type="text" class="form-control mb-1 inExpCompany" placeholder="Tên công ty" oninput="updateExpPreview()">
-                <input type="text" class="form-control mb-1 inExpRole" placeholder="Vị trí (VD: Dev .NET)" oninput="updateExpPreview()">
-                <textarea class="form-control inExpDesc" placeholder="Mô tả chi tiết công việc" oninput="updateExpPreview()"></textarea>
-            </div>`;
-        container.insertAdjacentHTML('beforeend', newItem);
-    }
-
-    // 3. Hàm cập nhật nội dung kinh nghiệm sang Preview
-    function updateExpPreview() {
-        let html = "";
-        document.querySelectorAll('.exp-item').forEach(item => {
-            let company = item.querySelector('.inExpCompany').value;
-            let role = item.querySelector('.inExpRole').value;
-            let desc = item.querySelector('.inExpDesc').value;
-
-            if (company || role) {
-                html += `
-                    <div class="cv-item mb-3">
-                        <div class="fw-bold" style="color: #333;">${role}</div>
-                        <div class="text-primary italic">${company}</div>
-                        <div style="font-size: 0.9em; color: #666;">${desc}</div>
-                    </div>`;
+        // Xử lý chọn ảnh
+        $('#inAvatar').on('change', function(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#image-to-crop').attr('src', e.target.result);
+                    $('#cropperModal').modal('show');
+                };
+                reader.readAsDataURL(files[0]);
             }
         });
-        document.querySelector('.cv-exp-list').innerHTML = html;
+
+        // Khởi tạo Cropper khi modal mở
+        $('#cropperModal').on('shown.bs.modal', function() {
+            cropper = new Cropper(document.getElementById('image-to-crop'), {
+                aspectRatio: 220 / 250, // Khớp với tỉ lệ avatar trong CV
+                viewMode: 1
+            });
+        }).on('hidden.bs.modal', function() {
+            cropper.destroy();
+        });
+    });
+
+    function triggerFileInput() { $('#inAvatar').click(); }
+
+    function cropAndSave() {
+        const canvas = cropper.getCroppedCanvas({ width: 220, height: 250 });
+        const dataUrl = canvas.toDataURL();
+        $('#edit-avatar-preview').attr('src', dataUrl); // Ảnh ở cột edit
+        $('#display-avatar').attr('src', dataUrl).show(); // Ảnh trên bản preview CV
+        $('#avatar-action-buttons').removeClass('d-none');
+        $('#cropperModal').modal('hide');
     }
 
-    // 4. Hàm lưu CV (Gửi về Controller)
-    async function saveFullCV() {
-        const data = {
-            FullName: document.getElementById('inName').value,
-            JobTitle: document.getElementById('inJob').value,
-            Summary: document.getElementById('inSummary').value,
-            Experiences: []
-        };
+    function deleteAvatar() {
+        $('#edit-avatar-preview').attr('src', 'https://via.placeholder.com/80');
+        $('#display-avatar').hide();
+        $('#inAvatar').val('');
+        $('#avatar-action-buttons').addClass('d-none');
+    }
 
-        document.querySelectorAll('.exp-item').forEach(item => {
-            data.Experiences.push({
-                Company: item.querySelector('.inExpCompany').value,
-                Role: item.querySelector('.inExpRole').value,
-                Description: item.querySelector('.inExpDesc').value
-            });
+    function toggleSection(element) {
+        $(element).next().slideToggle(200);
+        $(element).find('i').toggleClass('bi-chevron-down bi-chevron-right');
+    }
+
+    // --- HÀM CẬP NHẬT REAL-TIME ---
+    function updateCV() {
+        // 1. Thông tin cơ bản
+        $('#display-name').text($('#inName').val() || "HỌ VÀ TÊN CỦA BẠN");
+        $('#display-job').text($('#inJob').val() || "VỊ TRÍ ỨNG TUYỂN");
+        $('#display-phone').text($('#inPhone').val() || "Chưa cập nhật");
+        $('#display-email').text($('#inEmail').val() || "Chưa cập nhật");
+        $('#display-address').text($('#inAddress').val() || "Chưa cập nhật");
+
+        // 2. Mục tiêu & Giới thiệu
+        $('#display-summary').text($('#inSummary').val());
+
+        // 3. Học vấn (Render danh sách)
+        let eduHtml = "";
+        $('.edu-item-group').each(function() {
+            const major = $(this).find('.inEduMajor').val();
+            const school = $(this).find('.inEduSchool').val();
+            const start = $(this).find('.inEduStart').val();
+            const end = $(this).find('.inEduEnd').val();
+            if(major || school) {
+                eduHtml += `
+                <div class="edu-item">
+                    <div class="edu-title">${school}</div>
+                    <div class="edu-info">${major}</div>
+                    <div class="edu-info">${start} - ${end}</div>
+                </div>`;
+            }
         });
+        $('#display-edu-list').html(eduHtml);
 
-        console.log("Dữ liệu gửi đi:", data);
-        alert("Đã nhấn lưu! Kiểm tra console log để xem dữ liệu.");
-        // Tại đây bạn dùng fetch() để gửi data qua SaveCV Action trong Controller
+        // 4. Kinh nghiệm
+        let expHtml = "";
+        $('.exp-item-group').each(function() {
+            const role = $(this).find('.inExpRole').val();
+            const company = $(this).find('.inExpCompany').val();
+            const start = $(this).find('.inExpStart').val();
+            const end = $(this).find('.inExpEnd').val();
+            const desc = $(this).find('.inExpDesc').val();
+            if(role || company) {
+                expHtml += `
+                <div class="exp-item">
+                    <div class="exp-title">${role}</div>
+                    <div class="exp-info">${company} | ${start} - ${end}</div>
+                    <div class="text-block">${desc}</div>
+                </div>`;
+            }
+        });
+        $('#display-exp-list').html(expHtml);
+
+        // 5. Ngoại ngữ
+        let langHtml = "";
+        $('.lang-item-group').each(function() {
+            const name = $(this).find('.inLangName').val();
+            const level = $(this).find('.inLangLevel').val();
+            if(name) langHtml += `<div class="list-item">• ${name} (${level})</div>`;
+        });
+        $('#display-languages').html(langHtml);
+
+        // 6. Tin học
+        let itHtml = "";
+        $('.comp-item-group').each(function() {
+            const skill = $(this).find('.inCompName').val();
+            if(skill) itHtml += `<div class="list-item">• ${skill}</div>`;
+        });
+        $('#display-it').html(itHtml);
+
+        // 7. Các mục khác (Dùng ID từ file 1)
+        $('#display-activities').text($('#inActDesc').val()); // Bạn cần chỉnh lại loop nếu có nhiều hoạt động
+        $('#display-certs').text($('#inCert').val());
+        $('#display-hobbies').text($('#inHobby').val());
+    }
+
+    function saveCV() {
+        // Logic gửi AJAX về Controller để lưu Model
+        alert("Đang tiến hành lưu dữ liệu...");
+    }
+
+
+    function saveCV() {
+        alert("Đã lưu dữ liệu thành công!");
     }
 </script>

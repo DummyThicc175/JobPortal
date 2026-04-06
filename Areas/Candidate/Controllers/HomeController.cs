@@ -106,28 +106,48 @@ namespace JobPortal.Areas.Candidate.Controllers
 
 
         // Đường dẫn: Candidate/Home/EditCV/5
-        public IActionResult EditCV(int id)
+        public async Task<IActionResult> EditCV(int id)
         {
-            var template = _context.CVTemplates.FirstOrDefault(t => t.Id == id);
-            if (template == null) return NotFound();
+            var model = await _context.UserCVs
+                .Include(x => x.Experiences)
+                .Include(x => x.Educations)
+                .Include(x => x.Languages)
+                .Include(x => x.ITSKills)
+                .Include(x => x.References)
+                .FirstOrDefaultAsync(x => x.TemplateId == id);
 
-            // Nếu lỡ trong DB vẫn còn đường dẫn dài, mình sẽ lấy mỗi tên file thôi
-            // Ví dụ: lấy "Templates/T1" thay vì cả cụm dài
-            string path = template.TemplateViewPath;
-            if (path.Contains("Templates/"))
+            if (model == null)
             {
-                path = path.Substring(path.IndexOf("Templates/"));
-                path = path.Replace(".cshtml", ""); // Partial không cần đuôi .cshtml
+                var template = await _context.CVTemplates.FirstOrDefaultAsync(t => t.Id == id);
+                if (template == null) return NotFound();
+
+                // PHẢI XỬ LÝ LẤY PATH TẠI ĐÂY
+                string path = template.TemplateViewPath;
+                if (path.Contains("Templates/"))
+                {
+                    path = path.Substring(path.IndexOf("Templates/"));
+                    path = path.Replace(".cshtml", "");
+                }
+
+                model = new EditCVViewModel
+                {
+                    TemplateId = id,
+                    TemplatePath = path, // QUAN TRỌNG: Phải gán cái này để không bị lỗi Null
+                    FullName = "HỌ VÀ TÊN CỦA BẠN",
+                    Experiences = new List<ExperienceVM>(),
+                    Educations = new List<EducationVM>(),
+                    Languages = new List<LanguageVM>(),
+                    ITSKills = new List<ITSkillVM>(),
+                    References = new List<ReferenceVM>()
+                };
             }
 
-            var model = new EditCVViewModel
+            // Kiểm tra thêm một lần nữa cho chắc chắn trước khi return
+            if (string.IsNullOrEmpty(model.TemplatePath))
             {
-                TemplateId = id,
-                TemplatePath = path, // Bây giờ path sẽ là "Templates/T1"
-                FullName = "TRẦN THẠCH THẢO ANH",
-                Experiences = new List<ExperienceVM>(),
-                Educations = new List<EducationVM>()
-            };
+                // Nếu vẫn null thì gán mặc định file T1
+                model.TemplatePath = "Templates/T1";
+            }
 
             return View(model);
         }
