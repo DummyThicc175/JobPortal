@@ -1,0 +1,167 @@
+﻿@model IEnumerable<JobPortal.Models.JobPost>
+
+@{
+    ViewData["Title"] = "Quản lý bài đăng";
+    Layout = "~/Areas/Admin/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold"><i class="fa fa-layer-group me-2"></i>Tất cả tin tuyển dụng</h4>
+    <div class="text-muted small">Tổng số: @Model.Count() bài đăng</div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Thông tin tin đăng</th>
+                        <th>Địa điểm</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Chức năng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">
+                                <div class="fw-bold text-dark">@item.Title</div>
+                                <div class="small text-muted">
+                                    @item.CompanyName • <span class="text-primary">@(item.Category?.Name ?? "Chưa phân loại")</span>
+                                </div>
+                                <div class="extra-small text-muted" style="font-size: 0.75rem;">
+                                    ID: #@item.Id | Đăng ngày: @item.CreatedAt.ToString("dd/MM/yyyy")
+                                </div>
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <i class="fa fa-map-marker-alt text-danger me-1"></i>
+                                    @(item.JobLocation?.Name ?? "Toàn quốc")
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.IsApproved)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success px-3 rounded-pill">Đang hiện</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary px-3 rounded-pill">Đang ẩn</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="d-inline-flex gap-2">
+                                    <button class="btn btn-light btn-sm rounded-circle border shadow-sm"
+                                            onclick="showDetails(@item.Id)" title="Xem nhanh">
+                                        <i class="fa fa-eye text-info"></i>
+                                    </button>
+
+                                    <form asp-action="ToggleApproval" asp-route-id="@item.Id" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn @(item.IsApproved ? "btn-outline-warning" : "btn-outline-success") btn-sm rounded-pill px-3 shadow-sm">
+                                            @(item.IsApproved ? "Ẩn bài" : "Hiện bài")
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="DeletePost" asp-route-id="@item.Id" method="post"
+                                          class="m-0" onsubmit="return confirm('Bạn có chắc muốn xóa vĩnh viễn bài này?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle border shadow-sm" title="Xóa vĩnh viễn">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 bg-light rounded-top-4">
+                <h5 class="modal-title fw-bold text-primary" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3 mb-4">
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block small text-uppercase fw-bold">Công ty</small>
+                        <span class="fw-bold text-dark" id="modalCompany"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block small text-uppercase fw-bold">Mức lương</small>
+                        <span class="text-danger fw-bold" id="modalSalary"></span>
+                    </div>
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block small text-uppercase fw-bold">Ngành nghề</small>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle px-3 rounded-pill" id="modalCategory"></span>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block small text-uppercase fw-bold">Địa điểm</small>
+                        <span class="text-dark fw-bold"><i class="fa fa-map-marker-alt text-danger me-1"></i><span id="modalLocation"></span></span>
+                    </div>
+                </div>
+                <div class="job-content bg-light p-3 rounded-3 mt-2">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="fa fa-file-alt me-2 text-primary"></i>Mô tả chi tiết:</h6>
+                    <div id="modalDescription" style="white-space: pre-line; color: #4a5568; line-height: 1.6; font-size: 0.95rem;"></div>
+                </div>
+                <div class="mt-3 text-end small text-muted">
+                    Ngày đăng: <span id="modalDate"></span>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showDetails(id) {
+            // Gọi API lấy dữ liệu JSON từ Controller
+            fetch('/Admin/JobManager/GetDetails?id=' + id)
+                .then(response => {
+                    if (!response.ok) throw new Error("Không thể kết nối đến máy chủ");
+                    return response.json();
+                })
+                .then(data => {
+                    // Gán dữ liệu vào Modal
+                    document.getElementById('modalTitle').innerText = data.title;
+                    document.getElementById('modalCompany').innerText = data.company;
+                    document.getElementById('modalSalary').innerText = data.salary;
+                    document.getElementById('modalCategory').innerText = data.category;
+                    document.getElementById('modalLocation').innerText = data.location;
+                    document.getElementById('modalDescription').innerText = data.description;
+                    document.getElementById('modalDate').innerText = data.createdAt;
+
+                    // Hiển thị Modal
+                    var myModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                    myModal.show();
+                })
+                .catch(error => {
+                    console.error(error);
+                    alert("Lỗi khi tải thông tin bài đăng!");
+                });
+        }
+    </script>
+
+    <style>
+        .bg-info-subtle {
+            background-color: #e1f5fe !important;
+            color: #0288d1 !important;
+        }
+
+        .rounded-top-4 {
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+        }
+    </style>
+}

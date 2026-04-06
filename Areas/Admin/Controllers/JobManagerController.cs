@@ -69,5 +69,46 @@ namespace JobPortal.Areas.Admin.Controllers
                 description = job.Description
             });
         }
+        // 1. Xem tất cả bài đăng trên hệ thống
+        public async Task<IActionResult> Index()
+        {
+            var allJobs = await _context.JobPosts
+                .Include(j => j.JobLocation)
+                .Include(j => j.Category)
+                .OrderByDescending(j => j.CreatedAt)
+                .ToListAsync();
+            return View(allJobs);
+        }
+
+        // 2. Chức năng Gỡ bài / Duyệt lại (Bật/Tắt trạng thái IsApproved)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleApproval(int id)
+        {
+            var job = await _context.JobPosts.FindAsync(id);
+            if (job == null) return NotFound();
+
+            // Đảo ngược trạng thái duyệt
+            job.IsApproved = !job.IsApproved;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = job.IsApproved ? "Đã hiển thị lại bài đăng." : "Đã gỡ bài đăng khỏi trang chủ.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // 3. Xóa bài đăng vĩnh viễn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePost(int id)
+        {
+            var job = await _context.JobPosts.FindAsync(id);
+            if (job != null)
+            {
+                _context.JobPosts.Remove(job);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Đã xóa bài đăng vĩnh viễn.";
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
