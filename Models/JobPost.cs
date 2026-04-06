@@ -1,6 +1,4 @@
-using JobPortal.Models.JobPortal.Models;
-using System;
-using System.Collections.Generic;
+using JobPortal.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,7 +17,7 @@ namespace JobPortal.Models
         public string? CompanyName { get; set; }
 
         public string? SalaryRange { get; set; } // Mức lương (Ví dụ: "10 - 15")
-        public string? Location { get; set; }    // Địa điểm làm việc (Ví dụ: "Đồng Nai")
+       
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public bool IsApproved { get; set; } = false;
@@ -36,5 +34,10 @@ namespace JobPortal.Models
 
         [ForeignKey("CompanyId")]
         public virtual Company? Company { get; set; } // Thuộc tính điều hướng
+        [Display(Name = "Địa điểm")]
+        public int? LocationId { get; set; }
+
+        [ForeignKey("LocationId")]
+        public virtual Location? JobLocation { get; set; }
     }
 }

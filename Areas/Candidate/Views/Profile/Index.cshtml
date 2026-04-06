@@ -71,11 +71,29 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="small text-muted mb-1">Ngành nghề</label>
-                            <input asp-for="Industry" class="form-control border-0 bg-light rounded-3" />
+                            <select asp-for="Industry" class="form-select border-0 bg-light rounded-3">
+                                <option value="">-- Chọn ngành nghề --</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    foreach (var cat in ViewBag.Categories as List<JobPortal.Models.Category>)
+                                    {
+                                        <option value="@cat.Name" selected="@(Model.Industry == cat.Name ? "selected" : null)">@cat.Name</option>
+                                    }
+                                }
+                            </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="small text-muted mb-1">Địa điểm</label>
-                            <input asp-for="DesiredLocation" class="form-control border-0 bg-light rounded-3" />
+                            <label class="small text-muted mb-1">Địa điểm mong muốn</label>
+                            <select asp-for="DesiredLocation" class="form-select border-0 bg-light rounded-3">
+                                <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                @if (ViewBag.Locations != null)
+                                {
+                                    foreach (var loc in ViewBag.Locations as List<JobPortal.Models.Location>)
+                                    {
+                                        <option value="@loc.Name" selected="@(Model.DesiredLocation == loc.Name ? "selected" : null)">@loc.Name</option>
+                                    }
+                                }
+                            </select>
                         </div>
                         <div class="col-md-6">
                             <label class="small text-muted mb-1">Mức lương mong muốn</label>
@@ -106,7 +124,10 @@
                             </div>
                             <p class="fw-bold mt-2 mb-1">@job.Title</p>
                             <p class="text-danger small fw-bold mb-1">@job.SalaryRange triệu</p>
-                            <p class="text-muted small"><i class="bi bi-geo-alt me-1"></i> @job.Location</p>
+                            <p class="text-muted small">
+                                <i class="bi bi-geo-alt me-1"></i>
+                                @(job.JobLocation?.Name ?? "Toàn quốc")
+                            </p>
                         </div>
                     }
                 }

@@ -369,8 +369,8 @@ namespace JobPortal.Migrations
                     b.Property<bool>("IsApproved")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("LocationId")
+                        .HasColumnType("int");
 
                     b.Property<string>("SalaryRange")
                         .HasColumnType("nvarchar(max)");
@@ -384,6 +384,8 @@ namespace JobPortal.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("LocationId");
 
                     b.ToTable("JobPosts");
                 });
@@ -410,6 +412,340 @@ namespace JobPortal.Migrations
                     b.HasIndex("EditCVViewModelId");
 
                     b.ToTable("Languages");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.Location", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Locations");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "An Giang"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "Bà Rịa - Vũng Tàu"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Bắc Giang"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Bắc Kạn"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "Bạc Liêu"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "Bắc Ninh"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "Bến Tre"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "Bình Định"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "Bình Dương"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "Bình Phước"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Name = "Bình Thuận"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Name = "Cà Mau"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Name = "Cần Thơ"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Name = "Cao Bằng"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Name = "Đà Nẵng"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Name = "Đắk Lắk"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Name = "Đắk Nông"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Name = "Điện Biên"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Name = "Đồng Nai"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Name = "Đồng Tháp"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Name = "Gia Lai"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Name = "Hà Giang"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Name = "Hà Nam"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Name = "Hà Nội"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Name = "Hà Tĩnh"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Name = "Hải Dương"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Name = "Hải Phòng"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Name = "Hậu Giang"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Name = "Hòa Bình"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Name = "Hưng Yên"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Name = "Khánh Hòa"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Name = "Kiên Giang"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Name = "Kon Tum"
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Name = "Lai Châu"
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Name = "Lâm Đồng"
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Name = "Lạng Sơn"
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Name = "Lào Cai"
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Name = "Long An"
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Name = "Nam Định"
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Name = "Nghệ An"
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Name = "Ninh Bình"
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Name = "Ninh Thuận"
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Name = "Phú Thọ"
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Name = "Phú Yên"
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Name = "Quảng Bình"
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Name = "Quảng Nam"
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Name = "Quảng Ngãi"
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Name = "Quảng Ninh"
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Name = "Quảng Trị"
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Name = "Sóc Trăng"
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Name = "Sơn La"
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Name = "Tây Ninh"
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Name = "Thái Bình"
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Name = "Thái Nguyên"
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Name = "Thanh Hóa"
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Name = "Thừa Thiên Huế"
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Name = "Tiền Giang"
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Name = "TP. Hồ Chí Minh"
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Name = "Trà Vinh"
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Name = "Tuyên Quang"
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Name = "Vĩnh Long"
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Name = "Vĩnh Phúc"
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Name = "Yên Bái"
+                        });
                 });
 
             modelBuilder.Entity("JobPortal.Models.ReferenceVM", b =>
@@ -700,9 +1036,15 @@ namespace JobPortal.Migrations
                         .WithMany()
                         .HasForeignKey("CompanyId");
 
+                    b.HasOne("JobPortal.Models.Location", "JobLocation")
+                        .WithMany("JobPosts")
+                        .HasForeignKey("LocationId");
+
                     b.Navigation("Category");
 
                     b.Navigation("Company");
+
+                    b.Navigation("JobLocation");
                 });
 
             modelBuilder.Entity("JobPortal.Models.LanguageVM", b =>
@@ -788,6 +1130,11 @@ namespace JobPortal.Migrations
                 });
 
             modelBuilder.Entity("JobPortal.Models.JobPortal.Models.Category", b =>
+                {
+                    b.Navigation("JobPosts");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.Location", b =>
                 {
                     b.Navigation("JobPosts");
                 });

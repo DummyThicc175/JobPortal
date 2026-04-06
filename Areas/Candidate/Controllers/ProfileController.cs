@@ -19,11 +19,22 @@ namespace JobPortal.Areas.Candidate.Controllers
         // Hiển thị trang hồ sơ
         public async Task<IActionResult> Index()
         {
+            // 1. Lấy danh sách Tỉnh thành và Ngành nghề để hiển thị trong Dropdown (ô chọn)
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+
             var model = new CandidateProfileViewModel
             {
-                // Lấy dữ liệu gợi ý từ Database
-                SuggestedJobs = await _context.JobPosts.Include(j => j.Company).Take(5).ToListAsync()
+                // 2. Lấy dữ liệu gợi ý và phải có .Include để lấy Tên Địa điểm/Ngành nghề
+                SuggestedJobs = await _context.JobPosts
+                    .Include(j => j.Company)
+                    .Include(j => j.JobLocation) // Quan trọng: Để lấy Tên Tỉnh thành
+                    .Include(j => j.Category)    // Quan trọng: Để lấy Tên Ngành nghề
+                    .Where(j => j.IsApproved)    // Chỉ lấy tin đã được duyệt
+                    .Take(5)
+                    .ToListAsync()
             };
+
             return View(model);
         }
 

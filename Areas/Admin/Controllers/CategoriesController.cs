@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using JobPortal.Data;
-using JobPortal.Models.JobPortal.Models;
+using JobPortal.Models;
 
 namespace JobPortal.Areas.Admin.Controllers
 {
