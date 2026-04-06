@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using JobPortal.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using JobPortal.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace JobPortal.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area("Admin")] // Khai báo thuộc tính vùng
+    [Authorize(Roles = "Admin")]
     public class JobManagerController : Controller
     {
         private readonly ApplicationDbContext _context;

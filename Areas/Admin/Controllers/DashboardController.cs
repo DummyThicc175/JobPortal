@@ -1,10 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
 using JobPortal.Data; // Đảm bảo đúng namespace chứa ApplicationDbContext
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
 namespace JobPortal.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area("Admin")] // Khai báo thuộc tính vùng
+    [Authorize(Roles = "Admin")]
     public class DashboardController : Controller
     {
         private readonly ApplicationDbContext _context;
