@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using JobPortal.Models; // Sửa tên JobPortal thành tên dự án của bạn nếu khác
+using JobPortal.Models;
+using JobPortal.Models.JobPortal.Models; // Sửa tên JobPortal thành tên dự án của bạn nếu khác
 
 namespace JobPortal.Data
 {
@@ -18,7 +19,7 @@ namespace JobPortal.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
 
         public DbSet<CVTemplate> CVTemplates { get; set; }
-
+        public DbSet<Category> Categories { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

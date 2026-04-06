@@ -323,6 +323,23 @@ namespace JobPortal.Migrations
                     b.ToTable("ITSKills");
                 });
 
+            modelBuilder.Entity("JobPortal.Models.JobPortal.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("JobPortal.Models.JobPost", b =>
                 {
                     b.Property<int>("Id")
@@ -330,6 +347,9 @@ namespace JobPortal.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
 
                     b.Property<string>("CompanyName")
                         .IsRequired()
@@ -354,6 +374,8 @@ namespace JobPortal.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("JobPosts");
                 });
@@ -660,6 +682,15 @@ namespace JobPortal.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("JobPortal.Models.JobPost", b =>
+                {
+                    b.HasOne("JobPortal.Models.JobPortal.Models.Category", "Category")
+                        .WithMany("JobPosts")
+                        .HasForeignKey("CategoryId");
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("JobPortal.Models.LanguageVM", b =>
                 {
                     b.HasOne("JobPortal.Models.EditCVViewModel", null)
@@ -740,6 +771,11 @@ namespace JobPortal.Migrations
                     b.Navigation("Languages");
 
                     b.Navigation("References");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.JobPortal.Models.Category", b =>
+                {
+                    b.Navigation("JobPosts");
                 });
 #pragma warning restore 612, 618
         }
