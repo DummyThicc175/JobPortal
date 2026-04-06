@@ -72,14 +72,16 @@ namespace JobPortal.Areas.Admin.Controllers
             });
         }
         // 1. Xem tất cả bài đăng trên hệ thống
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? searchId)
         {
-            var allJobs = await _context.JobPosts
-                .Include(j => j.JobLocation)
-                .Include(j => j.Category)
-                .OrderByDescending(j => j.CreatedAt)
-                .ToListAsync();
-            return View(allJobs);
+            var jobPosts = _context.JobPosts.AsQueryable();
+
+            if (searchId.HasValue)
+            {
+                jobPosts = jobPosts.Where(j => j.Id == searchId.Value);
+            }
+
+            return View(await jobPosts.ToListAsync());
         }
 
         // 2. Chức năng Gỡ bài / Duyệt lại (Bật/Tắt trạng thái IsApproved)

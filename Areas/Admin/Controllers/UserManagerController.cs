@@ -17,12 +17,17 @@ public class UserManagerController : Controller
     }
 
     // 1. Danh sách người dùng
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string searchEmail)
     {
-        var users = await _userManager.Users.ToListAsync();
-        return View(users);
-    }
+        var users = _userManager.Users.AsQueryable();
 
+        if (!string.IsNullOrEmpty(searchEmail))
+        {
+            users = users.Where(u => u.Email.Contains(searchEmail));
+        }
+
+        return View(await users.ToListAsync());
+    }
     // 2. Khóa hoặc Mở khóa tài khoản
     [HttpPost]
     public async Task<IActionResult> ToggleLock(string userId)

@@ -23,9 +23,16 @@ namespace JobPortal.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
-            return View(await _context.Categories.ToListAsync());
+            var categories = _context.Categories.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                categories = categories.Where(c => c.Name.Contains(searchTerm));
+            }
+
+            return View(await categories.ToListAsync());
         }
 
         // GET: Admin/Categories/Details/5
