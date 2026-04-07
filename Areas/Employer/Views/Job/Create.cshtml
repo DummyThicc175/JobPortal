@@ -20,8 +20,12 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label class="form-label fw-bold">Ngành nghề</label>
-                        <input asp-for="CategoryName" class="form-control border-2" placeholder="Nhập ngành nghề..." />
-                        <span asp-validation-for="CategoryName" class="text-danger"></span>
+                            <select asp-for="CategoryId" class="form-select border-2"
+                                    asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                <option value="">-- Chọn ngành nghề --</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+
                     </div>
 
                     <div class="col-md-6 mb-4">

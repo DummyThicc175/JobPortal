@@ -8,7 +8,8 @@ using System.Security.Claims;
 namespace JobPortal.Areas.Employer.Controllers
 {
     [Area("Employer")]
-    // [Authorize(Roles = "Employer")] // Mở dòng này khi bạn đã phân quyền xong
+    [Authorize(Roles = "Employer")]
+    [Authorize(Roles = "Admin")]// Đảm bảo chỉ Employer mới có quyền truy cập
     public class JobController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -18,19 +19,17 @@ namespace JobPortal.Areas.Employer.Controllers
             _context = context;
         }
 
-        // 1. Trang danh sách tin đã đăng + Thống kê nhanh cho Dashboard
+        // 1. Trang danh sách tin đã đăng của riêng Employer đó
         public async Task<IActionResult> Index()
         {
-            // Lấy ID của người dùng đang đăng nhập (Employer)
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            // Truy vấn danh sách tin (Sắp xếp tin mới nhất lên đầu)
+// Chỉ lấy danh sách tin do chính User này đăng 
             var jobs = await _context.JobPosts
+                .Include(j => j.Category)
+                .Include(j => j.JobLocation)
+                .Where(j => j.EmployerId == userId)
                 .OrderByDescending(j => j.CreatedAt)
                 .ToListAsync();
-
-            // Nếu bạn muốn lọc chỉ xem tin của riêng User đó, dùng dòng này:
-            // var jobs = await _context.JobPosts.Where(j => j.EmployerId == userId).OrderByDescending(j => j.CreatedAt).ToListAsync();
 
             return View(jobs);
         }
@@ -38,7 +37,9 @@ namespace JobPortal.Areas.Employer.Controllers
         // 2. Trang Đăng tin mới (GET)
         public async Task<IActionResult> Create()
         {
+            // Nạp danh sách để hiển thị Dropdown trên View [cite: 163, 165]
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             return View();
         }
 
@@ -49,10 +50,9 @@ namespace JobPortal.Areas.Employer.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Gán ID người dùng đang đăng nhập
                 job.EmployerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 job.CreatedAt = DateTime.Now;
-                job.EmployerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                job.IsApproved = false; // Chờ Admin duyệt 
 
                 _context.Add(job);
                 await _context.SaveChangesAsync();
@@ -61,24 +61,28 @@ namespace JobPortal.Areas.Employer.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Nếu lỗi, phải load lại danh sách Dropdown trước khi trả về View
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             return View(job);
         }
-        // --- CHỨC NĂNG CHỈNH SỬA (GET) ---
+
+        // 4. Chỉnh sửa tin tuyển dụng (GET)
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
 
-            var job = await _context.JobPosts.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var job = await _context.JobPosts
+                .FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == userId);
+
             if (job == null) return NotFound();
 
-            // Load lại danh sách tỉnh thành cho dropdown
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             return View(job);
         }
 
-        // --- CHỨC NĂNG CHỈNH SỬA (POST) ---
+        // 5. Xử lý Chỉnh sửa (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, JobPost job)
@@ -89,84 +93,78 @@ namespace JobPortal.Areas.Employer.Controllers
             {
                 try
                 {
-                    // Giữ lại các thông tin không cho phép sửa từ form
-                    var existingJob = await _context.JobPosts.AsNoTracking().FirstOrDefaultAsync(j => j.Id == id);
+                    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    var existingJob = await _context.JobPosts.AsNoTracking()
+                        .FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == userId);
+
+                    if (existingJob == null) return Forbid();
+
+                    // Giữ lại các thông tin hệ thống không cho phép sửa từ Form 
                     job.EmployerId = existingJob.EmployerId;
                     job.CreatedAt = existingJob.CreatedAt;
-                    job.IsApproved = existingJob.IsApproved; // Giữ nguyên trạng thái duyệt
+                    job.IsApproved = existingJob.IsApproved;
 
                     _context.Update(job);
                     await _context.SaveChangesAsync();
                     TempData["Success"] = "Cập nhật tin tuyển dụng thành công!";
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!_context.JobPosts.Any(e => e.Id == job.Id)) return NotFound();
                     else throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             return View(job);
         }
-        // 4. Xem danh sách ứng viên (Dành cho chức năng "Xem ứng viên" trong Index)
+
+        // 6. Xem danh sách ứng viên của một bài đăng cụ thể
         public async Task<IActionResult> Candidates(int jobId)
         {
-            if (jobId <= 0)
-            {
-                return BadRequest();
-            }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId && j.EmployerId == userId);
 
-            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId);
-            if (job == null)
-            {
-                return NotFound();
-            }
+            if (job == null) return NotFound();
 
             var applications = await _context.Applications
-                .Include(a => a.CV) // Lấy thông tin CV đi kèm
+                .Include(a => a.CV)
                 .Where(a => a.JobPostId == jobId)
                 .OrderByDescending(a => a.AppliedDate)
                 .ToListAsync();
 
-            var candidateIds = applications
-                .Select(a => a.CandidateId)
-                .Distinct()
-                .ToList();
+            var candidateIds = applications.Select(a => a.CandidateId).Distinct().ToList();
+            var users = await _context.Users.Where(u => candidateIds.Contains(u.Id)).ToListAsync();
 
-            var users = await _context.Users
-                .Where(u => candidateIds.Contains(u.Id))
-                .ToListAsync();
-
-            var applicantViewModels = new List<EmployerApplicantViewModel>();
-
-            foreach (var application in applications)
-            {
+            var applicantViewModels = applications.Select(application => {
                 var user = users.FirstOrDefault(u => u.Id == application.CandidateId);
-                applicantViewModels.Add(new EmployerApplicantViewModel
+                return new EmployerApplicantViewModel
                 {
                     Id = application.Id,
                     JobPostId = application.JobPostId,
                     JobTitle = job.Title,
                     CandidateId = application.CandidateId,
-                    CandidateName = user?.UserName ?? application.CandidateId,
-                    CandidateEmail = user?.Email ?? "Không có email",
+                    CandidateName = user?.UserName ?? "Ẩn danh",
+                    CandidateEmail = user?.Email ?? "N/A",
                     CvFileName = application.CV?.FileName,
                     CvUrl = application.CV != null ? $"/uploads/cvs/{application.CV.FileName}" : null,
                     AppliedDate = application.AppliedDate,
                     Status = application.Status.ToString()
-                });
-            }
+                };
+            }).ToList();
 
             return View(applicantViewModels);
         }
 
-        // 5. Thêm chức năng Xóa tin (Cần thiết cho quản lý)
+        // 7. Xóa tin tuyển dụng (POST)
         [HttpPost]
-        [ValidateAntiForgeryToken] // Thêm bảo mật
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var job = await _context.JobPosts.FindAsync(id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == id && j.EmployerId == userId);
+
             if (job != null)
             {
                 _context.JobPosts.Remove(job);

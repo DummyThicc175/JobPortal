@@ -21,15 +21,17 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var jobPosts = await _context.JobPosts
-            .Include(j => j.Company)      // Load bảng Company
-            .Include(j => j.Category)     // Load bảng Category
-            .Include(j => j.JobLocation)  // Load bảng Location (thông qua thuộc tính JobLocation)
-            .AsNoTracking()               // Tăng tốc độ đọc dữ liệu
+        // Thêm .Where để chỉ lấy những tin đã được duyệt (IsApproved = true)
+        // Nên kết hợp .Include để hiển thị đầy đủ tên công ty, địa điểm, ngành nghề
+        var jobs = await _context.JobPosts
+            .Include(j => j.Category)
+            .Include(j => j.JobLocation)
+            .Include(j => j.Company)
+            .Where(j => j.IsApproved == true)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
 
-        return View(jobPosts);
+        return View(jobs);
     }
 
     public IActionResult Privacy()
