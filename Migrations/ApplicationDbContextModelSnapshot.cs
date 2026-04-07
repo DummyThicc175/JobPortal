@@ -122,6 +122,72 @@ namespace JobPortal.Migrations
                         });
                 });
 
+            modelBuilder.Entity("JobPortal.Models.Candidate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AvatarUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Birthday")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CVUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DesiredLocation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExpectedSalary")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Industry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaritalStatus")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Candidates");
+                });
+
+            modelBuilder.Entity("JobPortal.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Categories");
+                });
+
             modelBuilder.Entity("JobPortal.Models.ChatMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -321,23 +387,6 @@ namespace JobPortal.Migrations
                     b.HasIndex("EditCVViewModelId");
 
                     b.ToTable("ITSKills");
-                });
-
-            modelBuilder.Entity("JobPortal.Models.JobPortal.Models.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("JobPortal.Models.JobPost", b =>
@@ -1028,7 +1077,7 @@ namespace JobPortal.Migrations
 
             modelBuilder.Entity("JobPortal.Models.JobPost", b =>
                 {
-                    b.HasOne("JobPortal.Models.JobPortal.Models.Category", "Category")
+                    b.HasOne("JobPortal.Models.Category", "Category")
                         .WithMany("JobPosts")
                         .HasForeignKey("CategoryId");
 
@@ -1116,6 +1165,11 @@ namespace JobPortal.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("JobPortal.Models.Category", b =>
+                {
+                    b.Navigation("JobPosts");
+                });
+
             modelBuilder.Entity("JobPortal.Models.EditCVViewModel", b =>
                 {
                     b.Navigation("Educations");
@@ -1127,11 +1181,6 @@ namespace JobPortal.Migrations
                     b.Navigation("Languages");
 
                     b.Navigation("References");
-                });
-
-            modelBuilder.Entity("JobPortal.Models.JobPortal.Models.Category", b =>
-                {
-                    b.Navigation("JobPosts");
                 });
 
             modelBuilder.Entity("JobPortal.Models.Location", b =>

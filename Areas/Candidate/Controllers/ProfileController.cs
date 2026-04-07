@@ -16,57 +16,114 @@ namespace JobPortal.Areas.Candidate.Controllers
             _context = context;
         }
 
-        // Hiển thị trang hồ sơ
+        // 1. TRANG HIỂN THỊ HỒ SƠ
         public async Task<IActionResult> Index()
         {
-            // 1. Lấy danh sách Tỉnh thành và Ngành nghề để hiển thị trong Dropdown (ô chọn)
+            // Lấy ứng viên đầu tiên trong bảng Candidates
+            var candidate = await _context.Candidates.FirstOrDefaultAsync();
+
+            var model = new CandidateProfileViewModel();
+
+            if (candidate != null)
+            {
+                // Đổ dữ liệu từ DB vào ViewModel để hiện lên Form
+                model.FullName = candidate.FullName;
+                model.Phone = candidate.Phone;
+                model.Gender = candidate.Gender;
+                model.Birthday = candidate.Birthday;
+                model.MaritalStatus = candidate.MaritalStatus;
+                model.Industry = candidate.Industry;
+                model.DesiredLocation = candidate.DesiredLocation;
+                model.ExpectedSalary = candidate.ExpectedSalary;
+                model.AvatarUrl = candidate.AvatarUrl;
+                model.Email = candidate.Email;
+                model.Address = candidate.Address;
+                model.CVUrl = candidate.CVUrl;
+              
+            }
+
+            // Load dữ liệu cho các ô Dropdown (Ngành nghề, Tỉnh thành)
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
             ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
-
-            var model = new CandidateProfileViewModel
-            {
-                // 2. Lấy dữ liệu gợi ý và phải có .Include để lấy Tên Địa điểm/Ngành nghề
-                SuggestedJobs = await _context.JobPosts
-                    .Include(j => j.Company)
-                    .Include(j => j.JobLocation) // Quan trọng: Để lấy Tên Tỉnh thành
-                    .Include(j => j.Category)    // Quan trọng: Để lấy Tên Ngành nghề
-                    .Where(j => j.IsApproved)    // Chỉ lấy tin đã được duyệt
-                    .Take(5)
-                    .ToListAsync()
-            };
 
             return View(model);
         }
 
-        // Xử lý khi nhấn nút LƯU THÔNG TIN HỒ SƠ
+        // 2. XỬ LÝ LƯU THÔNG TIN
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveProfile(CandidateProfileViewModel model)
         {
-            if (ModelState.IsValid)
+            // Bỏ qua kiểm tra validate nghiêm ngặt để ưu tiên lưu dữ liệu trước
+            var candidate = await _context.Candidates.FirstOrDefaultAsync();
+
+            // Nếu chưa có ứng viên nào (Database trống), tạo mới hoàn toàn
+            if (candidate == null)
             {
-                // 1. Xử lý lưu ảnh đại diện (nếu có chọn file mới)
-                if (model.AvatarFile != null)
-                {
-                    string folder = "images/avatars/";
-                    string fileName = Guid.NewGuid().ToString() + "_" + model.AvatarFile.FileName;
-                    string serverPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder, fileName);
-
-                    using (var stream = new FileStream(serverPath, FileMode.Create))
-                    {
-                        await model.AvatarFile.CopyToAsync(stream);
-                    }
-                    model.AvatarUrl = "/" + folder + fileName;
-                }
-
-                // 2. Logic lưu các thông tin khác vào Database ở đây...
-                // _context.Update(candidateRecord);
-                // await _context.SaveChangesAsync();
-
-                TempData["Success"] = "Cập nhật hồ sơ thành công!";
-                return RedirectToAction(nameof(Index));
+                candidate = new JobPortal.Models.Candidate();
+                _context.Candidates.Add(candidate);
             }
-            return View("Index", model);
+
+            // Cập nhật thông tin cơ bản
+            candidate.FullName = model.FullName;
+            candidate.Phone = model.Phone;
+            candidate.Gender = model.Gender;
+            candidate.Birthday = model.Birthday;
+            candidate.MaritalStatus = model.MaritalStatus;
+            candidate.Industry = model.Industry;
+            candidate.DesiredLocation = model.DesiredLocation;
+            candidate.ExpectedSalary = model.ExpectedSalary;
+            candidate.Email = model.Email;
+            candidate.Address = model.Address;
+           
+
+            // --- XỬ LÝ LƯU AVATAR ---
+            if (model.AvatarFile != null && model.AvatarFile.Length > 0)
+            {
+                string uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "avatars");
+                if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.AvatarFile.FileName);
+                string filePath = Path.Combine(uploadDir, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.AvatarFile.CopyToAsync(stream);
+                }
+                candidate.AvatarUrl = "/uploads/avatars/" + fileName;
+            }
+
+            // --- XỬ LÝ LƯU CV ---
+            if (model.CVFile != null && model.CVFile.Length > 0)
+            {
+                string cvDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "cvs");
+                if (!Directory.Exists(cvDir)) Directory.CreateDirectory(cvDir);
+
+                string cvFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.CVFile.FileName);
+                string cvFilePath = Path.Combine(cvDir, cvFileName);
+
+                using (var stream = new FileStream(cvFilePath, FileMode.Create))
+                {
+                    await model.CVFile.CopyToAsync(stream);
+                }
+                candidate.CVUrl = "/uploads/cvs/" + cvFileName;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Hồ sơ của " + candidate.FullName + " đã được cập nhật!";
+            }
+            catch (Exception ex)
+            {
+                // Thông báo lỗi chi tiết ra màn hình nếu lưu thất bại
+                TempData["ErrorMessage"] = "Lỗi lưu Database: " + ex.InnerException?.Message ?? ex.Message;
+                ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+                ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+                return View("Index", model);
+            }
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }
