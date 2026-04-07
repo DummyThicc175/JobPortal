@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<IdentityUser> UserManager
+@inject JobPortal.Data.ApplicationDbContext DbContext
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -90,7 +95,7 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 ms-4">
                         <li class="nav-item"><a class="nav-link" href="#">Việc làm</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Công ty</a></li>
+                       
                     </ul>
 
                     <div class="d-flex align-items-center gap-3">
@@ -105,37 +110,61 @@
 
                         <!-- Dropdown Tài Khoản (ĐÃ ĐƯA VÀO ĐÚNG VỊ TRÍ) -->
                         <div class="dropdown">
-                            <div class="d-flex align-items-center bg-light rounded-pill p-1 pe-3 border" data-bs-toggle="dropdown" style="cursor: pointer;">
-                                <img src="https://ui-avatars.com/api/?name=Thao+Anh&background=4460ef&color=fff" class="rounded-circle me-2" width="32" height="32" />
-                                <span class="small fw-bold text-dark">thaoanhtranthach</span>
-                                <i class="fa-solid fa-chevron-down ms-2 small text-muted"></i>
+                            @{
+                                // Lấy thông tin ứng viên từ Database dựa trên User đang đăng nhập
+                                var userId = UserManager.GetUserId(User);
+                                var candidate = DbContext.Candidates.AsNoTracking().FirstOrDefault(c => c.Email == User.Identity.Name);
+
+                                var avatarUrl = candidate?.AvatarUrl ?? "/images/default-avatar.png";
+                                var fullName = candidate?.FullName ?? "Ứng viên";
+                                var jobTitle = candidate?.Industry ?? "Chưa cập nhật vị trí";
+                            }
+
+                            <div class="d-flex align-items-center gap-2 cursor-pointer" data-bs-toggle="dropdown" style="cursor:pointer">
+                                <img src="@avatarUrl" class="rounded-circle border" width="45" height="45" style="object-fit: cover;">
+                                <div class="d-none d-md-block text-start">
+                                    <div class="fw-bold small" style="line-height: 1.2;">@fullName</div>
+                                    <small class="text-muted" style="font-size: 11px;">@User.Identity.Name</small>
+                                </div>
+                                <i class="fa-solid fa-chevron-down ms-1 small text-muted"></i>
                             </div>
 
-                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu shadow">
-                                <!-- Tìm thẻ <a> của mục Hồ sơ của tôi và sửa thành: -->
-                                <a class="dropdown-item" asp-area="Candidate" asp-controller="Profile" asp-action="Index">
-                                    <i class="bi bi-file-earmark-person me-2"></i> Hồ sơ của tôi
-                                </a>
-                                <li><a class="dropdown-item" asp-area="Candidate" asp-controller="Home" asp-action="ManageCV"><i class="fa-solid fa-wand-magic-sparkles text-primary"></i>Trang trí CV</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu shadow border-0">
+                                <li class="px-3 py-2 border-bottom mb-2 d-md-none">
+                                    <div class="fw-bold">@fullName</div>
+                                    <small class="text-muted">@jobTitle</small>
+                                </li>
+
+                                <li>
+                                    <a class="dropdown-item" asp-area="Candidate" asp-controller="Profile" asp-action="Index">
+                                        <i class="fa-regular fa-circle-user text-primary"></i> Hồ sơ của tôi
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" asp-area="Candidate" asp-controller="Home" asp-action="ManageCV">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Trang trí CV
+                                    </a>
+                                </li>
 
                                 <li>
                                     <a class="dropdown-item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#jobManagement">
-                                        <span><i class="fa-solid fa-briefcase text-primary"></i>Quản lý việc làm</span>
+                                        <span><i class="fa-solid fa-briefcase text-primary"></i> Quản lý việc làm</span>
                                         <i class="fa-solid fa-chevron-down small"></i>
                                     </a>
                                     <div class="collapse show" id="jobManagement">
                                         <a class="dropdown-item submenu-item" href="#">• Việc làm đã ứng tuyển</a>
                                         <a class="dropdown-item submenu-item" href="#">• Việc làm đã lưu</a>
-                                        <a class="dropdown-item submenu-item" href="#">• Việc làm chờ ứng tuyển</a>
-                                        <a class="dropdown-item submenu-item" href="#">• Nhà tuyển dụng xem hồ sơ</a>
                                     </div>
                                 </li>
 
-                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-bell text-primary"></i>Hỗ trợ và thông báo</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fa-regular fa-circle-user text-primary"></i>Quản lý tài khoản</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fa-solid fa-arrows-rotate text-primary"></i>Chuyển tài khoản</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger fw-bold" href="#"><i class="fa-solid fa-power-off"></i>Đăng xuất</a></li>
+                                <li>
+                                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                                        <button type="submit" class="dropdown-item text-danger fw-bold border-0 bg-transparent w-100 text-start">
+                                            <i class="fa-solid fa-power-off"></i> Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
                             </ul>
                         </div>
                     </div>

@@ -115,11 +115,14 @@
                     <img src="https://ui-avatars.com/api/?name=Thao+Anh&background=4460ef&color=fff" class="rounded-circle shadow-sm" width="90" />
                     <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" style="width:15px; height:15px;"></span>
                 </div>
-                <h5 class="fw-bold mb-1">Thảo Anh</h5>
-                <p class="text-muted small">Lập trình viên</p>
+               
 
                 <div class="sidebar-menu text-start mt-4">
-                    <a href="#"><i class="fa-regular fa-circle-user"></i> Hồ sơ của tôi</a>
+                    <<li>
+                        <a class="dropdown-item" asp-area="Candidate" asp-controller="Profile" asp-action="Index">
+                            <i class="fa-regular fa-circle-user text-primary"></i> Hồ sơ của tôi
+                        </a>
+                    </li>
                     <a class="active" href="#"><i class="fa-solid fa-wand-magic-sparkles"></i> Trang trí CV</a>
                     <a href="#"><i class="fa-solid fa-briefcase"></i> Quản lý việc làm</a>
                     <a href="#"><i class="fa-solid fa-gear"></i> Cài đặt</a>
