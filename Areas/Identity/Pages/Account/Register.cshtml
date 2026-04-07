@@ -36,6 +36,12 @@
                                     <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                                 </div>
                             </div>
+                            <div class="mb-3">
+                                <select asp-for="Input.Role" asp-items="@Model.RoleList" class="form-select">
+                                    <option disabled selected>-- Chọn loại tài khoản --</option>
+                                </select>
+                                <span asp-validation-for="Input.Role" class="text-danger"></span>
+                            </div>
                         </div>
 
                         <div class="my-4">

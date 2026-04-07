@@ -1,7 +1,7 @@
-using JobPortal.Models; // Chỉ cần dùng một cái này nếu namespace các model chuẩn
+using JobPortal.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using JobPortal.Models;
 
 namespace JobPortal.Data
 {
@@ -23,8 +23,6 @@ namespace JobPortal.Data
         public DbSet<Location> Locations { get; set; }
 
         // --- Các bảng lưu trữ thông tin CV thực tế ---
-        // Lưu ý: Tôi đã đổi tên từ ViewModel sang tên bảng thực tế để tránh nhầm lẫn
-        // Bạn cần đảm bảo các Class này tồn tại trong Models
         public DbSet<EditCVViewModel> UserCVs { get; set; }
         public DbSet<ExperienceVM> Experiences { get; set; }
         public DbSet<EducationVM> Educations { get; set; }
@@ -37,7 +35,73 @@ namespace JobPortal.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Seed dữ liệu cho Location
+            // 1. Tạo các Role mặc định
+            // Lưu ý: Trong thực tế nên dùng ID cố định thay vì Guid.NewGuid() để tránh tạo lại ID mới mỗi lần chạy migration
+            string adminRoleId = "8505d10d-7730-4e57-96fd-99335279b974";
+            string employerRoleId = "02174cfc-2dc1-460d-8521-396c0966a4f0";
+            string candidateRoleId = "7d9b7113-a8f8-4035-99a7-a20dd400f6a3";
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = adminRoleId, Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = employerRoleId, Name = "Employer", NormalizedName = "EMPLOYER" },
+                new IdentityRole { Id = candidateRoleId, Name = "Candidate", NormalizedName = "CANDIDATE" }
+            );
+
+            // 2. Tạo User và mã hóa mật khẩu
+            var hasher = new PasswordHasher<IdentityUser>();
+
+            string adminUserId = "b74ddd14-6340-4840-95c2-db12554843e5";
+            string employerUserId = "c9284cfc-2dc1-460d-8521-396c0966a4f1";
+            string candidateUserId = "d83b7113-a8f8-4035-99a7-a20dd400f6a4";
+
+            // Tạo tk Admin
+            var adminUser = new IdentityUser
+            {
+                Id = adminUserId,
+                UserName = "admin@jobhub.com",
+                NormalizedUserName = "ADMIN@JOBHUB.COM",
+                Email = "admin@jobhub.com",
+                NormalizedEmail = "ADMIN@JOBHUB.COM",
+                EmailConfirmed = true
+            };
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin@123");
+
+            // Tạo tk Employer
+            var employerUser = new IdentityUser
+            {
+                Id = employerUserId,
+                UserName = "employer@jobhub.com",
+                NormalizedUserName = "EMPLOYER@JOBHUB.COM",
+                Email = "employer@jobhub.com",
+                NormalizedEmail = "EMPLOYER@JOBHUB.COM",
+                EmailConfirmed = true
+            };
+            employerUser.PasswordHash = hasher.HashPassword(employerUser, "Employer@123");
+
+            // Tạo tk Candidate
+            var candidateUser = new IdentityUser
+            {
+                Id = candidateUserId,
+                UserName = "candidate@jobhub.com",
+                NormalizedUserName = "CANDIDATE@JOBHUB.COM",
+                Email = "candidate@jobhub.com",
+                NormalizedEmail = "CANDIDATE@JOBHUB.COM",
+                EmailConfirmed = true
+            };
+            candidateUser.PasswordHash = hasher.HashPassword(candidateUser, "Candidate@123");
+
+            // Đưa User vào DB - Sửa builder thành modelBuilder
+            modelBuilder.Entity<IdentityUser>().HasData(adminUser, employerUser, candidateUser);
+
+            // 3. Gán Role cho User - Sửa builder thành modelBuilder
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+                new IdentityUserRole<string> { RoleId = adminRoleId, UserId = adminUserId },
+                new IdentityUserRole<string> { RoleId = employerRoleId, UserId = employerUserId },
+                new IdentityUserRole<string> { RoleId = candidateRoleId, UserId = candidateUserId }
+            );
+
+            // Seed dữ liệu cho Location (giữ nguyên)
+            // Seed dữ liệu cho Location - ĐÃ KHÔI PHỤC ĐẦY ĐỦ
             modelBuilder.Entity<Location>().HasData(
                 new Location { Id = 1, Name = "An Giang" },
                 new Location { Id = 2, Name = "Bà Rịa - Vũng Tàu" },
@@ -104,7 +168,7 @@ namespace JobPortal.Data
                 new Location { Id = 63, Name = "Yên Bái" }
             );
 
-            // Seed dữ liệu mẫu cho CVTemplate
+            // Seed dữ liệu mẫu cho CVTemplate (giữ nguyên)
             modelBuilder.Entity<CVTemplate>().HasData(
                 new CVTemplate
                 {
