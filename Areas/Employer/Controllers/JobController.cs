@@ -38,10 +38,7 @@ namespace JobPortal.Areas.Employer.Controllers
         // 2. Trang Đăng tin mới (GET)
         public async Task<IActionResult> Create()
         {
-            // Lấy danh sách để hiển thị trong ô chọn (Dropdown)
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
-
             return View();
         }
 
@@ -65,7 +62,6 @@ namespace JobPortal.Areas.Employer.Controllers
             }
 
             // Nếu lỗi, phải load lại danh sách Dropdown trước khi trả về View
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
             return View(job);
         }
@@ -73,18 +69,53 @@ namespace JobPortal.Areas.Employer.Controllers
         // 4. Xem danh sách ứng viên (Dành cho chức năng "Xem ứng viên" trong Index)
         public async Task<IActionResult> Candidates(int jobId)
         {
-            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId);
-            
-            if (job == null) return NotFound();
+            if (jobId <= 0)
+            {
+                return BadRequest();
+            }
 
-            var applicants = await _context.Applications
+            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId);
+            if (job == null)
+            {
+                return NotFound();
+            }
+
+            var applications = await _context.Applications
                 .Include(a => a.CV) // Lấy thông tin CV đi kèm
                 .Where(a => a.JobPostId == jobId)
                 .OrderByDescending(a => a.AppliedDate)
                 .ToListAsync();
 
-            ViewBag.JobTitle = job.Title; // Để hiển thị tiêu đề trên View
-            return View(applicants);
+            var candidateIds = applications
+                .Select(a => a.CandidateId)
+                .Distinct()
+                .ToList();
+
+            var users = await _context.Users
+                .Where(u => candidateIds.Contains(u.Id))
+                .ToListAsync();
+
+            var applicantViewModels = new List<EmployerApplicantViewModel>();
+
+            foreach (var application in applications)
+            {
+                var user = users.FirstOrDefault(u => u.Id == application.CandidateId);
+                applicantViewModels.Add(new EmployerApplicantViewModel
+                {
+                    Id = application.Id,
+                    JobPostId = application.JobPostId,
+                    JobTitle = job.Title,
+                    CandidateId = application.CandidateId,
+                    CandidateName = user?.UserName ?? application.CandidateId,
+                    CandidateEmail = user?.Email ?? "Không có email",
+                    CvFileName = application.CV?.FileName,
+                    CvUrl = application.CV != null ? $"/uploads/cvs/{application.CV.FileName}" : null,
+                    AppliedDate = application.AppliedDate,
+                    Status = application.Status.ToString()
+                });
+            }
+
+            return View(applicantViewModels);
         }
 
         // 5. Thêm chức năng Xóa tin (Cần thiết cho quản lý)
