@@ -400,6 +400,9 @@ namespace JobPortal.Migrations
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
+                    b.Property<string>("CategoryName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("CompanyId")
                         .HasColumnType("int");
 
@@ -852,6 +855,26 @@ namespace JobPortal.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "8505d10d-7730-4e57-96fd-99335279b974",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "02174cfc-2dc1-460d-8521-396c0966a4f0",
+                            Name = "Employer",
+                            NormalizedName = "EMPLOYER"
+                        },
+                        new
+                        {
+                            Id = "7d9b7113-a8f8-4035-99a7-a20dd400f6a3",
+                            Name = "Candidate",
+                            NormalizedName = "CANDIDATE"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -942,6 +965,56 @@ namespace JobPortal.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "b74ddd14-6340-4840-95c2-db12554843e5",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "0a55a4bc-a6dd-4cba-9573-1a4b582d0005",
+                            Email = "admin@jobhub.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@JOBHUB.COM",
+                            NormalizedUserName = "ADMIN@JOBHUB.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEA325iizvA61b+YzhZmnFUDipZdIhBl21Mxur4ZYt79EWk+IXUC3ljzBm6jxSvTScA==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "cfc997f9-c2b9-4a2e-8498-9ab3cfe010e4",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@jobhub.com"
+                        },
+                        new
+                        {
+                            Id = "c9284cfc-2dc1-460d-8521-396c0966a4f1",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "c643469b-9f7d-4580-a885-c765be7f97a3",
+                            Email = "employer@jobhub.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "EMPLOYER@JOBHUB.COM",
+                            NormalizedUserName = "EMPLOYER@JOBHUB.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEFTG78SLv5u1QrqR/Axlac4lh7Izmh/GcQvaeMA8A098SOabXbXGsqYrkORGn9hlw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "42670bbd-3b24-4bd0-a6c5-9bbf8c880ccb",
+                            TwoFactorEnabled = false,
+                            UserName = "employer@jobhub.com"
+                        },
+                        new
+                        {
+                            Id = "d83b7113-a8f8-4035-99a7-a20dd400f6a4",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "4f3cdc1f-eb0d-49bc-a4a3-a083804f042f",
+                            Email = "candidate@jobhub.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "CANDIDATE@JOBHUB.COM",
+                            NormalizedUserName = "CANDIDATE@JOBHUB.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIM4X6cmV/czWwax/m3keBj0ozuVNeixbSLBg8NlSOEqln9HuG7Fgh8uu0xLNekNmQ==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "dd293037-743d-4a25-87f6-327a1d0bcda1",
+                            TwoFactorEnabled = false,
+                            UserName = "candidate@jobhub.com"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -1006,6 +1079,23 @@ namespace JobPortal.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "b74ddd14-6340-4840-95c2-db12554843e5",
+                            RoleId = "8505d10d-7730-4e57-96fd-99335279b974"
+                        },
+                        new
+                        {
+                            UserId = "c9284cfc-2dc1-460d-8521-396c0966a4f1",
+                            RoleId = "02174cfc-2dc1-460d-8521-396c0966a4f0"
+                        },
+                        new
+                        {
+                            UserId = "d83b7113-a8f8-4035-99a7-a20dd400f6a4",
+                            RoleId = "7d9b7113-a8f8-4035-99a7-a20dd400f6a3"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>

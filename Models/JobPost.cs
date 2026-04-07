@@ -24,8 +24,10 @@ namespace JobPortal.Models
 
         public string? EmployerId { get; set; }
 
-        // Liên kết với bảng Ngành nghề (Category)
         [Display(Name = "Ngành nghề")]
+        public string? CategoryName { get; set; }
+
+        // Liên kết với bảng Ngành nghề (Category)
         public int? CategoryId { get; set; }
         public virtual Category? Category { get; set; }
 

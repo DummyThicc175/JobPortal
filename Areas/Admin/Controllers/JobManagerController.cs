@@ -64,7 +64,7 @@ namespace JobPortal.Areas.Admin.Controllers
             {
                 title = job.Title,
                 company = job.CompanyName ?? job.Company?.Name ?? "Chưa rõ",
-                category = job.Category?.Name ?? "Chưa phân loại",
+                category = job.CategoryName ?? job.Category?.Name ?? "Chưa phân loại",
                 location = job.JobLocation?.Name ?? "Toàn quốc",
                 salary = job.SalaryRange ?? "Thỏa thuận",
                 createdAt = job.CreatedAt.ToString("dd/MM/yyyy"),

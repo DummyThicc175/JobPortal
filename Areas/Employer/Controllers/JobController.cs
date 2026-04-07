@@ -38,10 +38,7 @@ namespace JobPortal.Areas.Employer.Controllers
         // 2. Trang Đăng tin mới (GET)
         public async Task<IActionResult> Create()
         {
-            // Lấy danh sách để hiển thị trong ô chọn (Dropdown)
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
-
             return View();
         }
 
@@ -65,30 +62,108 @@ namespace JobPortal.Areas.Employer.Controllers
             }
 
             // Nếu lỗi, phải load lại danh sách Dropdown trước khi trả về View
-            ViewBag.Categories = await _context.Categories.OrderBy(c => c.Name).ToListAsync();
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            return View(job);
+        }
+        // --- CHỨC NĂNG CHỈNH SỬA (GET) ---
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var job = await _context.JobPosts.FindAsync(id);
+            if (job == null) return NotFound();
+
+            // Load lại danh sách tỉnh thành cho dropdown
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
             return View(job);
         }
 
+        // --- CHỨC NĂNG CHỈNH SỬA (POST) ---
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, JobPost job)
+        {
+            if (id != job.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Giữ lại các thông tin không cho phép sửa từ form
+                    var existingJob = await _context.JobPosts.AsNoTracking().FirstOrDefaultAsync(j => j.Id == id);
+                    job.EmployerId = existingJob.EmployerId;
+                    job.CreatedAt = existingJob.CreatedAt;
+                    job.IsApproved = existingJob.IsApproved; // Giữ nguyên trạng thái duyệt
+
+                    _context.Update(job);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Cập nhật tin tuyển dụng thành công!";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.JobPosts.Any(e => e.Id == job.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            return View(job);
+        }
         // 4. Xem danh sách ứng viên (Dành cho chức năng "Xem ứng viên" trong Index)
         public async Task<IActionResult> Candidates(int jobId)
         {
-            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId);
-            
-            if (job == null) return NotFound();
+            if (jobId <= 0)
+            {
+                return BadRequest();
+            }
 
-            var applicants = await _context.Applications
+            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == jobId);
+            if (job == null)
+            {
+                return NotFound();
+            }
+
+            var applications = await _context.Applications
                 .Include(a => a.CV) // Lấy thông tin CV đi kèm
                 .Where(a => a.JobPostId == jobId)
                 .OrderByDescending(a => a.AppliedDate)
                 .ToListAsync();
 
-            ViewBag.JobTitle = job.Title; // Để hiển thị tiêu đề trên View
-            return View(applicants);
+            var candidateIds = applications
+                .Select(a => a.CandidateId)
+                .Distinct()
+                .ToList();
+
+            var users = await _context.Users
+                .Where(u => candidateIds.Contains(u.Id))
+                .ToListAsync();
+
+            var applicantViewModels = new List<EmployerApplicantViewModel>();
+
+            foreach (var application in applications)
+            {
+                var user = users.FirstOrDefault(u => u.Id == application.CandidateId);
+                applicantViewModels.Add(new EmployerApplicantViewModel
+                {
+                    Id = application.Id,
+                    JobPostId = application.JobPostId,
+                    JobTitle = job.Title,
+                    CandidateId = application.CandidateId,
+                    CandidateName = user?.UserName ?? application.CandidateId,
+                    CandidateEmail = user?.Email ?? "Không có email",
+                    CvFileName = application.CV?.FileName,
+                    CvUrl = application.CV != null ? $"/uploads/cvs/{application.CV.FileName}" : null,
+                    AppliedDate = application.AppliedDate,
+                    Status = application.Status.ToString()
+                });
+            }
+
+            return View(applicantViewModels);
         }
 
         // 5. Thêm chức năng Xóa tin (Cần thiết cho quản lý)
         [HttpPost]
+        [ValidateAntiForgeryToken] // Thêm bảo mật
         public async Task<IActionResult> Delete(int id)
         {
             var job = await _context.JobPosts.FindAsync(id);
@@ -96,6 +171,7 @@ namespace JobPortal.Areas.Employer.Controllers
             {
                 _context.JobPosts.Remove(job);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Xóa tin tuyển dụng thành công!";
             }
             return RedirectToAction(nameof(Index));
         }

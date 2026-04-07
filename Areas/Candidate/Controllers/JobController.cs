@@ -54,21 +54,25 @@ namespace JobPortal.Areas.Candidate.Controllers
         }
 
         // Action để hiển thị trang chi tiết công việc
+        // Action để hiển thị trang chi tiết công việc
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var job = await _context.JobPosts.FirstOrDefaultAsync(j => j.Id == id);
+            // Thêm Include để nạp dữ liệu từ các bảng liên quan
+            var job = await _context.JobPosts
+                .Include(j => j.Category)      // Nạp bảng Ngành nghề
+                .Include(j => j.JobLocation)   // Nạp bảng Địa điểm
+                .FirstOrDefaultAsync(j => j.Id == id);
 
             if (job == null)
             {
                 return NotFound();
             }
 
-            // Trả về view ở thư mục root Views nếu bạn không muốn di chuyển file
             return View("~/Areas/Candidate/Views/Job/Details.cshtml", job);
         }
 
 
-        
+
     }
 }

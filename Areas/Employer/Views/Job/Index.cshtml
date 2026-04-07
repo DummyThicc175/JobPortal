@@ -94,19 +94,25 @@
                                     </span>
                                 }
                             </td>
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    <a asp-action="Candidates" asp-route-jobId="@item.Id" class="btn btn-sm btn-outline-info" title="Xem ứng viên">
-                                        <i class="bi bi-people-fill"></i>
-                                    </a>
-                                    <a href="#" class="btn btn-sm btn-outline-primary" title="Sửa tin">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-danger" title="Xóa tin">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <a asp-action="Candidates" asp-route-jobId="@item.Id" class="btn btn-sm btn-outline-info" title="Xem ứng viên">
+                                            <i class="bi bi-people-fill"></i>
+                                        </a>
+
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary" title="Sửa tin">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa tin tuyển dụng này?');" style="display:inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Xóa tin">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
                         </tr>
                         }
                     </tbody>

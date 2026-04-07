@@ -41,7 +41,7 @@
                             <td class="ps-4">
                                 <div class="fw-bold text-dark">@item.Title</div>
                                 <div class="small text-muted">
-                                    @item.CompanyName • <span class="text-primary">@(item.Category?.Name ?? "Chưa phân loại")</span>
+                                    @item.CompanyName • <span class="text-primary">@(item.CategoryName ?? item.Category?.Name ?? "Chưa phân loại")</span>
                                 </div>
                                 <div class="extra-small text-muted" style="font-size: 0.75rem;">
                                     ID: #@item.Id | Đăng ngày: @item.CreatedAt.ToString("dd/MM/yyyy")

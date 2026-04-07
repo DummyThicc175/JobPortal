@@ -408,7 +408,7 @@
                             @* Tiêu đề và nút Lưu *@
                             <div class="d-flex justify-content-between mb-2">
                                 <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 85%;">
-                                    <a href="/JobPosts/Details/@item.Id" class="text-decoration-none text-dark hover-blue">
+                                    <a asp-area="Candidate" asp-controller="Job" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark hover-blue">
                                         @item.Title
                                     </a>
                                 </h5>
@@ -423,7 +423,7 @@
                                 @* Thêm Category ở đây *@
                                 <p class="text-muted mb-0" style="font-size: 0.8rem;">
                                     <i class="fa-solid fa-layer-group me-1 opacity-50"></i>
-                                    <span class="text-primary fw-medium">@(item.Category?.Name ?? "Chưa phân loại")</span>
+                                    <span class="text-primary fw-medium">@(item.CategoryName ?? item.Category?.Name ?? "Chưa phân loại")</span>
                                 </p>
                             </div>
 
@@ -442,7 +442,7 @@
                                 <small class="text-muted" style="font-size: 0.75rem;">
                                     <i class="far fa-clock me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")
                                 </small>
-                                <a href="/JobPosts/Details/@item.Id" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
+                                <a asp-area="Candidate" asp-controller="Job" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm">
                                     Ứng tuyển
                                 </a>
                             </div>
