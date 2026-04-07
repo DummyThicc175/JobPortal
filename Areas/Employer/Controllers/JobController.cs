@@ -52,7 +52,7 @@ namespace JobPortal.Areas.Employer.Controllers
                 // Gán ID người dùng đang đăng nhập
                 job.EmployerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 job.CreatedAt = DateTime.Now;
-                job.IsApproved = false; // Chờ Admin duyệt
+                job.EmployerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 _context.Add(job);
                 await _context.SaveChangesAsync();
