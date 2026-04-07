@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using JobPortal.Models;
 
-namespace JobPortal.Models
+namespace JobPortal.Models // Giữ namespace này để dùng chung toàn hệ thống
 {
     public class CandidateProfileViewModel
     {
@@ -11,14 +12,14 @@ namespace JobPortal.Models
         public string? Gender { get; set; }
         public DateTime? Birthday { get; set; }
 
-        // Các thông tin hiển thị trên Sidebar (Hình bạn gửi)
-        public string? CurrentJobTitle { get; set; } // Ví dụ: Lập trình viên
+        // File xử lý tải lên
         public string? AvatarUrl { get; set; }
         public IFormFile? AvatarFile { get; set; }
 
-        // Tiêu chí tìm việc
-        public string? Industry { get; set; }
-        public string? DesiredLocation { get; set; }
-        public string? ExpectedSalary { get; set; }
+        public string? CVUrl { get; set; }
+        public IFormFile? CVFile { get; set; }
+
+        // Danh sách hiển thị lịch sử ứng tuyển
+        public List<Application>? AppliedJobs { get; set; }
     }
 }
