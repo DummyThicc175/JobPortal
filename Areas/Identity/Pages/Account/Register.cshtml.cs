@@ -2,6 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,14 +19,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
 
 namespace JobPortal.Areas.Identity.Pages.Account
 {
@@ -97,21 +98,42 @@ namespace JobPortal.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+
+            [Required(ErrorMessage = "Vui lòng chọn loại tài khoản")]
+            [Display(Name = "Loại tài khoản")]
+            public string Role { get; set; }
         }
 
+
+        public IList<SelectListItem> RoleList { get; set; }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+            // Chỉ lấy Employer và Candidate, loại bỏ Admin
+            RoleList = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Employer", Text = "Nhà tuyển dụng" },
+        new SelectListItem { Value = "Candidate", Text = "Người tìm việc" }
+    };
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
+                // 1. CHẶN ROLE ADMIN (Bảo mật bổ sung)
+                if (Input.Role == "Admin")
+                {
+                    ModelState.AddModelError(string.Empty, "Bạn không có quyền đăng ký tài khoản Admin.");
+                    return Page();
+                }
+
                 var user = CreateUser();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
@@ -122,9 +144,22 @@ namespace JobPortal.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    // 2. GÁN ROLE CHO USER
+                    // Phải đảm bảo Role "Employer" và "Candidate" đã tồn tại trong bảng AspNetRoles
+                    if (!string.IsNullOrEmpty(Input.Role))
+                    {
+                        await _userManager.AddToRoleAsync(user, Input.Role);
+                    }
+                    else
+                    {
+                        // Mặc định là Candidate nếu có lỗi xảy ra với dữ liệu đầu vào
+                        await _userManager.AddToRoleAsync(user, "Candidate");
+                    }
+
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
@@ -150,10 +185,15 @@ namespace JobPortal.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
+            // Nếu có lỗi, render lại RoleList để Dropdown không bị trống
+            RoleList = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Employer", Text = "Nhà tuyển dụng" },
+        new SelectListItem { Value = "Candidate", Text = "Người tìm việc" }
+    };
+
             return Page();
         }
-
         private IdentityUser CreateUser()
         {
             try
