@@ -65,7 +65,50 @@ namespace JobPortal.Areas.Employer.Controllers
             ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
             return View(job);
         }
+        // --- CHỨC NĂNG CHỈNH SỬA (GET) ---
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
 
+            var job = await _context.JobPosts.FindAsync(id);
+            if (job == null) return NotFound();
+
+            // Load lại danh sách tỉnh thành cho dropdown
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            return View(job);
+        }
+
+        // --- CHỨC NĂNG CHỈNH SỬA (POST) ---
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, JobPost job)
+        {
+            if (id != job.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // Giữ lại các thông tin không cho phép sửa từ form
+                    var existingJob = await _context.JobPosts.AsNoTracking().FirstOrDefaultAsync(j => j.Id == id);
+                    job.EmployerId = existingJob.EmployerId;
+                    job.CreatedAt = existingJob.CreatedAt;
+                    job.IsApproved = existingJob.IsApproved; // Giữ nguyên trạng thái duyệt
+
+                    _context.Update(job);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Cập nhật tin tuyển dụng thành công!";
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.JobPosts.Any(e => e.Id == job.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.Locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+            return View(job);
+        }
         // 4. Xem danh sách ứng viên (Dành cho chức năng "Xem ứng viên" trong Index)
         public async Task<IActionResult> Candidates(int jobId)
         {
@@ -120,6 +163,7 @@ namespace JobPortal.Areas.Employer.Controllers
 
         // 5. Thêm chức năng Xóa tin (Cần thiết cho quản lý)
         [HttpPost]
+        [ValidateAntiForgeryToken] // Thêm bảo mật
         public async Task<IActionResult> Delete(int id)
         {
             var job = await _context.JobPosts.FindAsync(id);
@@ -127,6 +171,7 @@ namespace JobPortal.Areas.Employer.Controllers
             {
                 _context.JobPosts.Remove(job);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Xóa tin tuyển dụng thành công!";
             }
             return RedirectToAction(nameof(Index));
         }
