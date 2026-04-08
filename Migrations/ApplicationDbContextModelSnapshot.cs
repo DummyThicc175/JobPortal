@@ -33,7 +33,7 @@ namespace JobPortal.Migrations
                     b.Property<DateTime>("AppliedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CVId")
+                    b.Property<int?>("CVId")
                         .HasColumnType("int");
 
                     b.Property<string>("CandidateId")
@@ -52,7 +52,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("JobPostId");
 
-                    b.ToTable("Applications");
+                    b.ToTable("Applications", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.CV", b =>
@@ -82,7 +82,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CVs");
+                    b.ToTable("CVs", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.CVTemplate", b =>
@@ -109,7 +109,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("CVTemplates");
+                    b.ToTable("CVTemplates", (string)null);
 
                     b.HasData(
                         new
@@ -168,7 +168,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Candidates");
+                    b.ToTable("Candidates", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.Category", b =>
@@ -185,7 +185,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.ChatMessage", b =>
@@ -216,7 +216,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChatMessages");
+                    b.ToTable("ChatMessages", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.Company", b =>
@@ -253,7 +253,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies");
+                    b.ToTable("Companies", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.EditCVViewModel", b =>
@@ -305,7 +305,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserCVs");
+                    b.ToTable("UserCVs", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.EducationVM", b =>
@@ -332,7 +332,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("EditCVViewModelId");
 
-                    b.ToTable("Educations");
+                    b.ToTable("Educations", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.ExperienceVM", b =>
@@ -362,7 +362,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("EditCVViewModelId");
 
-                    b.ToTable("Experiences");
+                    b.ToTable("Experiences", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.ITSkillVM", b =>
@@ -386,7 +386,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("EditCVViewModelId");
 
-                    b.ToTable("ITSKills");
+                    b.ToTable("ITSKills", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.JobPost", b =>
@@ -439,7 +439,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("JobPosts");
+                    b.ToTable("JobPosts", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.LanguageVM", b =>
@@ -463,7 +463,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("EditCVViewModelId");
 
-                    b.ToTable("Languages");
+                    b.ToTable("Languages", (string)null);
                 });
 
             modelBuilder.Entity("JobPortal.Models.Location", b =>
@@ -480,7 +480,7 @@ namespace JobPortal.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", (string)null);
 
                     b.HasData(
                         new
@@ -827,7 +827,7 @@ namespace JobPortal.Migrations
 
                     b.HasIndex("EditCVViewModelId");
 
-                    b.ToTable("References");
+                    b.ToTable("References", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -971,15 +971,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0a55a4bc-a6dd-4cba-9573-1a4b582d0005",
+                            ConcurrencyStamp = "bb21bf1a-2c95-4cb4-9513-a3bfcb18e1a3",
                             Email = "admin@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@JOBHUB.COM",
                             NormalizedUserName = "ADMIN@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEA325iizvA61b+YzhZmnFUDipZdIhBl21Mxur4ZYt79EWk+IXUC3ljzBm6jxSvTScA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEP66dZ8fMQrYqMfYUJDPV1ylrVW5wFmU5jVndqOdCrTsbMCxsj3PLVw+W2VY1ip4CQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "cfc997f9-c2b9-4a2e-8498-9ab3cfe010e4",
+                            SecurityStamp = "845c3e75-a25b-4b5c-8479-cf371a12ac39",
                             TwoFactorEnabled = false,
                             UserName = "admin@jobhub.com"
                         },
@@ -987,15 +987,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "c9284cfc-2dc1-460d-8521-396c0966a4f1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "c643469b-9f7d-4580-a885-c765be7f97a3",
+                            ConcurrencyStamp = "3f872066-04dd-4b49-9816-a245a2f6a0c5",
                             Email = "employer@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "EMPLOYER@JOBHUB.COM",
                             NormalizedUserName = "EMPLOYER@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEFTG78SLv5u1QrqR/Axlac4lh7Izmh/GcQvaeMA8A098SOabXbXGsqYrkORGn9hlw==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEcNaiilYJEW30sBeMsmrM2VGBhmhCqdrZiic1xTJn6bUCpr2cTK+wCWht0cnJabqg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "42670bbd-3b24-4bd0-a6c5-9bbf8c880ccb",
+                            SecurityStamp = "f35c2057-6781-44fc-a471-a4d4aff3bf93",
                             TwoFactorEnabled = false,
                             UserName = "employer@jobhub.com"
                         },
@@ -1003,15 +1003,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "d83b7113-a8f8-4035-99a7-a20dd400f6a4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "4f3cdc1f-eb0d-49bc-a4a3-a083804f042f",
+                            ConcurrencyStamp = "99a20091-339c-438c-85d6-2165a930ba00",
                             Email = "candidate@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "CANDIDATE@JOBHUB.COM",
                             NormalizedUserName = "CANDIDATE@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIM4X6cmV/czWwax/m3keBj0ozuVNeixbSLBg8NlSOEqln9HuG7Fgh8uu0xLNekNmQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEFwLOQtvhItPkZJx8V4KDreb2BKMNZUHjAi7kKW6RVm1YWZCIk3tE2sFSz9pT57TA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "dd293037-743d-4a25-87f6-327a1d0bcda1",
+                            SecurityStamp = "f5ef74b4-ab24-4f00-94b3-4bbd55fed23d",
                             TwoFactorEnabled = false,
                             UserName = "candidate@jobhub.com"
                         });
@@ -1119,13 +1119,36 @@ namespace JobPortal.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SavedJob", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CandidateId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("JobPostId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("SavedDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobPostId");
+
+                    b.ToTable("SavedJobs", (string)null);
+                });
+
             modelBuilder.Entity("JobPortal.Models.Application", b =>
                 {
                     b.HasOne("JobPortal.Models.CV", "CV")
                         .WithMany()
-                        .HasForeignKey("CVId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CVId");
 
                     b.HasOne("JobPortal.Models.JobPost", "JobPost")
                         .WithMany()
@@ -1253,6 +1276,17 @@ namespace JobPortal.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("SavedJob", b =>
+                {
+                    b.HasOne("JobPortal.Models.JobPost", "JobPost")
+                        .WithMany()
+                        .HasForeignKey("JobPostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobPost");
                 });
 
             modelBuilder.Entity("JobPortal.Models.Category", b =>

@@ -20,7 +20,10 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); // Đảm bảo dịch vụ Razor Pages được đăng ký
-
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // Tăng giới hạn lên 100MB
+});
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

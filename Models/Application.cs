@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; 
 
 namespace JobPortal.Models
 {
@@ -8,13 +9,15 @@ namespace JobPortal.Models
 
         [Required]
         public int JobPostId { get; set; }
-        public virtual JobPost JobPost { get; set; } // Liên kết đến tin tuyển dụng
+        public virtual JobPost JobPost { get; set; }
 
         [Required]
-        public string CandidateId { get; set; } // ID người ứng tuyển
+        public string CandidateId { get; set; }
 
-        public int CVId { get; set; } // CV được chọn để ứng tuyển
-        public virtual CV CV { get; set; }
+       
+
+        public int? CVId { get; set; }
+        public virtual CV? CV { get; set; }
 
         public DateTime AppliedDate { get; set; } = DateTime.Now;
 

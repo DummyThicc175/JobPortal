@@ -94,7 +94,7 @@
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 ms-4">
-                        <li class="nav-item"><a class="nav-link" href="#">Việc làm</a></li>
+                       
                        
                     </ul>
 
@@ -139,22 +139,12 @@
                                     <a class="dropdown-item" asp-area="Candidate" asp-controller="Profile" asp-action="Index">
                                         <i class="fa-regular fa-circle-user text-primary"></i> Hồ sơ của tôi
                                     </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" asp-area="Candidate" asp-controller="Home" asp-action="ManageCV">
-                                        <i class="fa-solid fa-wand-magic-sparkles text-primary"></i> Trang trí CV
+                                    <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="AppliedJobs">
+                                        • Việc làm đã ứng tuyển
                                     </a>
-                                </li>
-
-                                <li>
-                                    <a class="dropdown-item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#jobManagement">
-                                        <span><i class="fa-solid fa-briefcase text-primary"></i> Quản lý việc làm</span>
-                                        <i class="fa-solid fa-chevron-down small"></i>
+                                    <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="SavedJobs">
+                                        • Việc làm đã lưu
                                     </a>
-                                    <div class="collapse show" id="jobManagement">
-                                        <a class="dropdown-item submenu-item" href="#">• Việc làm đã ứng tuyển</a>
-                                        <a class="dropdown-item submenu-item" href="#">• Việc làm đã lưu</a>
-                                    </div>
                                 </li>
 
                                 <li><hr class="dropdown-divider"></li>

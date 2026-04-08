@@ -1,22 +1,24 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using JobPortal.Data;
 using JobPortal.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace JobPortal.Areas.Employer.Controllers
 {
     [Area("Employer")]
     [Authorize(Roles = "Employer")]
-    [Authorize(Roles = "Admin")]// Đảm bảo chỉ Employer mới có quyền truy cập
+   
     public class JobController : Controller
     {
         private readonly ApplicationDbContext _context;
-
-        public JobController(ApplicationDbContext context)
+        private readonly UserManager<IdentityUser> _userManager;
+        public JobController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager; // Gán giá trị được truyền vào cho biến _userManager
         }
 
         // 1. Trang danh sách tin đã đăng của riêng Employer đó
@@ -33,7 +35,23 @@ namespace JobPortal.Areas.Employer.Controllers
 
             return View(jobs);
         }
+        public async Task<IActionResult> Candidates1()
+        {
+            // Lấy ID của nhà tuyển dụng hiện tại
+            var userId = _userManager.GetUserId(User);
 
+            if (userId == null) return Unauthorized();
+
+            // Lấy danh sách ứng tuyển
+            var candidates = await _context.Applications
+                .Include(a => a.JobPost)
+                
+                .Where(a => a.JobPost.EmployerId == userId)
+                .OrderByDescending(a => a.AppliedDate)
+                .ToListAsync();
+
+            return View(candidates);
+        }
         // 2. Trang Đăng tin mới (GET)
         public async Task<IActionResult> Create()
         {

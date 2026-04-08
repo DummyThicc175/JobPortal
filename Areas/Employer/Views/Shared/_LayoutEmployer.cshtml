@@ -60,8 +60,15 @@
                     class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
                         <i class="bi bi-plus-square"></i> Đăng tin mới
                     </a>
-
-                    <a href="#" class="nav-link"><i class="bi bi-people"></i> Ứng viên</a>
+                    <li class="nav-item">
+                       
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Candidates1" ? "active" : "")"
+                           asp-area="Employer"
+                           asp-controller="Job"
+                           asp-action="Candidates1">
+                            <i class="fa-solid fa-users me-2"></i> Ứng viên
+                        </a>
+                    </li>
                 </div>
 
                 <div class="position-absolute bottom-0 w-100 pb-4 border-top border-secondary">

@@ -30,6 +30,7 @@ namespace JobPortal.Data
         public DbSet<ITSkillVM> ITSKills { get; set; }
         public DbSet<ReferenceVM> References { get; set; }
         public DbSet<JobPortal.Models.Candidate> Candidates { get; set; }
+        public DbSet<SavedJob> SavedJobs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

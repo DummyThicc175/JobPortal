@@ -1,0 +1,115 @@
+﻿@model JobPortal.Models.CandidateProfileViewModel
+@{
+    ViewData["Title"] = "Hồ sơ của tôi";
+    Layout = "~/Views/Shared/_LayoutCV.cshtml";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    <img src="@(Model.AvatarUrl ?? "/images/default-avatar.png")"
+                         class="rounded-circle border" style="width:140px; height:140px; object-fit:cover;">
+                </div>
+                <h4 class="fw-bold mb-1">@(Model.FullName ?? "Chưa cập nhật tên")</h4>
+                <p class="text-muted small mb-3">@Model.Email</p>
+                <div class="d-grid">
+                    <a asp-action="Edit" class="btn btn-primary rounded-pill fw-bold">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>Chỉnh sửa hồ sơ
+                    </a>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-file-pdf text-danger me-2"></i>CV Của Tôi</h6>
+                @if (!string.IsNullOrEmpty(Model.CVUrl))
+                {
+                    <div class="d-flex align-items-center p-2 bg-light rounded-3">
+                        <i class="fa-solid fa-file-lines fs-4 me-3 text-secondary"></i>
+                        <div class="overflow-hidden">
+                            <a href="@Model.CVUrl" target="_blank" class="text-decoration-none fw-medium text-truncate d-block">Xem hồ sơ hiện tại</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted small mb-0 italic text-center">Bạn chưa tải lên CV PDF.</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold border-bottom pb-3 mb-4">Thông tin cá nhân</h5>
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Họ và tên</label>
+                        <span class="fw-bold fs-5">@(Model.FullName ?? "---")</span>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Số điện thoại</label>
+                        <span class="fw-bold fs-5">@(Model.Phone ?? "---")</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Giới tính</label>
+                        <span class="fw-bold fs-5">@(Model.Gender ?? "---")</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block">Ngày sinh</label>
+                        <span class="fw-bold fs-5">@(Model.Birthday?.ToString("dd/MM/yyyy") ?? "---")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small d-block">Địa chỉ hiện tại</label>
+                        <span class="fw-bold fs-5">@(Model.Address ?? "---")</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-4">Việc làm đã ứng tuyển</h5>
+                @if (Model.AppliedJobs != null && Model.AppliedJobs.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Công việc</th>
+                                    <th>Ngày nộp</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var app in Model.AppliedJobs)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-primary">@app.JobPost?.Title</div>
+                                            <small class="text-muted">@app.JobPost?.CompanyName</small>
+                                        </td>
+                                        <td>@app.AppliedDate.ToString("dd/MM/yyyy")</td>
+                                        <td><span class="badge rounded-pill bg-info text-dark px-3">@app.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fa-solid fa-folder-open fs-1 text-light mb-3"></i>
+                        <p class="text-muted">Bạn chưa ứng tuyển công việc nào.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
