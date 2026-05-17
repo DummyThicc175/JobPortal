@@ -7,68 +7,100 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        :root { --sidebar-bg: #1a1d20; --primary-color: #0d6efd; }
-        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        /* Sidebar Styling */
-        .sidebar { min-height: 100vh; background: var(--sidebar-bg); color: white; transition: all 0.3s; }
-        .sidebar .nav-link { 
-            color: #adb5bd; 
-            padding: 12px 20px; 
-            display: flex; 
-            align-items: center; 
-            border-radius: 0;
-            transition: 0.2s;
+        :root {
+            --sidebar-bg: #1a1d20;
+            --primary-color: #0d6efd;
         }
-        .sidebar .nav-link:hover { background: #2c3136; color: white; }
-        .sidebar .nav-link.active { 
-            background: #2c3136; 
-            color: white; 
-            border-left: 4px solid var(--primary-color); 
-        }
-        .sidebar .nav-link i { font-size: 1.1rem; margin-right: 12px; }
 
-        /* Main Content */
-        .main-content { padding: 25px; }
-        .top-navbar { 
-            background: white; 
-            padding: 15px 25px; 
-            border-bottom: 1px solid #e0e0e0; 
-            margin: -25px -25px 25px -25px; 
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.04); }
-        .btn-create-nav { margin: 15px 20px; text-align: left; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            transition: all 0.3s;
+        }
+
+            .sidebar .nav-link {
+                color: #adb5bd;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+                border-radius: 0;
+                transition: 0.2s;
+            }
+
+                .sidebar .nav-link:hover {
+                    background: #2c3136;
+                    color: white;
+                }
+
+                .sidebar .nav-link.active {
+                    background: var(--primary-color);
+                    color: white;
+                    fw-bold;
+                }
+
+                .sidebar .nav-link i {
+                    margin-right: 12px;
+                    font-size: 1.1rem;
+                }
+
+        /* Main Content Styling */
+        .main-content {
+            padding: 25px;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .top-navbar {
+            background: white;
+            padding: 15px 30px;
+            border-bottom: 1px solid #dee2e6;
+            margin: -25px -25px 25px -25px;
+        }
+
+        /* Global Card Adjustments */
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,.04);
+        }
     </style>
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-2 d-none d-md-block sidebar shadow-sm p-0">
-                <div class="py-4 text-center border-bottom border-secondary mb-3">
-                    <h4 class="text-primary fw-bold mb-0">JOBHUB</h4>
-                    <small class="text-muted text-uppercase" style="letter-spacing: 1px;">Employer Center</small>
+            <nav class="col-md-2 d-none d-md-block sidebar p-0 position-fixed">
+                <div class="p-4 border-bottom border-secondary">
+                    <h5 class="mb-0 text-white fw-bold"><i class="bi bi-briefcase-fill text-primary me-2"></i>JobHub</h5>
+                    <small class="text-muted">Nhà tuyển dụng</small>
                 </div>
 
-                <div class="nav flex-column">
-                    <a asp-area="Employer" asp-controller="Job" asp-action="Index" 
-                    class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
-                        <i class="bi bi-grid-1x2"></i> Dashboard
-                    </a>
-
-                    <a asp-area="Employer" asp-controller="Job" asp-action="Create" 
-                    class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Create" ? "active" : "")">
-                        <i class="bi bi-plus-square"></i> Đăng tin mới
-                    </a>
-                    <li class="nav-item">
-                       
-                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Candidates1" ? "active" : "")"
-                           asp-area="Employer"
-                           asp-controller="Job"
-                           asp-action="Candidates1">
-                            <i class="fa-solid fa-users me-2"></i> Ứng viên
-                        </a>
-                    </li>
+                <div class="pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")"
+                               asp-area="Employer" asp-controller="Job" asp-action="Index">
+                                <i class="bi bi-speedometer2"></i> Tổng quan
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")"
+                               asp-area="Employer" asp-controller="Job" asp-action="Create">
+                                <i class="bi bi-plus-square"></i> Đăng tin tuyển dụng
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Candidates1" ? "active" : "")"
+                               asp-area="Employer" asp-controller="Job" asp-action="Candidates1">
+                                <i class="bi bi-people"></i> Quản lý ứng viên
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="position-absolute bottom-0 w-100 pb-4 border-top border-secondary">
@@ -88,10 +120,21 @@
                     </nav>
                     <div class="d-flex align-items-center">
                         <div class="text-end me-3">
-                            <div class="fw-bold">HR Manager</div>
-                            <small class="text-muted">Premium Account</small>
+                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                            {
+                                <div class="fw-bold text-dark">
+                                    @(User.Identity.Name?.Split('@')[0] ?? "Nhà tuyển dụng")
+                                </div>
+                                <small class="text-muted" style="font-size: 0.8rem;">@User.Identity.Name</small>
+                            }
+                            else
+                            {
+                                <div class="fw-bold text-dark">Guest</div>
+                                <small class="text-muted" style="font-size: 0.8rem;">Chưa đăng nhập</small>
+                            }
                         </div>
-                        <img src="https://ui-avatars.com/api/?name=HR&background=0D6EFD&color=fff" class="rounded-circle shadow-sm" width="40">
+
+                        
                     </div>
                 </div>
 
@@ -99,6 +142,9 @@
             </main>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

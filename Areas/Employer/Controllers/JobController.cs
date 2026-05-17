@@ -40,17 +40,46 @@ namespace JobPortal.Areas.Employer.Controllers
             // Lấy ID của nhà tuyển dụng hiện tại
             var userId = _userManager.GetUserId(User);
 
-            if (userId == null) return Unauthorized();
+            // 1. Lấy danh sách các bài đăng thuộc về nhà tuyển dụng này
+            var myJobs = await _context.JobPosts
+                .Where(j => j.EmployerId == userId)
+                .Select(j => j.Id)
+                .ToListAsync();
 
-            // Lấy danh sách ứng tuyển
-            var candidates = await _context.Applications
+            // 2. Lấy danh sách hồ sơ ứng tuyển của các bài đăng đó
+            var applications = await _context.Applications
                 .Include(a => a.JobPost)
-                
-                .Where(a => a.JobPost.EmployerId == userId)
+                .Where(a => myJobs.Contains(a.JobPostId))
                 .OrderByDescending(a => a.AppliedDate)
                 .ToListAsync();
 
-            return View(candidates);
+            // 3. Chuẩn bị danh sách ViewModels truyền ra giao diện
+            var applicantViewModels = applications.Select(application =>
+            {
+                // Tìm tài khoản Identity để lấy Email/UserName
+                var user = _context.Users.FirstOrDefault(u => u.Id == application.CandidateId);
+
+                // --- ĐOẠN SỬA QUAN TRỌNG: Lấy thông tin Candidate từ DB để lấy đúng file CV cá nhân ---
+                var candidateInfo = _context.Candidates.FirstOrDefault(c => c.Email == user.Email);
+
+                return new EmployerApplicantViewModel
+                {
+                    Id = application.Id,
+                    JobPostId = application.JobPostId,
+                    JobTitle = application.JobPost?.Title ?? "N/A",
+                    CandidateId = application.CandidateId,
+                    CandidateName = candidateInfo?.FullName ?? user?.UserName ?? "Ẩn danh",
+                    CandidateEmail = user?.Email ?? "N/A",
+
+                    // Lấy trực tiếp đường dẫn CVUrl được lưu trong bảng Candidates của ứng viên đó
+                    CvUrl = candidateInfo?.CVUrl,
+
+                    AppliedDate = application.AppliedDate,
+                    Status = application.Status.ToString()
+                };
+            }).ToList();
+
+            return View(applicantViewModels);
         }
         // 2. Trang Đăng tin mới (GET)
         public async Task<IActionResult> Create()

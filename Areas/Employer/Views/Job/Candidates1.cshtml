@@ -1,9 +1,10 @@
-﻿@model IEnumerable<JobPortal.Models.Application>
+﻿@model IEnumerable<JobPortal.Models.EmployerApplicantViewModel>
 
 @{
     ViewData["Title"] = "Danh sách ứng viên";
     Layout = "/Areas/Employer/Views/Shared/_LayoutEmployer.cshtml";
-    var defaultCV = "/uploads/cvs/default-cv.pdf"; // Đường dẫn file CV mặc định bạn tự tạo
+    // File mặc định dự phòng nếu ứng viên đó chưa kịp cập nhật CV cá nhân
+    var defaultCV = "/uploads/cvs/default-cv.pdf";
 }
 
 <div class="container-fluid py-4">
@@ -29,28 +30,29 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        <img src="/images/default-avatar.png" class="rounded-circle me-3" width="40" height="40">
+                                      
                                         <div>
-                                            <div class="fw-bold">@app.CandidateId</div> @* Thay bằng FullName nếu bạn đã Join bảng Candidate *@
-                                            <small class="text-muted">ID: @app.Id</small>
+                                            <div class="fw-bold">@app.CandidateName</div>
+                                            <small class="text-muted d-block">@app.CandidateEmail</small>
+                                            <small class="text-muted">ID Ứng tuyển: @app.Id</small>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge bg-light text-dark border">@app.JobPost?.Title</span>
+                                    <span class="badge bg-light text-dark border">@app.JobTitle</span>
                                 </td>
                                 <td>@app.AppliedDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
                                     <span class="badge bg-info">@app.Status</span>
                                 </td>
                                 <td class="text-center">
-                                    @* Nút xem CV mặc định *@
-                                    <a href="@defaultCV" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                    @* ĐOẠN SỬA QUAN TRỌNG: Nếu ứng viên có CV cá nhân thì hiện CV cá nhân, ngược lại mới dùng defaultCV *@
+                                    <a href="@(string.IsNullOrEmpty(app.CvUrl) ? defaultCV : app.CvUrl)" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
                                         <i class="fa-solid fa-file-pdf me-1"></i> Xem CV
                                     </a>
 
                                     <button class="btn btn-sm btn-success rounded-pill px-3 ms-2">
-                                        <i class="fa-solid fa-check"></i> Duyệt
+                                        <i class="fa-solid fa-check"></i> Nhắn tin
                                     </button>
                                 </td>
                             </tr>
