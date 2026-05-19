@@ -220,5 +220,11 @@ namespace JobPortal.Areas.Employer.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+        // Thêm vào trong JobController.cs của Areas/Employer
+        public IActionResult Messages()
+        {
+            ViewData["Title"] = "Quản lý tin nhắn";
+            return View();
+        }
     }
 }

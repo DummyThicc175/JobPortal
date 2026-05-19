@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
 @using System.Linq
+@using System.Security.Claims
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject JobPortal.Data.ApplicationDbContext DbContext
@@ -149,7 +150,7 @@
                 background-color: #f1f5f9 !important;
             }
 
-        /* Đảm bảo dropdown item chính có khoảng cách đẹp [cite: 122] */
+        /* Đảm bảo dropdown item chính có khoảng cách đẹp */
         .dropdown-item {
             padding: 10px 16px;
             border-radius: 8px;
@@ -198,84 +199,16 @@
             z-index: 1000;
         }
 
-        #chat-window {
-            position: fixed;
-            bottom: 110px;
-            right: 30px;
-            width: 380px;
-            height: 520px;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            display: none;
-            flex-direction: column;
-            z-index: 1000;
-            overflow: hidden;
+        /* Thêm hiệu ứng hover cho phần danh sách chat đối tác */
+        .partner-item {
+            transition: background 0.2s ease;
         }
-
-        .chat-header {
-            padding: 20px;
-            font-weight: 800;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
+        .partner-item:hover {
+            background: #f1f5f9 !important;
         }
-
-        .avatar-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 15px;
-        }
-
-        .online-dot {
-            width: 12px;
-            height: 12px;
-            background: #10b981;
-            border: 2px solid white;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 0;
-            right: 0;
-        }
-
-        * Hiện danh sách con của Quản lý việc làm */
-        .dropdown-submenu ul {
-            display: block; /* Hiện mặc định */
-            list-style: none;
-            padding-left: 2.5rem !important; /* Đẩy vào trong cho đẹp */
-        }
-
-        .dropdown-submenu .dropdown-item {
-            pointer-events: none; /* Để mục "Quản lý việc làm" không bị bấm nhầm */
-            color: #000;
-            font-weight: bold;
-        }
-
-        .navbar .container-fluid {
-            overflow: visible !important;
-        }
-        /* Hiệu ứng hover cho thẻ việc làm */
-        .job-card-hover {
-            transition: all 0.3s ease;
-            border: 1px solid transparent !important;
-        }
-
-            .job-card-hover:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 25px rgba(0, 102, 255, 0.1) !important;
-                border-color: rgba(0, 102, 255, 0.2) !important;
-            }
-
-        /* Căn chỉnh logo cho đồng nhất */
-        .company-logo-wrapper {
-            min-width: 55px;
-            height: 55px;
-        }
-
-        /* Kiểu chữ tiêu đề việc làm */
-        .job-card-hover h6 {
-            line-height: 1.4;
-            font-size: 1.05rem;
+        .partner-item.active {
+            background: #e0f2fe !important;
+            border-left: 4px solid #0066ff !important;
         }
     </style>
 </head>
@@ -283,96 +216,78 @@
 
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container-fluid px-4">
-            <!-- Logo nằm bên trái -->
             <a class="navbar-brand fw-bold text-primary" href="/">JOB<span class="text-dark">HUB</span></a>
 
             <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-
-
             <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2">
                 @if (isAuth)
                 {
                     @if (isAdmin)
                     {
-                        <a href="https://localhost:7294/admin/dashboard" class="btn btn-dark fw-bold px-4 rounded-3 border-2 order-2 order-lg-1">
-                            <i class="fa-solid fa-gauge-high me-2"></i> Quản lý trang web
+                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                            Quản lý
                         </a>
                     }
                     else if (isEmployer)
                     {
-                        <a href="https://localhost:7294/Employer/Job" class="btn btn-outline-primary fw-bold px-4 rounded-3 border-2 order-2 order-lg-1">
+                        <a asp-area="Employer" asp-controller="Job" asp-action="Create" class="btn btn-outline-primary fw-bold px-4 rounded-3 border-2 order-2 order-lg-1">
                             Đăng tin tuyển dụng
                         </a>
                     }
-                    @* Nếu là Ứng viên (Candidate), không có thẻ <a> nào được render ở đây, nút sẽ biến mất *@
-                }
-                else
-                {
-                   
                 }
 
-                    <div class="d-flex align-items-center gap-1 order-1 order-lg-2 ms-lg-2">
-                        @if (isAuth)
-                        {
-                            <div class="dropdown">
-                                <a class="d-flex align-items-center text-decoration-none dropdown-toggle px-3 py-2 rounded-pill bg-light"
-                                   href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="d-flex align-items-center gap-1 order-1 order-lg-2 ms-lg-2">
+                    @if (isAuth)
+                    {
+                        <div class="dropdown">
+                            <a class="d-flex align-items-center text-decoration-none dropdown-toggle px-3 py-2 rounded-pill bg-light"
+                               href="#" role="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="me-2">
+                                    <img src="@avatarUrl" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
+                                </div>
+                                <span class="fw-bold text-dark me-1">@fullName</span>
+                            </a>
 
-                                    @* Hiển thị ảnh đại diện thực tế *@
-                                    <div class="me-2">
-                                        <img src="@avatarUrl" class="rounded-circle border" width="35" height="35" style="object-fit: cover;">
-                                    </div>
-
-                                    @* Hiển thị tên đầy đủ *@
-                                    <span class="fw-bold text-dark me-1">@fullName</span>
-                                </a>
-
-                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2 py-3" style="min-width: 280px;">
-                                    <li>
-                                        <a class="dropdown-item" href="/Candidate/Profile/Index">
-                                            <i class="fa-regular fa-circle-user text-primary me-2"></i> Hồ sơ của tôi
-                                        </a>
-                                    </li>
-
-                                    <li>
-                                        <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="AppliedJobs">
-                                            • Việc làm đã ứng tuyển
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="SavedJobs">
-                                            • Việc làm đã lưu
-                                        </a>
-                                    </li>
-
-                                    <li><hr class="dropdown-divider mx-3"></li>
-
-                                    <li>
-                                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                                            <button type="submit" class="dropdown-item text-danger fw-bold border-0 bg-transparent w-100 text-start">
-                                                <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <!-- Hiện nút Đăng ký/Đăng nhập khi chưa vào hệ thống -->
-                            <a class="nav-link px-3 fw-semibold text-secondary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
-                            <a class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm text-white" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
-                        }
-                    </div>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 mt-2 py-3" style="min-width: 280px;">
+                                <li>
+                                    <a class="dropdown-item" href="/Candidate/Profile/Index">
+                                        <i class="fa-regular fa-circle-user text-primary me-2"></i> Hồ sơ của tôi
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="AppliedJobs">
+                                        • Việc làm đã ứng tuyển
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item submenu-item" asp-area="Candidate" asp-controller="Profile" asp-action="SavedJobs">
+                                        • Việc làm đã lưu
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider mx-3"></li>
+                                <li>
+                                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                                        <button type="submit" class="dropdown-item text-danger fw-bold border-0 bg-transparent w-100 text-start">
+                                            <i class="fa-solid fa-power-off me-2"></i> Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="nav-link px-3 fw-semibold text-secondary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+                        <a class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm text-white" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+                    }
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Các phần Hero, Search và Chat giữ nguyên logic của bạn -->
     <header class="hero-section text-center">
         <div class="container">
             <h1 class="display-4 fw-bold mb-3">Tìm kiếm công việc mơ ước</h1>
@@ -389,12 +304,9 @@
                             <div class="col-md-5">
                                 <div class="input-group h-100">
                                     <span class="input-group-text bg-transparent border-0"><i class="fa fa-search text-muted"></i></span>
-                                    <input type="text" name="keyword" value="@ViewBag.Keyword"
-                                           class="form-control border-0 shadow-none"
-                                           placeholder="Kỹ năng, vị trí công việc...">
+                                    <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control border-0 shadow-none" placeholder="Kỹ năng, vị trí công việc...">
                                 </div>
                             </div>
-
                             <div class="col-md-4">
                                 <div class="input-group h-100 border-start">
                                     <span class="input-group-text bg-transparent border-0">
@@ -418,7 +330,6 @@
                                     </select>
                                 </div>
                             </div>
-
                             <div class="col-md-3">
                                 <button type="submit" class="btn btn-primary w-100 h-100 fw-bold rounded-3 shadow-sm" style="background-color: #0066ff;">
                                     Tìm việc ngay
@@ -444,11 +355,8 @@
             {
                 <div class="col-md-6 col-lg-4">
                     <div class="card job-card h-100 bg-white shadow-sm border-0 position-relative" style="border-radius: 12px; transition: 0.3s;">
-                        @* Đường kẻ trang trí phía trên cho card thêm chuyên nghiệp *@
                         <div class="position-absolute top-0 start-0 end-0 bg-primary" style="height: 3px; border-radius: 12px 12px 0 0;"></div>
-
                         <div class="card-body p-4 d-flex flex-column">
-                            @* Tiêu đề và nút Lưu *@
                             <div class="d-flex justify-content-between mb-2">
                                 <h5 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 85%;">
                                     <a asp-area="Candidate" asp-controller="Job" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark hover-blue">
@@ -457,20 +365,15 @@
                                 </h5>
                                 <i class="fa-regular fa-heart text-muted" style="cursor: pointer;"></i>
                             </div>
-
-                            @* Tên công ty *@
                             <div class="mb-3">
                                 <p class="text-secondary small mb-1 text-truncate">
                                     <i class="fa-solid fa-building me-1 opacity-50"></i> @(item.CompanyName ?? "Công ty ẩn danh")
                                 </p>
-                                @* Thêm Category ở đây *@
                                 <p class="text-muted mb-0" style="font-size: 0.8rem;">
                                     <i class="fa-solid fa-layer-group me-1 opacity-50"></i>
                                     <span class="text-primary fw-medium">@(item.CategoryName ?? item.Category?.Name ?? "Chưa phân loại")</span>
                                 </p>
                             </div>
-
-                            @* Lương và Địa điểm - Dạng Badge gọn *@
                             <div class="d-flex flex-wrap gap-2 mb-4">
                                 <span class="badge rounded-pill bg-light text-primary border px-3 py-2">
                                     <i class="fa-solid fa-circle-dollar-to-slot me-1"></i> @item.SalaryRange
@@ -479,8 +382,6 @@
                                     <i class="fa-solid fa-location-dot me-1"></i> @(item.JobLocation?.Name ?? "Toàn quốc")
                                 </span>
                             </div>
-
-                            @* Footer card: Ngày và Nút ứng tuyển *@
                             <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
                                 <small class="text-muted" style="font-size: 0.75rem;">
                                     <i class="far fa-clock me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")
@@ -496,38 +397,213 @@
         </div>
     </main>
 
-    <!-- Chat UI -->
-    <div id="chat-window">
-        <div class="chat-header">
-            <span>Tin nhắn</span>
-            <i class="fa-solid fa-xmark text-muted" style="cursor:pointer" onclick="toggleChat()"></i>
-        </div>
-        <div class="chat-list p-2">
-            <div class="d-flex align-items-center p-3 hover-bg-light rounded-4" style="cursor: pointer; background: #f0f7ff;">
-                <div class="position-relative me-3">
-                    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" class="avatar-img">
-                    <span class="online-dot"></span>
+    @if (isAuth && !isAdmin && !isEmployer)
+    {
+        <div id="chat-window" style="display: none; position: fixed; bottom: 110px; right: 30px; width: 650px; height: 520px; background: white; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); z-index: 3000; overflow: hidden; font-family: 'Inter', sans-serif;">
+            
+            <div id="chat-sidebar" style="width: 240px; background: #f8fafc; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                <div style="padding: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; background: #0066ff; color: white;">
+                    Tin nhắn tuyển dụng
                 </div>
-                <div>
-                    <div class="fw-bold">Trợ lý AI (JobBot)</div>
-                    <div class="small text-muted text-truncate" style="max-width: 200px;">Cần mình giúp chỉnh sửa CV không?</div>
+                <div id="partner-list" style="flex: 1; overflow-y: auto; padding: 10px 0;">
+                    <div style="padding: 20px; text-align: center; color: #64748b; font-size: 13px;">Chưa có hội thoại</div>
+                </div>
+            </div>
+
+            <div id="chat-content-area" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="chat-header" style="padding: 18px 20px; font-weight: 800; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #ffffff; color: #1e293b;">
+                    <span id="chat-partner-name" style="font-size: 16px;">Chọn một nhà tuyển dụng</span>
+                    <i class="fa-solid fa-xmark" style="cursor: pointer; font-size: 18px; color: #64748b;" onclick="toggleChat()"></i>
+                </div>
+                
+                <div id="chat-body" style="flex: 1; padding: 15px; overflow-y: auto; background: #f1f5f9; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="align-self: center; background: #fff; padding: 10px 15px; border-radius: 20px; font-size: 13px; color: #64748b; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-top: auto; margin-bottom: auto;">
+                        Hãy chọn một người từ danh sách bên trái để bắt đầu nhắn tin.
+                    </div>
+                </div>
+
+                <div class="chat-footer" style="padding: 15px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; background: white;">
+                    <input type="text" id="chat-input" class="form-control" placeholder="Nhập tin nhắn..." disabled style="border-radius: 20px; border: 1px solid #cbd5e1; padding-left: 15px; height: 40px; flex: 1;">
+                    <button id="btn-send-chat" disabled class="btn btn-primary" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; background-color: #0066ff; border: none;">
+                        <i class="fa-solid fa-paper-plane" style="color: white; font-size: 15px; margin-left: 2px;"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div id="chat-bubble" onclick="toggleChat()">
-        <i class="fa-solid fa-comment-dots"></i>
-    </div>
+        <input type="hidden" id="current-user-id" value="@User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier)" />
+        <input type="hidden" id="active-partner-id" value="" />
 
- 
+        <div id="chat-bubble" onclick="toggleChat()">
+            <i class="fa-solid fa-comment-dots"></i>
+        </div>
 
-  
-    <script>
-        function toggleChat() {
-            const chatWin = document.getElementById('chat-window');
-            chatWin.style.display = (chatWin.style.display === 'flex') ? 'none' : 'flex';
-        }
-    </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+        <script>
+            function toggleChat() {
+                const chatWin = document.getElementById('chat-window');
+                if(chatWin) {
+                    const isOpening = chatWin.style.display === 'none' || chatWin.style.display === '';
+                    chatWin.style.display = isOpening ? 'flex' : 'none';
+                    if(isOpening) {
+                        loadChatPartners();
+                    }
+                }
+            }
+
+            const chatConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub")
+                .build();
+
+            const currentUserId = document.getElementById("current-user-id").value;
+
+            function appendMessage(text, isMe, time) {
+                const chatBody = document.getElementById("chat-body");
+                if(!chatBody) return;
+                
+                const msgDiv = document.createElement("div");
+                msgDiv.style.padding = "10px 15px";
+                msgDiv.style.borderRadius = "15px";
+                msgDiv.style.maxWidth = "75%";
+                msgDiv.style.fontSize = "14px";
+
+                if (isMe) {
+                    msgDiv.style.alignSelf = "flex-end";
+                    msgDiv.style.background = "#0066ff";
+                    msgDiv.style.color = "white";
+                } else {
+                    msgDiv.style.alignSelf = "flex-start";
+                    msgDiv.style.background = "#e2e8f0";
+                    msgDiv.style.color = "#1e293b";
+                }
+
+                msgDiv.innerHTML = `<div>${text}</div><small style="font-size: 10px; opacity: 0.6; display: block; text-align: right; margin-top: 2px;">${time}</small>`;
+                chatBody.appendChild(msgDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+
+            function loadChatPartners() {
+                if(!currentUserId) return;
+                
+                const partnerList = document.getElementById("partner-list");
+                if (!partnerList) return;
+
+                // Gọi API vừa viết ở ChatController để lấy những người từng nhắn tin
+                fetch('/Chat/GetChatPartners')
+                    .then(res => res.json())
+                    .then(partners => {
+                        if (partners.length > 0) {
+                            partnerList.innerHTML = ""; // Xóa dòng chữ "Chưa có hội thoại"
+                            partners.forEach(p => {
+                                addPartnerToSidebar(p.id, p.name);
+                            });
+                        }
+                    })
+                    .catch(err => console.error("Lỗi khi tải danh sách người chat:", err));
+            }
+
+            function openPartnerChat(partnerId, partnerName) {
+                document.getElementById("active-partner-id").value = partnerId;
+                document.getElementById("chat-partner-name").innerText = partnerName;
+                
+                document.getElementById("chat-input").removeAttribute("disabled");
+                document.getElementById("btn-send-chat").removeAttribute("disabled");
+
+                const chatBody = document.getElementById("chat-body");
+                chatBody.innerHTML = "";
+
+                fetch(`/Chat/GetChatHistory?partnerId=${partnerId}`)
+                    .then(res => res.json())
+                    .then(messages => {
+                        messages.forEach(m => {
+                            appendMessage(m.content, m.isMe, m.time);
+                        });
+                    });
+
+                document.querySelectorAll('.partner-item').forEach(item => item.classList.remove('active'));
+                const clickedItem = document.getElementById(`partner-${partnerId}`);
+                if(clickedItem) clickedItem.classList.add('active');
+            }
+
+            function addPartnerToSidebar(id, name) {
+                const partnerList = document.getElementById("partner-list");
+                if (!partnerList) return;
+
+                if (partnerList.innerHTML.includes("Chưa có hội thoại")) {
+                    partnerList.innerHTML = "";
+                }
+
+                if (!document.getElementById(`partner-${id}`)) {
+                    const item = document.createElement("div");
+                    item.id = `partner-${id}`;
+                    item.className = "partner-item";
+                    item.style = "padding: 12px 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 10px; background: #fff;";
+                    item.innerHTML = `
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background: #0066ff; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;">
+                            ${name.charAt(0).toUpperCase()}
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 14px; color: #1e293b; text-truncate">${name}</div>
+                            <small style="color: #64748b; font-size: 11px;">Nhà tuyển dụng</small>
+                        </div>
+                    `;
+                    item.onclick = () => openPartnerChat(id, name);
+                    partnerList.appendChild(item);
+                }
+            }
+
+            chatConnection.on("ReceiveMessage", function (senderId, receiverId, message, time) {
+                const activePartnerId = document.getElementById("active-partner-id").value;
+
+                // Tự động quét lại hoặc thêm đối tác vào danh sách bên trái khi có tin nhắn mới đến
+                if (receiverId === currentUserId || senderId === currentUserId) {
+                    loadChatPartners(); 
+                }
+
+                // Nếu ứng viên đang mở đúng khung chat của người vừa nhắn tới
+                if ((senderId === currentUserId && receiverId === activePartnerId) || 
+                    (senderId === activePartnerId && receiverId === currentUserId)) {
+                    appendMessage(message, senderId === currentUserId, time);
+                } 
+                // Nếu ứng viên đang online nhưng chưa chọn ai, tự động bật khung chat lên cho họ biết
+                else if (receiverId === currentUserId && activePartnerId === "") {
+                    document.getElementById("chat-window").style.display = "flex";
+                    loadChatPartners();
+                }
+            });
+
+            function executeSend() {
+                const partnerId = document.getElementById("active-partner-id").value;
+                const input = document.getElementById("chat-input");
+                const msg = input.value.trim();
+
+                if (msg !== "" && partnerId !== "") {
+                    chatConnection.invoke("SendMessage", currentUserId, partnerId, msg).catch(function (err) {
+                        return console.error(err.toString());
+                    });
+                    input.value = "";
+                }
+            }
+
+            chatConnection.start().then(function () {
+                console.log("Ứng viên kết nối Hub thành công!");
+                loadChatPartners();
+            }).catch(function (err) {
+                return console.error(err.toString());
+            });
+
+            document.addEventListener("DOMContentLoaded", function() {
+                const btnSend = document.getElementById("btn-send-chat");
+                const chatInput = document.getElementById("chat-input");
+                
+                if(btnSend) btnSend.addEventListener("click", executeSend);
+                if(chatInput) {
+                    chatInput.addEventListener("keypress", function(e) {
+                        if (e.key === "Enter") executeSend();
+                    });
+                }
+            });
+        </script>
+    }
 </body>
 </html>

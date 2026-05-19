@@ -24,6 +24,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(optio
 {
     options.MultipartBodyLengthLimit = 104857600; // Tăng giới hạn lên 100MB
 });
+
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -36,6 +39,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.MapHub<JobPortal.Hubs.ChatHub>("/chatHub");
 
 app.UseAuthentication();
 app.UseAuthorization();
