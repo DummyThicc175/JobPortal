@@ -63,22 +63,57 @@ namespace JobPortal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AiFeedback")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("AiScore")
+                        .HasColumnType("int");
+
                     b.Property<string>("CandidateId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("EducationsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExperiencesJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileName")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("JobTitle")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SkillsJson")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TemplateId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UploadDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Website")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -996,15 +1031,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "b74ddd14-6340-4840-95c2-db12554843e5",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "6725557d-a26a-43f9-abdb-d8c1126c3cca",
+                            ConcurrencyStamp = "baa10bc3-20bf-4d89-8907-78dc82d7bbeb",
                             Email = "admin@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@JOBHUB.COM",
                             NormalizedUserName = "ADMIN@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENaYNc2x4zDQalh5PdHFT1oK4noaYDC3afOd2JOyjfYuMkd2EvfqLUsvBdO3tmiDlA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJgcDjpbg8ztKCooFYOYfNn0fm4S4rqi8tIe/C1f4KSNlyQtoOV5nEjtAm860P3MUA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "05c30bac-473e-4493-8073-149ad45bbe81",
+                            SecurityStamp = "9ee6378f-ef6d-40b9-8a22-279d7bcec5b5",
                             TwoFactorEnabled = false,
                             UserName = "admin@jobhub.com"
                         },
@@ -1012,15 +1047,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "c9284cfc-2dc1-460d-8521-396c0966a4f1",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "0b208e86-ea3a-4b41-977d-1217512e7702",
+                            ConcurrencyStamp = "8bb6a4c8-22f7-4f22-bb46-f1a225a56b2b",
                             Email = "employer@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "EMPLOYER@JOBHUB.COM",
                             NormalizedUserName = "EMPLOYER@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEIrZkiGg8/dBbFEgWNc4htRuziMmgcJDNBryiUX1JKwrw3jfAyWHeTIumqn5ujrDLQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMulEQM985vjfBLoozHC3hJX+1IxlyjQ16Kp37GJ+6hE38QtMQuYfzRNGIbn/Tj+FA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0ef165b7-6bb2-400a-8e83-9db8df82af1c",
+                            SecurityStamp = "ec39a2f2-61d1-4655-bbc6-cb9dddda1c15",
                             TwoFactorEnabled = false,
                             UserName = "employer@jobhub.com"
                         },
@@ -1028,15 +1063,15 @@ namespace JobPortal.Migrations
                         {
                             Id = "d83b7113-a8f8-4035-99a7-a20dd400f6a4",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "5dd0a7f6-5e83-412c-9c13-44e7071ddf1f",
+                            ConcurrencyStamp = "298460db-13f3-427a-8cc2-74e6421fea2c",
                             Email = "candidate@jobhub.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "CANDIDATE@JOBHUB.COM",
                             NormalizedUserName = "CANDIDATE@JOBHUB.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDsSRomObWB1tPTfguo1vwNJyJAWSOX7KUWoLx80e/XRoArhU9SLNqK/pggRRwDbXg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOjhd8FhUHCYScZqp7C3c1XB3GwlFOvT2iMT2i2qqYlpR41/DIGHo7JiE28nPsGJ7g==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "bbbce6c5-d832-4f40-a203-ea01275a02b0",
+                            SecurityStamp = "2e75ba8e-6545-4545-8770-ae35abe5ec44",
                             TwoFactorEnabled = false,
                             UserName = "candidate@jobhub.com"
                         });
