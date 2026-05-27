@@ -11,8 +11,9 @@
     var isAdmin = User.IsInRole("Admin"); // Kiểm tra nếu là Admin
     var isEmployer = User.IsInRole("Employer"); // Kiểm tra nếu là Employer
     // Khởi tạo các biến mặc định
-    var fullName = "Ứng viên";
+    var fullName = isEmployer ? "Nhà Tuyển Dụng" : (isAdmin ? "Quản trị viên" : "Ứng viên");
     var avatarUrl = "/images/default-avatar.png";
+   
 
     if (isAuth)
     {
@@ -227,14 +228,20 @@
                 {
                     @if (isAdmin)
                     {
-                        <a class="btn btn-primary" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                            Quản lý
+                        <a class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm text-white" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                            <i class="fa-solid fa-gauge me-2"></i>Quản lý hệ thống
                         </a>
                     }
                     else if (isEmployer)
                     {
                         <a asp-area="Employer" asp-controller="Job" asp-action="Create" class="btn btn-outline-primary fw-bold px-4 rounded-3 border-2 order-2 order-lg-1">
-                            Đăng tin tuyển dụng
+                            <i class="fa-solid fa-pen-to-square me-2"></i>Đăng tin tuyển dụng
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Candidate" asp-controller="Profile" asp-action="SelectTemplate" class="btn btn-success fw-bold px-4 rounded-3 shadow-sm text-white order-2 order-lg-1" style="background-color: #2ec4b6; border-color: #2ec4b6;">
+                            <i class="fa-solid fa-magic text-white me-2"></i>Tạo CV Online
                         </a>
                     }
                 }
@@ -299,42 +306,35 @@
         <div class="row justify-content-center">
             <div class="col-md-11 col-lg-10">
                 <div class="card search-card p-3 shadow-sm border-0" style="border-radius: 20px;">
-                    <form asp-controller="Job" asp-action="Index" method="get">
-                        <div class="row g-2">
+                    <form asp-controller="Job" asp-action="Search" method="get">
+                        <div class="row g-2 align-items-center">
+
                             <div class="col-md-5">
                                 <div class="input-group h-100">
-                                    <span class="input-group-text bg-transparent border-0"><i class="fa fa-search text-muted"></i></span>
-                                    <input type="text" name="keyword" value="@ViewBag.Keyword" class="form-control border-0 shadow-none" placeholder="Kỹ năng, vị trí công việc...">
+                                    <span class="input-group-text bg-transparent border-0">
+                                        <i class="fa fa-search text-muted"></i>
+                                    </span>
+                                    <input type="text" name="searchString" value="@ViewBag.Keyword" class="form-control border-0 shadow-none" placeholder="Kỹ năng, vị trí công việc...">
                                 </div>
                             </div>
+
                             <div class="col-md-4">
                                 <div class="input-group h-100 border-start">
                                     <span class="input-group-text bg-transparent border-0">
                                         <i class="fa-solid fa-location-dot text-muted"></i>
                                     </span>
-                                    <select name="locationId" class="form-select border-0 shadow-none">
-                                        <option value="">Tất cả địa điểm</option>
-                                        @if (ViewBag.Locations != null)
-                                        {
-                                            var locationList = ViewBag.Locations as IEnumerable<JobPortal.Models.Location>;
-                                            if (locationList != null)
-                                            {
-                                                foreach (var loc in locationList)
-                                                {
-                                                    <option value="@loc.Id" selected="@(ViewBag.SelectedLocation != null && (int)ViewBag.SelectedLocation == loc.Id)">
-                                                        @loc.Name
-                                                    </option>
-                                                }
-                                            }
-                                        }
+                                    <select name="locationId" class="form-select border-0 shadow-none" asp-items="ViewBag.Locations">
+                                        <option value="">-- Tất cả địa điểm --</option>
                                     </select>
                                 </div>
                             </div>
+
                             <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary w-100 h-100 fw-bold rounded-3 shadow-sm" style="background-color: #0066ff;">
+                                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-3 shadow-sm" style="background-color: #0066ff; height: 45px;">
                                     Tìm việc ngay
                                 </button>
                             </div>
+
                         </div>
                     </form>
                 </div>
@@ -386,9 +386,18 @@
                                 <small class="text-muted" style="font-size: 0.75rem;">
                                     <i class="far fa-clock me-1"></i> @item.CreatedAt.ToString("dd/MM/yyyy")
                                 </small>
-                                <a asp-controller="Home" asp-action="JobDetails" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4 fw-bold">
-                                    Ứng tuyển
-                                </a>
+                                @if (isAuth)
+                                {
+                                    <a asp-controller="Home" asp-action="JobDetails" asp-route-id="@item.Id" class="btn btn-primary rounded-pill px-4 fw-bold">
+                                        Ứng tuyển
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" disabled title="Vui lòng đăng nhập để ứng tuyển">
+                                        Ứng tuyển
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>

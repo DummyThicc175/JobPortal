@@ -2,6 +2,7 @@
 using JobPortal.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -32,7 +33,8 @@ public class HomeController : Controller
             .Where(j => j.IsApproved == true)
             .OrderByDescending(j => j.CreatedAt)
             .ToListAsync();
-
+        var locations = await _context.Locations.OrderBy(l => l.Name).ToListAsync();
+        ViewBag.Locations = new SelectList(locations, "Id", "Name");
         return View(jobs);
     }
     [HttpPost]

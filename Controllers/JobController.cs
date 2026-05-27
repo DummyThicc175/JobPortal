@@ -45,5 +45,33 @@ namespace JobPortal.Controllers
 
             return View(results);
         }
+        public async Task<IActionResult> Search(string searchString, int? locationId)
+        {
+            // Lấy danh sách bài đăng gốc đã được duyệt
+            var jobsQuery = _context.JobPosts
+                .Include(j => j.Category)
+                .Include(j => j.JobLocation)
+                .Include(j => j.Company)
+                .Where(j => j.IsApproved)
+                .AsQueryable();
+
+            // 1. Lọc theo từ khóa (nếu có nhập)
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                jobsQuery = jobsQuery.Where(j => j.Title.Contains(searchString) ||
+                                                 j.Company.Name.Contains(searchString));
+            }
+
+            // 2. LỌC THEO ĐỊA ĐIỂM (Nếu người dùng chọn một tỉnh cụ thể)
+            if (locationId.HasValue)
+            {
+                jobsQuery = jobsQuery.Where(j => j.LocationId == locationId.Value);
+            }
+
+            var result = await jobsQuery.OrderByDescending(j => j.CreatedAt).ToListAsync();
+
+            // Trả dữ liệu về View hiển thị kết quả tìm kiếm của bạn
+            return View("Index", result);
+        }
     }
 }
