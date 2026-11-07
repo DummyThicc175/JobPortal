@@ -1,0 +1,65 @@
+@model IEnumerable<JobPortal.Models.Category>
+@{ ViewData["Title"] = "Ngành nghề"; ViewData["Description"] = "Giữ danh mục tuyển dụng rõ ràng để ứng viên dễ tìm đúng công việc."; }
+<div class="page-actions">
+<span class="count-chip">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> ngành nghề</span>
+<a asp-action="Create" class="btn btn-primary">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#plus" />
+</svg>Thêm ngành nghề</a>
+</div>
+<form method="get" class="filter-bar">
+<div class="input-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+<input name="searchTerm" type="search" class="form-control" placeholder="Tìm theo tên ngành nghề…" value="@Context.Request.Query["searchTerm"]" aria-label="Tên ngành nghề" />
+</div>
+<button class="btn btn-light" type="submit">Tìm kiếm</button>
+</form>
+<div class="panel">@if (Model.Any()) { <div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th style="width:100px">Mã</th>
+<th>Tên ngành nghề</th>
+<th class="text-end">Thao tác</th>
+</tr>
+</thead>
+<tbody>@foreach (var item in Model) { <tr>
+<td class="muted">#@item.Id</td>
+<td>
+<strong>@item.Name</strong>
+</td>
+<td>
+<div class="table-actions">
+<a asp-action="Details" asp-route-id="@item.Id" class="icon-button" aria-label="Xem ngành @item.Name">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#eye" />
+</svg>
+</a>
+<a asp-action="Edit" asp-route-id="@item.Id" class="icon-button" aria-label="Sửa ngành @item.Name">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#edit" />
+</svg>
+</a>
+<a asp-action="Delete" asp-route-id="@item.Id" class="icon-button danger" aria-label="Xóa ngành @item.Name">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#trash" />
+</svg>
+</a>
+</div>
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#tag" />
+</svg>
+</span>
+<h3>Chưa có ngành nghề phù hợp</h3>
+<p>Thêm ngành nghề mới hoặc thay đổi từ khóa tìm kiếm.</p>
+<a asp-action="Create" class="btn btn-primary">Thêm ngành nghề</a>
+</div> }</div>
+<partial name="_Pagination" />

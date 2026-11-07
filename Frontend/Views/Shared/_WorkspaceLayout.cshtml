@@ -1,0 +1,110 @@
+@{
+    var area = ViewData["WorkspaceArea"]?.ToString() ?? ViewContext.RouteData.Values["area"]?.ToString() ?? "Candidate";
+    var controller = ViewData["WorkspaceController"]?.ToString() ?? ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var isAdmin = area == "Admin";
+    var isEmployer = area == "Employer";
+    var roleLabel = isAdmin ? "Quản trị hệ thống" : isEmployer ? "Nhà tuyển dụng" : "Ứng viên";
+    var navigation = isAdmin ? new[] {
+        ("Dashboard", "Index", "grid", "Tổng quan"), ("JobManager", "Pending", "clock", "Duyệt tin tuyển dụng"),
+        ("JobManager", "Index", "briefcase", "Tin tuyển dụng"), ("Categories", "Index", "tag", "Ngành nghề"), ("UserManager", "Index", "users", "Tài khoản người dùng")
+    } : isEmployer ? new[] {
+        ("Job", "Index", "grid", "Tổng quan"), ("Job", "Create", "plus", "Đăng tin mới"),
+        ("Applicant", "Index", "users", "Hồ sơ ứng tuyển"), ("Chat", "Index", "message", "Tin nhắn")
+    } : new[] {
+        ("Profile", "Index", "user", "Hồ sơ của tôi"), ("CV", "SelectTemplate", "layout", "Tạo & chỉnh sửa CV"),
+        ("Application", "Index", "briefcase", "Việc đã ứng tuyển"), ("SavedJob", "Index", "bookmark", "Việc đã lưu")
+    };
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<partial name="_PortalHead" />@await RenderSectionAsync("Styles", required: false)</head>
+<body class="portal-ui workspace" data-portal-area="@area">
+    <a class="skip-link" href="#main-content">Đến nội dung chính</a>
+    <button class="sidebar-backdrop" data-sidebar-backdrop type="button" aria-label="Đóng menu">
+</button>
+    <aside id="workspace-navigation" class="workspace-sidebar" aria-label="Điều hướng @roleLabel">
+        <partial name="_Brand" />
+        <p class="sidebar-caption">KHÔNG GIAN LÀM VIỆC</p>
+        <nav class="sidebar-nav">
+            @foreach (var (targetController, targetAction, icon, label) in navigation)
+            {
+                var active = controller == targetController && (targetController is "JobManager" or "Job" ? action == targetAction || targetAction == "Index" && action == "Edit" : true);
+                <a asp-area="@area" asp-controller="@targetController" asp-action="@targetAction" class="sidebar-link @(active ? "active" : "")" aria-current="@(active ? "page" : null)">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#@icon" />
+</svg>
+<span>@label</span>
+</a>
+            }
+        </nav>
+        <div class="sidebar-bottom">
+            <div class="sidebar-note">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#@(isAdmin ? "shield" : "spark")" />
+</svg>
+<strong class="mt-2">@(isAdmin ? "Mỗi kết nối đều quan trọng" : isEmployer ? "Tìm đúng người, cùng tiến xa" : "Sẵn sàng cho cơ hội mới?")</strong>
+<p>@(isAdmin ? "Giữ thông tin tuyển dụng rõ ràng và cộng đồng tin cậy." : isEmployer ? "Một tin tuyển dụng rõ ràng là khởi đầu cho đội ngũ tốt." : "Hoàn thiện hồ sơ để giới thiệu phiên bản tốt nhất của bạn.")</p>
+</div>
+            <a href="/Job" class="sidebar-link">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>Khám phá việc làm</a>
+            <a href="/" class="sidebar-link">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>Về trang chủ</a>
+        </div>
+    </aside>
+    <div class="workspace-main">
+        <header class="workspace-topbar">
+            <button class="icon-button mobile-menu" type="button" data-sidebar-toggle aria-controls="workspace-navigation" aria-expanded="false" aria-label="Mở menu điều hướng">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#menu" />
+</svg>
+</button>
+            <div class="breadcrumb-line">
+<span>@roleLabel</span>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#chevron" />
+</svg>
+<span>@ViewData["Title"]</span>
+</div>
+            <div class="topbar-right">
+<a href="/Job" class="btn btn-quiet btn-sm">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>Tìm việc</a>
+<span class="topbar-divider">
+</span>
+<partial name="_AccountMenu" />
+</div>
+        </header>
+        <div class="workspace-content">
+            <main id="main-content">
+                <div class="workspace-page-head">
+<div>
+<span class="eyebrow">JOBHUB / @roleLabel</span>
+<h1>@ViewData["Title"]</h1>
+<p>@(ViewData["Description"] ?? (isAdmin ? "Theo dõi và quản lý hoạt động của JobHub." : isEmployer ? "Quản lý tuyển dụng và kết nối với ứng viên của bạn." : "Mỗi bước chuẩn bị đưa bạn đến gần hơn với công việc phù hợp."))</p>
+</div>
+</div>
+                <partial name="_OperationMessages" />
+                @RenderBody()
+            </main>
+            <footer class="workspace-footer">
+<span>© @DateTime.Now.Year JobHub</span>
+<span>Kết nối cơ hội. Phát triển sự nghiệp.</span>
+</footer>
+        </div>
+    </div>
+    @if (!isAdmin) { <partial name="_ChatWidget" /> }
+    <partial name="_PortalScripts" />
+    @await RenderSectionAsync("Scripts", required: false)
+    @if (!isAdmin) { <script src="~/lib/signalr/signalr.min.js">
+</script>
+<script src="~/js/chat.js" asp-append-version="true">
+</script> }
+</body>
+</html>

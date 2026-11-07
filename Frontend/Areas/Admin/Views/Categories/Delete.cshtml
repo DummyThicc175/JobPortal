@@ -1,0 +1,19 @@
+@model JobPortal.Models.Category
+@{ ViewData["Title"] = "Xóa ngành nghề"; ViewData["Description"] = "Kiểm tra thông tin danh mục trước khi xác nhận."; }
+<section class="panel" style="max-width:720px">
+<div class="panel-body">
+<span class="empty-symbol" style="background:#fff0ef;color:#bd5c57">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#trash" />
+</svg>
+</span>
+<h2 class="mb-3">Bạn muốn xóa “@Model.Name”?</h2>
+<p class="mb-2">Ngành nghề này sẽ được xóa khỏi danh mục. Thao tác không thể hoàn tác.</p>
+<p class="small mb-0">Nếu đang có tin tuyển dụng sử dụng ngành nghề này, hệ thống sẽ giữ lại và thông báo cho bạn.</p>
+</div>
+<form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="form-actions">
+<input asp-for="Id" type="hidden" />
+<a asp-action="Index" class="btn btn-light">Giữ lại ngành nghề</a>
+<button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+</form>
+</section>

@@ -1,0 +1,16 @@
+@page
+@model JobPortal.Areas.Identity.Pages.Account.AccessDeniedModel
+@{ ViewData["Title"] = "Không có quyền truy cập"; }
+<div class="public-content">
+<div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#shield" />
+</svg>
+</span>
+<span class="eyebrow d-block mb-2">QUYỀN TRUY CẬP</span>
+<h1 style="font-size:26px">Trang này dành cho vai trò khác.</h1>
+<p>Tài khoản hiện tại không có quyền sử dụng chức năng này. Bạn có thể quay về không gian của mình từ menu tài khoản.</p>
+<a href="/" class="btn btn-primary">Về trang chủ</a>
+</div>
+</div>

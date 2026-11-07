@@ -1,0 +1,56 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ var pending = ViewData["PendingOnly"] as bool? == true; }
+<div class="panel">@if (Model.Any()) { <div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Vị trí tuyển dụng</th>
+<th>Địa điểm</th>
+<th>Trạng thái</th>
+<th class="text-end">Thao tác</th>
+</tr>
+</thead>
+<tbody>@foreach (var job in Model) { <tr>
+<td>
+<strong>@job.Title</strong>
+<span class="subline">@job.CompanyName · @(job.CategoryName ?? "Chưa phân loại")</span>
+<span class="subline">#@job.Id · @job.CreatedAt.ToString("dd/MM/yyyy")</span>
+</td>
+<td>@(job.JobLocation?.Name ?? "Chưa cập nhật")</td>
+<td>
+<span class="status @(job.IsApproved ? "status-approved" : "status-pending")">@(job.IsApproved ? "Đang hiển thị" : "Chưa hiển thị")</span>
+</td>
+<td>
+<div class="table-actions">
+<button class="icon-button" data-job-details="@job.Id" type="button" aria-label="Xem nội dung tin @job.Title">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#eye" />
+</svg>
+</button>@if (pending) { <form asp-action="Approve" asp-route-id="@job.Id" method="post">
+<button class="btn btn-primary btn-sm" type="submit">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#check" />
+</svg>Duyệt tin</button>
+</form> } else { <form asp-action="ToggleApproval" asp-route-id="@job.Id" method="post">
+<button class="btn btn-light btn-sm" type="submit">@(job.IsApproved ? "Gỡ hiển thị" : "Duyệt hiển thị")</button>
+</form>
+<form asp-action="DeletePost" asp-route-id="@job.Id" method="post" data-confirm="Bạn muốn xóa hoặc gỡ tin tuyển dụng này? Tin đã có hồ sơ sẽ được giữ lại lịch sử.">
+<button class="icon-button danger" type="submit" aria-label="Xóa tin @job.Title">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#trash" />
+</svg>
+</button>
+</form> }</div>
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#@(pending ? "check" : "briefcase")" />
+</svg>
+</span>
+<h3>@(pending ? "Không có tin trong hàng chờ" : "Chưa tìm thấy tin tuyển dụng")</h3>
+<p>@(pending ? "Các tin cần xem xét sẽ xuất hiện tại đây." : "Thử kiểm tra lại mã tin hoặc quay về danh sách đầy đủ.")</p>@if (!pending) { <a asp-action="Index" class="btn btn-light">Tất cả tin tuyển dụng</a> }</div> }</div>
+<partial name="_Pagination" />
+<partial name="_JobDetailsModal" />

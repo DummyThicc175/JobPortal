@@ -1,0 +1,51 @@
+@model IEnumerable<JobPortal.Models.CVTemplate>
+@{ ViewData["Title"] = "Mẫu CV của bạn"; ViewData["Description"] = "Chọn một phong cách phù hợp và để kinh nghiệm của bạn lên tiếng."; }
+<div class="page-actions">
+<div class="d-flex gap-2 flex-wrap" role="group" aria-label="Lọc mẫu CV">
+<button class="btn btn-primary btn-sm" data-template-filter="all" aria-pressed="true" type="button">Tất cả mẫu</button>
+<button class="btn btn-light btn-sm" data-template-filter="Popular" aria-pressed="false" type="button">Phổ biến</button>
+<button class="btn btn-light btn-sm" data-template-filter="Creative" aria-pressed="false" type="button">Sáng tạo</button>
+</div>
+<span class="small muted">@Model.Count() mẫu sẵn sàng sử dụng</span>
+</div>
+<div class="template-grid">@foreach (var template in Model) { var image = Url.Content("~/" + (template.Thumbnail ?? "images/templates/t1.jpg").TrimStart('/')); <article class="template-card" data-template-category="@template.Category">
+<div class="template-preview">
+<img src="@image" alt="Xem trước @template.Name" />
+</div>
+<div class="template-info">
+<span class="eyebrow">@(template.Category == "Creative" ? "SÁNG TẠO" : "PHỔ BIẾN")</span>
+<h3>@template.Name</h3>
+<p>@(template.Id == 2 ? "Bố cục hai cột, điểm nhấn nhẹ nhàng và phân chia nội dung rõ ràng." : "Trình bày gọn gàng, nhấn mạnh kinh nghiệm và kỹ năng của bạn.")</p>
+<div class="template-actions">
+<button type="button" class="btn btn-light btn-sm" data-template-preview="@image" data-template-name="@template.Name">Xem mẫu</button>
+<a asp-action="Create" asp-route-templateId="@template.Id" class="btn btn-primary btn-sm">Sử dụng mẫu này <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</div>
+</div>
+</article> }</div>
+<div class="banner">
+<div>
+<h3>Đã có CV của riêng bạn?</h3>
+<p>Tải file PDF lên hồ sơ để sử dụng ngay khi ứng tuyển.</p>
+</div>
+<a href="/Candidate/Profile/Edit" class="btn btn-light">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#upload" />
+</svg>Tải CV lên</a>
+</div>
+<div class="modal fade" id="template-preview-modal" tabindex="-1" aria-labelledby="template-preview-title" aria-hidden="true">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-title" id="template-preview-title">Xem trước mẫu CV</h2>
+<button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Đóng xem trước">
+</button>
+</div>
+<div class="modal-body text-center" style="background:#f1f5f3">
+<img id="template-preview-image" alt="Xem trước mẫu CV" style="max-width:100%;max-height:75vh;object-fit:contain" />
+</div>
+</div>
+</div>
+</div>

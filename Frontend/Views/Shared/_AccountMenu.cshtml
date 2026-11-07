@@ -1,0 +1,48 @@
+@using System.Security.Claims
+@{
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var role = User.IsInRole("Admin") ? "Quản trị viên" : User.IsInRole("Employer") ? "Nhà tuyển dụng" : "Ứng viên";
+    var name = User.Identity?.Name?.Split('@')[0] ?? "Tài khoản";
+    if (string.IsNullOrWhiteSpace(name)) name = "Tài khoản";
+    var destination = User.IsInRole("Admin") ? "/Admin/Dashboard" : User.IsInRole("Employer") ? "/Employer/Job" : "/Candidate/Profile";
+}
+@if (signedIn)
+{
+    <div class="dropdown">
+        <button type="button" class="account-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Mở menu tài khoản">
+            <span class="avatar">@name[..1].ToUpperInvariant()</span>
+            <span class="account-name">
+<strong>@name</strong>
+<small>@role</small>
+</span>
+            <svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#chevron" />
+</svg>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li class="px-3 py-2 small text-muted text-break">@User.Identity?.Name</li>
+            <li>
+<a class="dropdown-item" href="@destination">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#grid" />
+</svg>Không gian của tôi</a>
+</li>
+            <li>
+<hr class="dropdown-divider" />
+</li>
+            <li>
+<form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/" method="post">
+<button type="submit" class="dropdown-item text-danger">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#logout" />
+</svg>Đăng xuất</button>
+</form>
+</li>
+        </ul>
+    </div>
+}
+else
+{
+    <a class="btn btn-light" asp-area="Identity" asp-page="/Account/Login">Đăng nhập</a>
+    <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register">Đăng ký</a>
+}

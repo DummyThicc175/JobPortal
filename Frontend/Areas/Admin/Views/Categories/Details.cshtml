@@ -1,0 +1,25 @@
+@model JobPortal.Models.Category
+@{ ViewData["Title"] = "Chi tiết ngành nghề"; ViewData["Description"] = "Thông tin danh mục được sử dụng trong hệ thống tuyển dụng."; }
+<section class="panel" style="max-width:760px">
+<div class="panel-body">
+<span class="empty-symbol mb-4">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#tag" />
+</svg>
+</span>
+<dl class="info-grid">
+<div>
+<dt>Mã ngành nghề</dt>
+<dd>#@Model.Id</dd>
+</div>
+<div>
+<dt>Tên ngành nghề</dt>
+<dd>@Model.Name</dd>
+</div>
+</dl>
+</div>
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Quay lại danh sách</a>
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Chỉnh sửa ngành nghề</a>
+</div>
+</section>

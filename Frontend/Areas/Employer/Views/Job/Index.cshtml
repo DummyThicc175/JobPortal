@@ -1,0 +1,99 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ ViewData["Title"] = "Tổng quan tuyển dụng"; ViewData["Description"] = "Theo dõi các vị trí đang tuyển và tìm người đồng hành tiếp theo."; }
+<div class="stats-grid">
+<div class="stat-card">
+<span class="stat-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<p class="stat-label">Tổng tin tuyển dụng</p>
+<div class="stat-value">@ViewBag.TotalJobs</div>
+<div class="stat-note">Tin do bạn đăng tuyển</div>
+</div>
+<div class="stat-card">
+<span class="stat-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#check" />
+</svg>
+</span>
+<p class="stat-label">Đang hiển thị</p>
+<div class="stat-value">@ViewBag.ApprovedJobs</div>
+<div class="stat-note">Đã được duyệt</div>
+</div>
+<div class="stat-card">
+<span class="stat-icon amber">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg>
+</span>
+<p class="stat-label">Chưa hiển thị</p>
+<div class="stat-value">@ViewBag.PendingJobs</div>
+<div class="stat-note">Chờ duyệt hoặc đã gỡ</div>
+</div>
+</div>
+<div class="section-head">
+<h2>Tin tuyển dụng của bạn</h2>
+<a asp-action="Create" class="btn btn-primary">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#plus" />
+</svg>Đăng tin mới</a>
+</div>
+<form method="get" class="filter-bar">
+<div class="input-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+<input type="search" name="keyword" value="@ViewBag.Keyword" class="form-control" placeholder="Tìm theo tên vị trí tuyển dụng…" aria-label="Tìm tin tuyển dụng" />
+</div>
+<button class="btn btn-light" type="submit">Tìm kiếm</button>
+</form>
+<div class="panel">@if (Model.Any()) { <div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Vị trí tuyển dụng</th>
+<th>Ngày đăng</th>
+<th>Trạng thái</th>
+<th class="text-end">Thao tác</th>
+</tr>
+</thead>
+<tbody>@foreach (var job in Model) { <tr>
+<td>
+<strong>@job.Title</strong>
+<span class="subline">@job.CompanyName · @(job.JobLocation?.Name ?? "Chưa có địa điểm")</span>
+</td>
+<td>@job.CreatedAt.ToString("dd/MM/yyyy")</td>
+<td>
+<span class="status @(job.IsApproved ? "status-approved" : "status-pending")">@(job.IsApproved ? "Đang hiển thị" : "Chưa hiển thị")</span>
+</td>
+<td>
+<div class="table-actions">
+<a asp-controller="Applicant" asp-action="ByJob" asp-route-jobId="@job.Id" class="btn btn-light btn-sm">Ứng viên</a>
+<a asp-action="Edit" asp-route-id="@job.Id" class="icon-button" aria-label="Sửa tin @job.Title">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#edit" />
+</svg>
+</a>
+<form asp-action="Delete" asp-route-id="@job.Id" method="post" data-confirm="Bạn muốn gỡ tin này? Lịch sử ứng tuyển được giữ lại nếu tin đã có hồ sơ.">
+<button class="icon-button danger" type="submit" aria-label="Gỡ tin @job.Title">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#trash" />
+</svg>
+</button>
+</form>
+</div>
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<h3>@(string.IsNullOrWhiteSpace((string?)ViewBag.Keyword) ? "Bắt đầu tìm kiếm người đồng hành" : "Không tìm thấy tin phù hợp")</h3>
+<p>Đăng một vị trí tuyển dụng với thông tin rõ ràng để kết nối với ứng viên.</p>
+<a asp-action="Create" class="btn btn-primary">Đăng tin tuyển dụng</a>
+</div> }</div>
+<partial name="_Pagination" />

@@ -1,0 +1,51 @@
+@model IEnumerable<JobPortal.Models.Application>
+@{ ViewData["Title"] = "Việc đã ứng tuyển"; ViewData["Description"] = "Theo dõi hồ sơ và trạng thái phản hồi từ nhà tuyển dụng."; }
+<div class="page-actions">
+<span class="count-chip">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> hồ sơ ứng tuyển</span>
+<a href="/Job" class="btn btn-light">Khám phá công việc khác <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</div>
+@if (Model.Any()) { @foreach (var app in Model) { <article class="application-item">
+<span class="company-mark">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#building" />
+</svg>
+</span>
+<div class="application-body">
+<h3>@app.JobPost?.Title</h3>
+<p>@app.JobPost?.CompanyName</p>
+<div class="application-meta">
+<span>
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg> Nộp ngày @app.AppliedDate.ToString("dd/MM/yyyy")</span>
+<span>@app.JobPost?.JobLocation?.Name</span>@if (app.CVId.HasValue) { <a href="/CV/Download/@app.CVId" target="_blank" rel="noopener">Xem CV đã nộp ↗</a> }</div>
+</div>
+<div class="application-side">
+@if (app.Status == JobPortal.Models.ApplicationStatus.Interview)
+{
+    var interview = app.InterviewSessions.FirstOrDefault(s => s.EndedAt == null);
+    if (interview != null)
+    {
+        <a href="/Interview/Room/@interview.Id" class="btn btn-primary btn-sm">Vào phỏng vấn</a>
+    }
+    else
+    {
+        <span class="small muted">Chờ nhà tuyển dụng mở phiên mới</span>
+    }
+}
+<partial name="_StatusBadge" model="app.Status" />@if (app.JobPost?.IsApproved == true) { <a href="/Job/Details/@app.JobPostId" class="btn btn-light btn-sm">Xem tin tuyển dụng</a> } else { <span class="small muted">Tin đã ngừng hiển thị</span> }</div>
+</article> } } else { <div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<h3>Chưa có hồ sơ ứng tuyển</h3>
+<p>Một cơ hội phù hợp có thể là bước khởi đầu cho hành trình tiếp theo của bạn.</p>
+<a href="/Job" class="btn btn-primary">Tìm công việc phù hợp</a>
+</div> }
+<partial name="_Pagination" />

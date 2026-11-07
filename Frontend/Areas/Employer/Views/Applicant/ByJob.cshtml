@@ -1,0 +1,8 @@
+@model IEnumerable<JobPortal.Models.EmployerApplicantViewModel>
+@{ ViewData["Title"] = "Ứng viên theo tin tuyển dụng"; ViewData["Description"] = Model.FirstOrDefault()?.JobTitle ?? "Các hồ sơ gửi đến vị trí bạn đang xem."; }
+<div class="page-actions">
+<a href="/Employer/Job" class="small muted">← Về danh sách tin tuyển dụng</a>
+<span class="count-chip">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> hồ sơ</span>
+</div>
+<partial name="_ApplicantList" model="Model" />

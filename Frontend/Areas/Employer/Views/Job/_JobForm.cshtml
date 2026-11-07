@@ -1,0 +1,57 @@
+@model JobPortal.Models.JobFormViewModel
+<div class="form-section">
+<div asp-validation-summary="ModelOnly" role="alert">
+</div>
+<h2>Thông tin vị trí</h2>
+<p>Giới thiệu rõ công việc và doanh nghiệp đang tuyển dụng.</p>
+<div class="row g-3">
+<div class="col-12">
+<label asp-for="Title" class="form-label">Tên vị trí tuyển dụng <span class="text-danger">*</span>
+</label>
+<input asp-for="Title" class="form-control" placeholder="Ví dụ: Lập trình viên Backend .NET" />
+<span asp-validation-for="Title">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="CompanyName" class="form-label">Tên công ty <span class="text-danger">*</span>
+</label>
+<input asp-for="CompanyName" class="form-control" placeholder="Tên doanh nghiệp tuyển dụng" />
+<span asp-validation-for="CompanyName">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="CategoryId" class="form-label">Ngành nghề <span class="text-danger">*</span>
+</label>
+<select asp-for="CategoryId" class="form-select" asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(ViewBag.Categories, "Id", "Name"))">
+<option value="">Chọn ngành nghề</option>
+</select>
+<span asp-validation-for="CategoryId">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="LocationId" class="form-label">Địa điểm <span class="text-danger">*</span>
+</label>
+<select asp-for="LocationId" class="form-select" asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(ViewBag.Locations, "Id", "Name"))">
+<option value="">Chọn tỉnh/thành phố</option>
+</select>
+<span asp-validation-for="LocationId">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="SalaryRange" class="form-label">Mức lương</label>
+<input asp-for="SalaryRange" class="form-control" placeholder="Ví dụ: 12–18 triệu hoặc Thỏa thuận" />
+<span asp-validation-for="SalaryRange">
+</span>
+</div>
+</div>
+</div>
+<div class="form-section">
+<h2>Mô tả công việc</h2>
+<p>Chia sẻ công việc, yêu cầu ứng viên và quyền lợi khi gia nhập.</p>
+<label asp-for="Description" class="form-label">Nội dung tuyển dụng <span class="text-danger">*</span>
+</label>
+<textarea asp-for="Description" class="form-control" rows="12" placeholder="Công việc bạn sẽ làm…&#10;&#10;Kỹ năng và kinh nghiệm cần có…&#10;&#10;Quyền lợi…">
+</textarea>
+<span asp-validation-for="Description">
+</span>
+</div>

@@ -1,0 +1,13 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ ViewData["Title"] = "Tin tuyển dụng"; ViewData["Description"] = "Kiểm tra nội dung và quản lý việc hiển thị tin tuyển dụng trên JobHub."; ViewData["PendingOnly"] = false; }
+<form method="get" class="filter-bar">
+<div class="input-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+<input type="number" name="searchId" class="form-control" placeholder="Tìm theo mã tin tuyển dụng…" value="@Context.Request.Query["searchId"]" aria-label="Mã tin tuyển dụng" min="1" />
+</div>
+<button type="submit" class="btn btn-light">Tìm kiếm</button>
+<a asp-action="Pending" class="btn btn-outline-primary ms-auto">Chờ duyệt</a>
+</form>
+<partial name="_JobList" model="Model" />

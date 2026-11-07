@@ -1,0 +1,65 @@
+@using System.Security.Claims
+@model IEnumerable<JobPortal.Models.AdminUserViewModel>
+@{ ViewData["Title"] = "Tài khoản người dùng"; ViewData["Description"] = "Quản lý vai trò và trạng thái truy cập của thành viên JobHub."; }
+<form method="get" class="filter-bar">
+<div class="input-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+<input name="searchEmail" type="search" class="form-control" placeholder="Tìm kiếm bằng email…" value="@Context.Request.Query["searchEmail"]" aria-label="Email tài khoản cần tìm" />
+</div>
+<button class="btn btn-light" type="submit">Tìm kiếm</button>
+<span class="count-chip ms-auto">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> tài khoản</span>
+</form>
+<div class="panel">@if (Model.Any()) { <div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Thành viên</th>
+<th>Vai trò</th>
+<th>Trạng thái</th>
+<th class="text-end">Quyền truy cập</th>
+</tr>
+</thead>
+<tbody>@foreach (var user in Model) { var locked = user.LockoutEnd > DateTimeOffset.UtcNow; var self = user.Id == User.FindFirstValue(ClaimTypes.NameIdentifier); <tr>
+<td>
+<div class="identity-cell">
+<span class="avatar @(user.Role == "Admin" ? "blue" : "")">@((user.Email ?? "U")[..1].ToUpperInvariant())</span>
+<div>
+<strong>@user.Email</strong>@if (self) { <span class="subline">Tài khoản đang sử dụng</span> }</div>
+</div>
+</td>
+<td>
+<form asp-action="AssignRole" method="post" class="d-flex gap-2 align-items-center">
+<input name="userId" type="hidden" value="@user.Id" />
+<select name="roleName" class="form-select form-select-sm" style="width:145px" aria-label="Vai trò của @user.Email">
+<option value="Candidate" selected="@(user.Role == "Candidate")">Ứng viên</option>
+<option value="Employer" selected="@(user.Role == "Employer")">Nhà tuyển dụng</option>
+<option value="Admin" selected="@(user.Role == "Admin")">Quản trị viên</option>
+</select>
+<button type="submit" class="btn btn-light btn-sm">Lưu</button>
+</form>
+</td>
+<td>
+<span class="status @(locked ? "status-locked" : "status-active")">@(locked ? "Đang bị khóa" : "Hoạt động")</span>
+</td>
+<td>
+<form asp-action="ToggleLock" method="post" class="text-end">
+<input name="userId" value="@user.Id" type="hidden" />
+<button class="btn btn-sm @(locked ? "btn-outline-primary" : "btn-light")" type="submit" disabled="@self">@(locked ? "Mở khóa" : "Khóa tài khoản")</button>
+</form>
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#users" />
+</svg>
+</span>
+<h3>Không tìm thấy tài khoản</h3>
+<p>Kiểm tra lại địa chỉ email hoặc xem tất cả thành viên.</p>
+<a asp-action="Index" class="btn btn-light">Xem tất cả tài khoản</a>
+</div> }</div>
+<partial name="_Pagination" />

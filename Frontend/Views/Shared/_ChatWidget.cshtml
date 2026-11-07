@@ -1,0 +1,32 @@
+@using System.Security.Claims
+@if (User.IsInRole("Candidate") || User.IsInRole("Employer"))
+{
+    <button class="chat-launcher" id="chat-bubble" type="button" onclick="toggleChat()" aria-label="Mở tin nhắn">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#message" />
+</svg>
+</button>
+    <section id="chat-window" class="chat-widget" aria-label="Tin nhắn tuyển dụng" data-chat-window>
+        <div class="chat-widget-header">
+<div>
+<strong id="chat-partner-name">Tin nhắn</strong>
+<small class="d-block opacity-75">Kết nối cùng nhà tuyển dụng và ứng viên</small>
+</div>
+<button class="icon-button" type="button" onclick="toggleChat()" aria-label="Đóng tin nhắn">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#close" />
+</svg>
+</button>
+</div>
+        <div id="partner-list" class="chat-partners">
+</div>
+        <div id="chat-body" class="chat-messages" role="log" aria-live="polite">
+</div>
+        <div class="chat-compose">
+<input id="chat-input" class="form-control" type="text" placeholder="Nhập tin nhắn…" aria-label="Nội dung tin nhắn" disabled />
+<button id="btn-send-chat" class="btn btn-primary" type="button" disabled>Gửi</button>
+</div>
+    </section>
+    <input type="hidden" id="current-user-id" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
+    <input type="hidden" id="active-partner-id" value="" />
+}

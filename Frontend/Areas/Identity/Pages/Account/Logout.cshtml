@@ -1,0 +1,17 @@
+@page
+@model LogoutModel
+@{ ViewData["Title"] = "Đăng xuất"; }
+<div class="public-content">
+<div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#logout" />
+</svg>
+</span>@if (User.Identity?.IsAuthenticated == true) { <h1 style="font-size:26px">Bạn muốn đăng xuất?</h1>
+<p>Bạn có thể đăng nhập lại bất cứ lúc nào để tiếp tục.</p>
+<form method="post" asp-route-returnUrl="/">
+<button type="submit" class="btn btn-primary">Xác nhận đăng xuất</button>
+</form> } else { <h1 style="font-size:26px">Bạn đã đăng xuất.</h1>
+<p>Hẹn gặp lại trên hành trình tiếp theo cùng JobHub.</p>
+<a href="/" class="btn btn-primary">Về trang chủ</a> }</div>
+</div>

@@ -1,0 +1,14 @@
+@model JobPortal.Models.ErrorViewModel
+@{ ViewData["Title"] = "Chưa thể hoàn tất yêu cầu"; }
+<div class="public-content">
+<div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg>
+</span>
+<h1 style="font-size:26px">Có gián đoạn khi xử lý yêu cầu.</h1>
+<p>Vui lòng thử lại sau hoặc quay về trang chủ để tiếp tục.</p>
+<a href="/" class="btn btn-primary">Về trang chủ</a>@if (Model.ShowRequestId) { <p class="small mt-4 mb-0">Mã tham chiếu: <code>@Model.RequestId</code>
+</p> }</div>
+</div>

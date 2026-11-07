@@ -1,0 +1,111 @@
+@model JobPortal.Models.CandidateProfileViewModel
+@{ ViewData["Title"] = "Hồ sơ của tôi"; ViewData["Description"] = "Giới thiệu bản thân và sẵn sàng cho những cơ hội tiếp theo."; }
+<div class="profile-layout">
+<aside>
+<section class="panel profile-identity">
+<img src="@(string.IsNullOrWhiteSpace(Model.AvatarUrl) || Model.AvatarUrl == "/images/default-avatar.png" ? "/images/avatar-placeholder.svg" : Model.AvatarUrl)" alt="Ảnh đại diện của bạn" class="avatar lg" />
+<h2>@(Model.FullName ?? "Hoàn thiện hồ sơ của bạn")</h2>
+<p>@Model.Email</p>
+<span class="status status-active mb-4">Ứng viên</span>
+<a asp-action="Edit" class="btn btn-primary w-100">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#edit" />
+</svg>Chỉnh sửa hồ sơ</a>
+</section>
+<section class="panel mt-3">
+<div class="panel-heading">
+<h3>CV của bạn</h3>
+<svg class="icon muted" aria-hidden="true">
+<use href="/images/icons.svg#file" />
+</svg>
+</div>
+<div class="panel-body">@if (!string.IsNullOrEmpty(Model.CVUrl)) { <span class="status status-active mb-3">Đã có CV</span>
+<p class="small">Sử dụng CV hiện tại để ứng tuyển công việc phù hợp.</p>
+<a href="@Model.CVUrl" target="_blank" rel="noopener" class="btn btn-light w-100">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#eye" />
+</svg>Xem CV hiện tại</a> } else { <p class="small">Thêm CV để nhà tuyển dụng hiểu hơn về kinh nghiệm và kỹ năng của bạn.</p> }<a href="/Candidate/CV/SelectTemplate" class="btn btn-outline-primary w-100 mt-2">Tạo hoặc chỉnh sửa CV</a>
+</div>
+</section>
+</aside>
+<div>
+<section class="panel">
+<div class="panel-heading">
+<div>
+<h2>Thông tin cá nhân</h2>
+<p>Thông tin dùng để kết nối với nhà tuyển dụng.</p>
+</div>
+<a asp-action="Edit" class="icon-button" aria-label="Chỉnh sửa thông tin">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#edit" />
+</svg>
+</a>
+</div>
+<div class="panel-body">
+<dl class="info-grid mb-0">
+<div>
+<dt>Họ và tên</dt>
+<dd>@(Model.FullName ?? "Chưa cập nhật")</dd>
+</div>
+<div>
+<dt>Địa chỉ email</dt>
+<dd>@Model.Email</dd>
+</div>
+<div>
+<dt>Số điện thoại</dt>
+<dd>@(Model.Phone ?? "Chưa cập nhật")</dd>
+</div>
+<div>
+<dt>Ngày sinh</dt>
+<dd>@(Model.Birthday?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+</div>
+<div>
+<dt>Giới tính</dt>
+<dd>@(Model.Gender ?? "Chưa cập nhật")</dd>
+</div>
+<div>
+<dt>Địa chỉ</dt>
+<dd>@(Model.Address ?? "Chưa cập nhật")</dd>
+</div>
+</dl>
+</div>
+</section>
+<section class="panel mt-4">
+<div class="panel-heading">
+<div>
+<h2>Ứng tuyển gần đây</h2>
+<p>Theo dõi những bước tiếp theo trong hành trình của bạn.</p>
+</div>
+<a href="/Candidate/Application" class="small">Xem tất cả</a>
+</div>@if (Model.AppliedJobs.Any()) { <div class="table-responsive">
+<table class="table">
+<thead>
+<tr>
+<th>Công việc</th>
+<th>Ngày nộp</th>
+<th>Trạng thái</th>
+</tr>
+</thead>
+<tbody>@foreach (var app in Model.AppliedJobs) { <tr>
+<td>
+<strong>@app.JobPost?.Title</strong>
+<span class="subline">@app.JobPost?.CompanyName</span>
+</td>
+<td>@app.AppliedDate.ToString("dd/MM/yyyy")</td>
+<td>
+<partial name="_StatusBadge" model="app.Status" />
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<h3>Bước đầu tiên đang chờ bạn</h3>
+<p>Khám phá các vị trí phù hợp và gửi hồ sơ đầu tiên.</p>
+<a href="/Job" class="btn btn-light">Khám phá việc làm</a>
+</div> }</section>
+</div>
+</div>

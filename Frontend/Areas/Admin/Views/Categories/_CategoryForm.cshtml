@@ -1,0 +1,12 @@
+@model JobPortal.Models.Category
+<div class="form-section">
+<div asp-validation-summary="ModelOnly" role="alert">
+</div>
+<h2>Thông tin ngành nghề</h2>
+<p>Tên được dùng để phân loại các tin tuyển dụng.</p>
+<label asp-for="Name" class="form-label">Tên ngành nghề <span class="text-danger">*</span>
+</label>
+<input asp-for="Name" class="form-control" placeholder="Ví dụ: Công nghệ thông tin" />
+<span asp-validation-for="Name">
+</span>
+</div>

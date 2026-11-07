@@ -1,0 +1,47 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ ViewData["Title"] = "Khám phá việc làm"; }
+<div class="public-content">
+<div class="section-head mt-0">
+<div>
+<span class="eyebrow">CÔNG VIỆC TIẾP THEO CỦA BẠN</span>
+<h1 class="mt-2">Khám phá việc làm</h1>
+<p>Tìm một vị trí phù hợp với kỹ năng và định hướng của bạn.</p>
+</div>
+</div>
+<div class="jobs-layout">
+<aside class="panel filter-aside">
+<h3>
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg> Tìm kiếm công việc</h3>
+<form asp-action="Index" method="get">
+<div class="filter-field">
+<label for="job-keyword" class="form-label">Vị trí hoặc công ty</label>
+<input id="job-keyword" name="keyword" type="search" class="form-control" value="@ViewBag.Keyword" placeholder="Ví dụ: Backend…" />
+</div>
+<div>
+<label for="job-location" class="form-label">Địa điểm</label>
+<select id="job-location" name="locationId" class="form-select" asp-items="ViewBag.Locations">
+<option value="">Tất cả địa điểm</option>
+</select>
+</div>
+<button class="btn btn-primary w-100 mt-3" type="submit">Tìm công việc</button>@if (!string.IsNullOrWhiteSpace((string?)ViewBag.Keyword) || ViewBag.SelectedLocation != null) { <a href="/Job" class="btn btn-quiet w-100 mt-2">Xóa bộ lọc</a> }</form>
+</aside>
+<section aria-label="Kết quả tìm việc">
+<div class="page-actions">
+<p>
+<strong class="text-dark">@(ViewData["Total"] ?? Model.Count())</strong> công việc được tìm thấy</p>
+<span class="small muted">Mới nhất trước</span>
+</div>@if (Model.Any()) { <div class="job-grid job-list-grid">@foreach (var job in Model) { <partial name="_JobCard" model="job" /> }</div> } else { <div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+</span>
+<h3>Chưa tìm thấy công việc phù hợp</h3>
+<p>Thử một từ khóa khác hoặc mở rộng địa điểm tìm kiếm của bạn.</p>
+<a href="/Job" class="btn btn-light">Xem tất cả công việc</a>
+</div> }<partial name="_Pagination" />
+</section>
+</div>
+</div>

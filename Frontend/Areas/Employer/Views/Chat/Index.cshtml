@@ -1,0 +1,29 @@
+@using System.Security.Claims
+@{ ViewData["Title"] = "Tin nhắn"; ViewData["Description"] = "Trao đổi trực tiếp với những ứng viên đã gửi hồ sơ đến bạn."; }
+<section class="panel chat-workspace">
+<aside class="chat-conversations">
+<div class="panel-heading">
+<h2>Cuộc trò chuyện</h2>
+<svg class="icon muted" aria-hidden="true">
+<use href="/images/icons.svg#message" />
+</svg>
+</div>
+<div id="employer-partner-list" style="overflow:auto;flex:1">
+<p class="small p-3 muted">Đang tải hội thoại…</p>
+</div>
+</aside>
+<div class="chat-thread">
+<div class="chat-thread-title" id="current-chat-title">Chọn một cuộc trò chuyện để bắt đầu</div>
+<div id="employer-chat-body" class="chat-messages" role="log" aria-live="polite">
+</div>
+<div class="chat-compose">
+<input id="employer-chat-input" class="form-control" placeholder="Nhập nội dung tin nhắn…" aria-label="Nội dung tin nhắn" disabled />
+<button id="employer-btn-send" class="btn btn-primary" type="button" disabled>Gửi <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</button>
+</div>
+</div>
+</section>
+<input type="hidden" id="employer-current-id" value="@User.FindFirstValue(ClaimTypes.NameIdentifier)" />
+<input type="hidden" id="employer-active-partner" value="" />

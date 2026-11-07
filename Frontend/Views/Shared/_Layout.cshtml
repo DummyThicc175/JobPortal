@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<partial name="_PortalHead" />@await RenderSectionAsync("Styles", required: false)</head>
+<body class="portal-ui public-site">
+<a class="skip-link" href="#main-content">Đến nội dung chính</a>
+<header class="public-header">
+<nav class="public-nav" aria-label="Điều hướng chính">
+<partial name="_Brand" />
+<div class="public-links">
+<a href="/Job" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Job" ? "active" : "")">Khám phá việc làm</a>@if (User.IsInRole("Candidate")) { <a href="/Candidate/CV/SelectTemplate">Tạo CV của bạn</a> } else if (User.IsInRole("Employer")) { <a href="/Employer/Job">Không gian tuyển dụng</a> } else if (User.IsInRole("Admin")) { <a href="/Admin/Dashboard">Quản trị hệ thống</a> } else { <a href="/Identity/Account/Register">Kết nối cùng JobHub</a> }</div>
+<div class="topbar-right">
+<partial name="_AccountMenu" />
+</div>
+</nav>
+</header>
+<main id="main-content" class="public-main">
+<div class="container">
+<partial name="_OperationMessages" />
+</div>@RenderBody()</main>
+<footer class="public-footer">
+<div class="public-footer-inner">
+<partial name="_Brand" />
+<span>Mỗi kết nối, một cơ hội mới.</span>
+<span>© @DateTime.Now.Year JobHub · <a href="/Home/Privacy">Quyền riêng tư</a>
+</span>
+</div>
+</footer>
+<partial name="_ChatWidget" />
+<partial name="_PortalScripts" />
+@await RenderSectionAsync("Scripts", required: false)
+@if (User.IsInRole("Candidate") || User.IsInRole("Employer")) { <script src="~/lib/signalr/signalr.min.js">
+</script>
+<script src="~/js/chat.js" asp-append-version="true">
+</script> }
+</body>
+</html>

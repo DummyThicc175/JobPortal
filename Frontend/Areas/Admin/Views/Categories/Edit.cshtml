@@ -1,0 +1,20 @@
+@model JobPortal.Models.Category
+@{ ViewData["Title"] = "Chỉnh sửa ngành nghề"; ViewData["Description"] = "Cập nhật tên danh mục tuyển dụng."; }
+<div class="form-layout">
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="panel">
+<input asp-for="Id" type="hidden" />
+<partial name="_CategoryForm" model="Model" />
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Hủy thay đổi</a>
+<button class="btn btn-primary" type="submit">Lưu thay đổi</button>
+</div>
+</form>
+<aside class="aside-tip">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#tag" />
+</svg>
+<h3>Danh mục #@Model.Id</h3>
+<p class="mb-0">Tên mới sẽ được hiển thị cùng các tin tuyển dụng liên kết với ngành nghề này.</p>
+</aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

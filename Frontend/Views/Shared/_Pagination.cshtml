@@ -1,0 +1,22 @@
+@{
+    var currentPage = (int?)ViewData["Page"] ?? 1;
+    var pages = (int?)ViewData["Pages"] ?? 1;
+    var total = (int?)ViewData["Total"] ?? 0;
+    var values = Context.Request.Query.ToDictionary(item => item.Key, item => (string?)item.Value.ToString());
+    string PageUrl(int number)
+    {
+        var query = new Dictionary<string, string?>(values) { ["page"] = number.ToString() };
+        return Context.Request.Path + Microsoft.AspNetCore.Http.QueryString.Create(query);
+    }
+}
+@if (total > 0)
+{
+    <nav aria-label="Phân trang" class="pagination-bar">
+        <span>Hiển thị @((currentPage - 1) * JobPortal.Infrastructure.Pagination.PageSize + 1)–@(Math.Min(currentPage * JobPortal.Infrastructure.Pagination.PageSize, total)) trong @total kết quả</span>
+        <div class="pagination-controls">
+            @if (currentPage > 1) { <a class="btn btn-light btn-sm" href="@PageUrl(currentPage - 1)">← Trước</a> } else { <button class="btn btn-light btn-sm" type="button" disabled>← Trước</button> }
+            <span>Trang @currentPage / @pages</span>
+            @if (currentPage < pages) { <a class="btn btn-light btn-sm" href="@PageUrl(currentPage + 1)">Sau →</a> } else { <button class="btn btn-light btn-sm" type="button" disabled>Sau →</button> }
+        </div>
+    </nav>
+}

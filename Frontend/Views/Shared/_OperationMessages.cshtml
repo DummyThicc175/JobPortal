@@ -1,0 +1,13 @@
+@foreach (var kind in new[] { "Error", "Success", "Message", "SaveSuccess" })
+{
+    if (TempData[kind] is string message)
+    {
+        <div class="alert @(kind == "Error" ? "alert-danger" : "alert-info") my-3" role="alert">@message</div>
+        TempData.Remove(kind);
+    }
+}
+@if (TempData["ApplySuccess"] is true)
+{
+    <div class="alert alert-success my-3" role="status">Đã gửi hồ sơ ứng tuyển. Bạn có thể theo dõi trạng thái trong mục Việc đã ứng tuyển.</div>
+    TempData.Remove("ApplySuccess");
+}

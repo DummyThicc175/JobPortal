@@ -1,0 +1,78 @@
+@{ ViewData["Title"] = "Tổng quan hệ thống"; ViewData["Description"] = "Góc nhìn chung về hoạt động tuyển dụng và cộng đồng JobHub."; }
+<div class="stats-grid">
+<div class="stat-card">
+<span class="stat-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<p class="stat-label">Tin tuyển dụng</p>
+<div class="stat-value">@ViewBag.TotalJobs</div>
+<div class="stat-note">Tất cả tin trên hệ thống</div>
+</div>
+<div class="stat-card">
+<span class="stat-icon amber">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg>
+</span>
+<p class="stat-label">Chưa hiển thị</p>
+<div class="stat-value">@ViewBag.PendingJobs</div>
+<div class="stat-note">Chờ duyệt hoặc đã gỡ</div>
+</div>
+<div class="stat-card">
+<span class="stat-icon blue">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#users" />
+</svg>
+</span>
+<p class="stat-label">Tài khoản</p>
+<div class="stat-value">@ViewBag.TotalUsers</div>
+<div class="stat-note">Thành viên của JobHub</div>
+</div>
+</div>
+<div class="section-head">
+<div>
+<h2>Không gian quản trị</h2>
+<p class="small">Những công việc giúp cộng đồng kết nối hiệu quả hơn.</p>
+</div>
+</div>
+<div class="row g-4">
+<div class="col-md-6">
+<section class="panel panel-body h-100">
+<span class="stat-icon amber" style="position:static;display:inline-flex">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#shield" />
+</svg>
+</span>
+<h3 class="mt-4">Kiểm duyệt tin tuyển dụng</h3>
+<p class="small mb-4">Xem nội dung, thông tin doanh nghiệp và địa điểm trước khi hiển thị tin đến ứng viên.</p>
+<a href="/Admin/JobManager/Pending" class="btn btn-outline-primary">Đến hàng chờ duyệt <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</section>
+</div>
+<div class="col-md-6">
+<section class="panel panel-body h-100">
+<span class="stat-icon blue" style="position:static;display:inline-flex">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#users" />
+</svg>
+</span>
+<h3 class="mt-4">Quản lý cộng đồng</h3>
+<p class="small mb-4">Kiểm tra tài khoản, phân quyền phù hợp và quản lý trạng thái truy cập vào hệ thống.</p>
+<a href="/Admin/UserManager" class="btn btn-light">Quản lý người dùng <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</section>
+</div>
+</div>
+<section class="banner">
+<div>
+<h3>Danh mục rõ ràng, tìm kiếm thuận tiện.</h3>
+<p>Quản lý ngành nghề để thông tin tuyển dụng được phân loại nhất quán.</p>
+</div>
+<a href="/Admin/Categories" class="btn btn-light">Quản lý ngành nghề</a>
+</section>

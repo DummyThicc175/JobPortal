@@ -1,0 +1,8 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ ViewData["Title"] = "Duyệt tin tuyển dụng"; ViewData["Description"] = "Xem xét nội dung trước khi chia sẻ cơ hội đến cộng đồng ứng viên."; ViewData["PendingOnly"] = true; }
+<div class="page-actions">
+<span class="count-chip">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> tin chưa hiển thị</span>
+<a asp-action="Index" class="btn btn-light">Tất cả tin tuyển dụng</a>
+</div>
+<partial name="_JobList" model="Model" />

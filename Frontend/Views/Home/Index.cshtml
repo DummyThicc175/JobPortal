@@ -1,0 +1,130 @@
+@model IEnumerable<JobPortal.Models.JobPost>
+@{ ViewData["Title"] = "Tìm công việc phù hợp với bạn"; }
+<section class="hero">
+<div class="hero-inner">
+<div>
+<span class="hero-tag">Một khởi đầu mới cùng JobHub</span>
+<h1>Cơ hội phù hợp.<br />
+<em>Tương lai của bạn.</em>
+</h1>
+<p>Khám phá công việc, chuẩn bị một hồ sơ chỉn chu và kết nối với nhà tuyển dụng phù hợp.</p>
+<a class="btn btn-primary btn-lg" href="/Job">Khám phá việc làm <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+<div class="hero-points">
+<span>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#check" />
+</svg> Tin tuyển dụng đã duyệt</span>
+<span>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#check" />
+</svg> Hồ sơ của riêng bạn</span>
+</div>
+</div>
+<div class="hero-scene" aria-hidden="true">
+<div class="hero-preview">
+<div class="preview-top">
+<span class="avatar lg">
+<svg class="icon" style="width:32px;height:32px">
+<use href="/images/icons.svg#user" />
+</svg>
+</span>
+<div style="flex:1">
+<div class="preview-line dark">
+</div>
+<div class="preview-line" style="width:80%">
+</div>
+<div class="preview-line" style="width:60%">
+</div>
+</div>
+</div>
+<span class="eyebrow">HỒ SƠ NGHỀ NGHIỆP</span>
+<div class="preview-line">
+</div>
+<div class="preview-line" style="width:83%">
+</div>
+<div class="preview-row">
+<div style="flex:1">
+<div class="preview-line dark">
+</div>
+<div class="preview-line">
+</div>
+<div class="preview-line">
+</div>
+<div class="preview-line" style="width:80%">
+</div>
+</div>
+<div style="width:35%">
+<div class="preview-line dark">
+</div>
+<div class="preview-line">
+</div>
+<div class="preview-line" style="width:70%">
+</div>
+</div>
+</div>
+</div>
+<div class="scene-label first">
+<svg class="icon">
+<use href="/images/icons.svg#briefcase" />
+</svg>Công việc phù hợp với bạn</div>
+<div class="scene-label second">
+<span class="avatar">
+<svg class="icon">
+<use href="/images/icons.svg#file" />
+</svg>
+</span>Chỉn chu từ hồ sơ đầu tiên</div>
+</div>
+</div>
+</section>
+<div class="public-content">
+<div class="search-panel-wrap">
+<form asp-controller="Job" asp-action="Search" method="get" class="search-panel">
+<div class="input-icon">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#search" />
+</svg>
+<input type="search" name="searchString" class="form-control" placeholder="Vị trí, kỹ năng hoặc tên công ty…" aria-label="Tìm theo vị trí, kỹ năng hoặc công ty" />
+</div>
+<select name="locationId" class="form-select" asp-items="ViewBag.Locations" aria-label="Địa điểm làm việc">
+<option value="">Tất cả địa điểm</option>
+</select>
+<button class="btn btn-primary" type="submit">Tìm việc ngay</button>
+</form>
+</div>
+<div class="section-head">
+<div>
+<span class="eyebrow">KHÁM PHÁ CƠ HỘI</span>
+<h2 class="mt-2">Việc làm mới nhất</h2>
+<p>Những vị trí vừa được nhà tuyển dụng đăng tuyển.</p>
+</div>
+<a href="/Job">Xem tất cả <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</div>
+@if (Model.Any()) { <div class="job-grid">@foreach (var job in Model) { <partial name="_JobCard" model="job" /> }</div>
+<partial name="_Pagination" /> } else { <div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>
+</span>
+<h3>Cơ hội mới đang được chuẩn bị</h3>
+<p>Chưa có tin tuyển dụng được duyệt. Bạn có thể chuẩn bị hồ sơ để sẵn sàng ứng tuyển.</p>
+<a class="btn btn-primary" href="/Identity/Account/Register">Tạo tài khoản</a>
+</div> }
+@if (!User.IsInRole("Admin")) { <section class="banner">
+<div>
+<span class="eyebrow">@(User.IsInRole("Employer") ? "DÀNH CHO NHÀ TUYỂN DỤNG" : "CHUẨN BỊ CHO BƯỚC TIẾP THEO")</span>
+<h3 class="mt-2">@(User.IsInRole("Employer") ? "Tìm người đồng hành cho đội ngũ của bạn." : "Để hồ sơ kể câu chuyện của bạn.")</h3>
+<p>@(User.IsInRole("Employer") ? "Đăng tin rõ ràng và quản lý hồ sơ ứng tuyển trong một không gian." : "Chọn một mẫu CV, điền thông tin và sẵn sàng cho cơ hội mới.")</p>
+</div>
+<a class="btn btn-primary" href="@(User.IsInRole("Employer") ? "/Employer/Job/Create" : "/Candidate/CV/SelectTemplate")">@(User.IsInRole("Employer") ? "Đăng tin tuyển dụng" : "Khám phá mẫu CV") <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a>
+</section> }
+</div>

@@ -1,0 +1,302 @@
+@model JobPortal.Models.EditCVViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa CV"; ViewData["Description"] = "Điền thông tin, xem trước và lưu CV của bạn.";
+    Layout = "/Views/Shared/_WorkspaceLayout.cshtml";
+}
+
+<script src="~/lib/html2pdf/html2pdf.bundle.min.js"></script>
+
+<div class="container-fluid cv-editor">
+    <div class="cv-editor-toolbar"><div><span class="count-chip"><svg class="icon icon-sm" aria-hidden="true"><use href="/images/icons.svg#layout" /></svg>@(Model.TemplateId == 2 ? "Mẫu hai cột" : "Mẫu truyền thống")</span><a asp-action="SelectTemplate" class="small ms-3">Đổi mẫu CV</a></div><div class="cv-editor-tools"><button type="button" id="btnCheckAI" class="btn btn-light">Đánh giá CV</button><button type="button" id="btnSaveCV" class="btn btn-outline-primary">Lưu CV</button><button type="button" id="btnDownloadPDF" class="btn btn-primary"><svg class="icon icon-sm" aria-hidden="true"><use href="/images/icons.svg#file" /></svg>Lưu & tải PDF</button></div></div>
+    @Html.AntiForgeryToken()<div id="cvSaveStatus" class="cv-editor-status" role="status" hidden></div><a id="cvStoredDownload" class="btn btn-link mx-3" target="_blank" rel="noopener" hidden>Xem CV đã lưu</a><div class="row g-4 cv-editor-columns">
+        <div class="col-xl-6 col-lg-7 cv-editor-controls">
+            <div class="card border-0 shadow-sm rounded-4 p-4" style="height: 82vh; overflow-y: auto; background-color: #fdfdfd;">
+                <div id="aiReviewSection" class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-purple border-4 d-none" style="border-color: #6f42c1 !important;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0" style="color: #6f42c1;"><i class="bi bi-cpu-fill me-2"></i>Đánh giá CV</h6>
+                        <span class="badge bg-purple fs-6 rounded-pill px-3 py-1 text-white" id="aiScoreBadge" style="background-color: #6f42c1;">0 / 100 Điểm</span>
+                    </div>
+                    <div class="bg-light p-2.5 rounded-3">
+                        <p class="small fw-bold text-dark mb-1">Gợi ý cải thiện:</p>
+                        <ul class="small text-secondary mb-0 ps-3" id="aiSuggestionsList">
+                        </ul>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-danger border-4">
+                    <h6 class="fw-bold text-danger mb-3"><i class="bi bi-sliders2-vertical me-2"></i>Màu sắc CV</h6>
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <label class="small fw-bold text-muted mb-1 d-block">Màu chữ nhấn</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" id="themeColorPicker" aria-label="Màu chữ nhấn" class="form-control form-control-color border-0 p-0" value="#0d6efd" style="width: 40px; height: 35px;">
+                                <span class="small text-muted" style="font-size:11px;">Màu nhấn</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label class="small fw-bold text-muted mb-1 d-block">@(Model.TemplateId == 2 ? "Màu cột trái" : "Màu phần đầu")</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" id="headerBgColorPicker" aria-label="Màu nền phần đầu hoặc cột trái" class="form-control form-control-color border-0 p-0" value="@(Model.TemplateId == 2 ? "#eaddd5" : "#212529")" style="width: 40px; height: 35px;">
+                                <span class="small text-muted" style="font-size:11px;">Nền 1</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label class="small fw-bold text-muted mb-1 d-block">@(Model.TemplateId == 2 ? "Màu cột phải" : "Màu nội dung")</label>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="color" id="bgColorPicker" aria-label="Màu nền nội dung" class="form-control form-control-color border-0 p-0" value="#ffffff" style="width: 40px; height: 35px;">
+                                <span class="small text-muted" style="font-size:11px;">Nền 2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-primary border-4">
+                    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-person-lines-fill me-2"></i>1. Thông tin liên hệ</h6>
+                    <div class="row align-items-center">
+                        <div class="col-sm-4 text-center border-end mb-3 mb-sm-0">
+                            <div class="mx-auto position-relative mb-2 d-flex flex-column align-items-center justify-content-center border border-2 border-dashed rounded-3 p-2 bg-light style-avatar-box" style="width: 125px; height: 145px; cursor: pointer;" onclick="document.getElementById('uploadAvatarFile').click()">
+                                <img id="imgAvatarForm" src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/avatar-placeholder.svg" : Model.AvatarPath)" class="w-100 h-100 object-fit-cover rounded-2" style="display: @(string.IsNullOrEmpty(Model.AvatarPath) ? "none" : "block");">
+                                <div id="avatarPlaceholderText" class="text-center text-muted @(string.IsNullOrEmpty(Model.AvatarPath) ? "" : "d-none")">
+                                    <i class="bi bi-cloud-arrow-up fs-3 text-primary"></i>
+                                    <span class="d-block small fw-bold mt-1" style="font-size: 11px;">Chọn ảnh</span>
+                                </div>
+                                <input type="file" id="uploadAvatarFile" aria-label="Chọn ảnh đại diện cho CV" class="d-none" accept="image/png,image/jpeg">
+                            </div>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="mb-2">
+                                <label class="small fw-bold text-muted mb-1">Họ và Tên</label>
+                                <input type="text" id="inName" aria-label="Họ và tên" maxlength="200" class="form-control form-control-sm rounded-2 fw-bold" value="@Model.FullName">
+                            </div>
+                            <div class="mb-2">
+                                <label class="small fw-bold text-muted mb-1">Vị trí công việc</label>
+                                <input type="text" id="inJob" aria-label="Vị trí công việc" maxlength="200" class="form-control form-control-sm rounded-2" value="@Model.JobTitle" placeholder="Ví dụ: Lập trình viên Backend">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2 g-2 pt-2 border-top">
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1">Email</label>
+                            <input type="email" id="inEmail" aria-label="Email liên hệ" class="form-control form-control-sm rounded-2 text-muted" value="@Model.Email" readonly disabled>
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1">Số điện thoại</label>
+                            <input type="text" id="inPhone" aria-label="Số điện thoại" maxlength="30" class="form-control form-control-sm rounded-2" value="@Model.Phone">
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-1">Địa chỉ cư trú</label>
+                            <input type="text" id="inAddress" aria-label="Địa chỉ" maxlength="500" class="form-control form-control-sm rounded-2" value="@Model.Address" placeholder="Hà Nội, Việt Nam">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-info border-4">
+                    <h6 class="fw-bold text-info mb-2"><i class="bi bi-chat-right-quote-fill me-2"></i>2. Giới thiệu bản thân</h6>
+                    <div>
+                        <textarea id="inSummary" aria-label="Giới thiệu bản thân" maxlength="4000" class="form-control form-control-sm rounded-2" rows="3" placeholder="Tóm tắt mục tiêu...">@Model.Summary</textarea>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-success border-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-success mb-0"><i class="bi bi-briefcase-fill me-2"></i>3. Kinh nghiệm làm việc</h6>
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" style="font-size:11px;" onclick="addExperienceField()"><i class="bi bi-plus-lg"></i> Thêm mục</button>
+                    </div>
+                    <div id="experienceContainer">
+                        <div class="p-2 border rounded bg-light mb-2 position-relative exp-item" data-index="0">
+                            <div class="row g-2">
+                                <div class="col-6"><input type="text" class="form-control form-control-sm exp-comp" placeholder="Tên công ty" value="@(Model.Experiences?.FirstOrDefault()?.Company)"></div>
+                                <div class="col-6"><input type="text" class="form-control form-control-sm exp-role" placeholder="Vai trò" value="@(Model.Experiences?.FirstOrDefault()?.Role)"></div>
+                                <div class="col-12"><input type="text" class="form-control form-control-sm exp-time" placeholder="Thời gian" value="@(Model.Experiences?.FirstOrDefault()?.Duration)"></div>
+                                <div class="col-12"><textarea class="form-control form-control-sm exp-desc" rows="2" placeholder="Mô tả...">@(Model.Experiences?.FirstOrDefault()?.Description)</textarea></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white border-start border-warning border-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-warning mb-0"><i class="bi bi-mortarboard-fill me-2"></i>4. Học vấn</h6>
+                        <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-2 py-0" style="font-size:11px;" onclick="addEducationField()"><i class="bi bi-plus-lg"></i> Thêm mục</button>
+                    </div>
+                    <div id="educationContainer">
+                        <div class="p-2 border rounded bg-light mb-2 position-relative edu-item" data-index="0">
+                            <div class="row g-2">
+                                <div class="col-6"><input type="text" class="form-control form-control-sm edu-school" placeholder="Trường học" value="@(Model.Educations?.FirstOrDefault()?.School)"></div>
+                                <div class="col-6"><input type="text" class="form-control form-control-sm edu-major" placeholder="Ngành học" value="@(Model.Educations?.FirstOrDefault()?.Major)"></div>
+                                <div class="col-12"><input type="text" class="form-control form-control-sm edu-time" placeholder="Thời gian" value="@(Model.Educations?.FirstOrDefault()?.Duration)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-danger border-4">
+                            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-tools me-2"></i>5. Kỹ năng</h6>
+                            <textarea id="inSkills" aria-label="Kỹ năng, mỗi dòng một kỹ năng" class="form-control form-control-sm" rows="4">@(Model.ITSKills?.FirstOrDefault()?.SkillName ?? "")</textarea>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100 border-start border-secondary border-4">
+                            <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-translate me-2"></i>6. Ngoại ngữ</h6>
+                            <textarea id="inLang" aria-label="Ngoại ngữ, mỗi dòng một ngoại ngữ" class="form-control form-control-sm" rows="4">@(Model.Languages?.FirstOrDefault()?.LanguageName ?? "")</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-3 p-3 bg-white border-start border-dark border-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-people-fill me-2"></i>7. Người tham chiếu</h6>
+                        <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-2 py-0" style="font-size:11px;" onclick="addReferenceField()"><i class="bi bi-plus-lg"></i> Thêm mục</button>
+                    </div>
+                    <div id="referenceContainer">
+                        <div class="p-2 border rounded bg-light mb-2 position-relative ref-item" data-index="0">
+                            <div class="row g-2">
+                                <div class="col-6"><input type="text" class="form-control form-control-sm ref-name" placeholder="Họ tên" value="@(Model.References?.FirstOrDefault()?.Name)"></div>
+                                <div class="col-6"><input type="text" class="form-control form-control-sm ref-pos" placeholder="Chức vụ" value="@(Model.References?.FirstOrDefault()?.Position)"></div>
+                                <div class="col-12"><input type="text" class="form-control form-control-sm ref-contact" placeholder="SĐT hoặc Email" value="@(Model.References?.FirstOrDefault()?.Phone)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="col-xl-6 col-lg-5 d-flex justify-content-center cv-editor-preview">
+            <div class="a4-container-preview shadow-inner rounded-4">
+
+                @if (Model.TemplateId == 2)
+                {
+                    <div id="cvSheet" class="cv-a4-sheet bg-white shadow-lg d-flex flex-row" style="font-family: 'Segoe UI', Arial, sans-serif;">
+
+                        <div id="cvPreviewHeader" class="p-4 text-dark d-flex flex-column align-items-center" style="width: 36%; min-height: 297mm; background-color: #eaddd5; transition: background-color 0.2s;">
+
+                            <div class="mb-4 bg-white p-1 shadow-sm" style="width: 140px; height: 160px; overflow: hidden; border-radius: 4px;">
+                                <img id="cvPreviewAvatar" src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/avatar-placeholder.svg" : Model.AvatarPath)" class="w-100 h-100 object-fit-cover">
+                            </div>
+
+                            <div class="w-100 mb-4 text-start px-2">
+                                <h6 class="fw-bold tracking-wider mb-2 text-uppercase text-dark border-bottom border-secondary border-2 pb-1" style="font-size: 13px;">PROFILE</h6>
+                                <p id="outSummary" class="text-dark small lh-base mb-0" style="white-space: pre-wrap; font-size: 12px; text-align: justify; opacity: 0.85;">@Model.Summary</p>
+                            </div>
+
+                            <div class="w-100 text-start mt-auto pb-4 px-2">
+                                <h6 class="fw-bold tracking-wider mb-2 text-uppercase text-dark border-bottom border-secondary border-2 pb-1" style="font-size: 13px;">CONTACT ME</h6>
+                                <div class="small d-flex flex-column gap-2" style="font-size: 11.5px; opacity: 0.9;">
+                                    <div class="text-break"><i class="bi bi-telephone-fill me-2"></i><span id="outPhone">@Model.Phone</span></div>
+                                    <div class="text-break"><i class="bi bi-envelope-fill me-2"></i><span id="outEmail">@Model.Email</span></div>
+                                    <div class="text-wrap"><i class="bi bi-geo-alt-fill me-2"></i><span id="outAddress">@Model.Address</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-grow-1 bg-inherit-custom d-flex flex-column" style="width: 64%; background-color: #ffffff; overflow: hidden;">
+
+                            <div class="mb-4 pt-2 border-bottom pb-3">
+                                <div id="nameScaleContainer" style="transform-origin: left center; transition: transform 0.1s ease; width: 100%; max-width: 380px; overflow: visible;">
+                                    <h1 class="fw-bold text-dark text-uppercase tracking-wide mb-1" id="outName" style="white-space: nowrap; display: inline-block; font-size: 2.2rem; letter-spacing: 0.5px;">@Model.FullName</h1>
+                                </div>
+                                <div id="jobScaleContainer" style="transform-origin: left center; transition: transform 0.1s ease; width: 100%; max-width: 380px; overflow: visible; margin-top: 2px;">
+                                    <h5 class="cv-theme-text fw-semibold tracking-wider text-uppercase" id="outJob" style="color: #0d6efd; white-space: nowrap; display: inline-block; font-size: 1.15rem;">@Model.JobTitle</h5>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom border-2 pb-1 text-uppercase cv-theme-border" style="border-color: #0d6efd !important; font-size: 13px;"><i class="bi bi-mortarboard-fill cv-theme-text me-1" style="color: #0d6efd;"></i> EDUCATION</h6>
+                                <div id="outEducationList" style="font-size: 12px;"></div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom border-2 pb-1 text-uppercase cv-theme-border" style="border-color: #0d6efd !important; font-size: 13px;"><i class="bi bi-translate cv-theme-text me-1" style="color: #0d6efd;"></i> LANGUAGE</h6>
+                                <p id="outLang" class="text-secondary mb-0" style="white-space: pre-wrap; line-height: 1.5; font-size: 12px;"></p>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom border-2 pb-1 text-uppercase cv-theme-border" style="border-color: #0d6efd !important; font-size: 13px;"><i class="bi bi-gear-fill cv-theme-text me-1" style="color: #0d6efd;"></i> COMPUTER SKILLS</h6>
+                                <p id="outSkills" class="text-secondary mb-0" style="white-space: pre-wrap; line-height: 1.5; font-size: 12px;"></p>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="fw-bold border-bottom border-2 pb-1 text-uppercase cv-theme-border" style="border-color: #0d6efd !important; font-size: 13px;"><i class="bi bi-briefcase-fill cv-theme-text me-1" style="color: #0d6efd;"></i> EXPERIENCE</h6>
+                                <div id="outExperienceList" style="font-size: 12px;"></div>
+                            </div>
+
+                            <div class="mt-auto">
+                                <h6 class="fw-bold border-bottom border-2 pb-1 text-uppercase cv-theme-border" style="border-color: #0d6efd !important; font-size: 13px;"><i class="bi bi-people-fill cv-theme-text me-1" style="color: #0d6efd;"></i> REFERENCES</h6>
+                                <div id="outReferenceList" style="font-size: 12px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div id="cvSheet" class="cv-a4-sheet bg-white shadow-lg d-flex flex-column">
+
+                        <div id="cvPreviewHeader" class="view-header d-flex align-items-center p-4 text-white border-bottom border-4 cv-theme-border" style="background-color: #212529; border-color: #0d6efd !important;">
+                            <img id="cvPreviewAvatar" src="@(string.IsNullOrEmpty(Model.AvatarPath) ? "/images/avatar-placeholder.svg" : Model.AvatarPath)" class="rounded-circle me-4 border border-3 border-light shadow-sm" style="width:90px; height:90px; object-fit:cover;">
+
+                            <div style="max-width: 280px; overflow: hidden;">
+                                <div id="nameScaleContainer" style="transform-origin: left center; transition: transform 0.1s ease;">
+                                    <h3 class="fw-bold text-uppercase mb-1 tracking-wide text-white" id="outName" style="white-space: nowrap; display: inline-block;">@Model.FullName</h3>
+                                </div>
+                                <p class="cv-theme-text fw-bold mb-0 small" id="outJob" style="color: #0d6efd;">@Model.JobTitle</p>
+                            </div>
+
+                            <div class="ms-auto text-end lh-sm border-start ps-3 border-secondary text-light-50" style="font-size: 11px; max-width: 200px;">
+                                <div class="mb-1 text-truncate"><i class="bi bi-envelope-fill cv-theme-text me-1" style="color: #0d6efd;"></i><span id="outEmail">@Model.Email</span></div>
+                                <div class="mb-1"><i class="bi bi-telephone-fill cv-theme-text me-1" style="color: #0d6efd;"></i><span id="outPhone">@Model.Phone</span></div>
+                                <div class="text-wrap"><i class="bi bi-geo-alt-fill cv-theme-text me-1" style="color: #0d6efd;"></i><span id="outAddress">@Model.Address</span></div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-grow-1 bg-inherit-custom" style="font-size:12.5px; background-color: #ffffff;">
+                            <div class="row g-3">
+                                <div class="col-7 border-end pr-custom pe-3">
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-bookmark-star-fill cv-theme-text me-1" style="color: #0d6efd;"></i> Giới thiệu chung</h6>
+                                        <p id="outSummary" class="text-secondary small mb-0" style="white-space: pre-wrap; line-height:1.5; text-align:justify;">@Model.Summary</p>
+                                    </div>
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-briefcase-fill cv-theme-text me-1" style="color: #0d6efd;"></i> Kinh nghiệm làm việc</h6>
+                                        <div id="outExperienceList"></div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-mortarboard-fill cv-theme-text me-1" style="color: #0d6efd;"></i> Học văn</h6>
+                                        <div id="outEducationList"></div>
+                                    </div>
+                                </div>
+                                <div class="col-5 ps-2">
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-gear-fill cv-theme-text me-1" style="color: #0d6efd;"></i> Kỹ năng</h6>
+                                        <p id="outSkills" class="text-secondary small mb-0" style="white-space: pre-wrap; line-height:1.5;">@Model.Interests</p>
+                                    </div>
+                                    <div class="mb-4">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-translate cv-theme-text me-1" style="color: #0d6efd;"></i> Ngoại ngữ</h6>
+                                        <p id="outLang" class="text-secondary small mb-0" style="white-space: pre-wrap; line-height:1.5;"></p>
+                                    </div>
+                                    <div class="mb-3">
+                                        <h6 class="fw-bold text-dark border-bottom border-2 pb-1 text-uppercase cv-theme-border"><i class="bi bi-people-fill cv-theme-text me-1" style="color: #0d6efd;"></i> Người tham chiếu</h6>
+                                        <div id="outReferenceList"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script id="cv-editor-data" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))</script>
+    <script src="~/js/cv-builder.js" asp-append-version="true"></script>
+}
+@section Styles {
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.css" />
+}

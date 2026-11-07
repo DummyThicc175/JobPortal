@@ -1,0 +1,23 @@
+@model JobPortal.Models.JobPost
+@{ var initial = string.IsNullOrWhiteSpace(Model.CompanyName) ? "J" : Model.CompanyName[..1].ToUpperInvariant(); }
+<article class="job-card" data-job-id="@Model.Id">
+    <div class="job-card-head">
+<span class="company-mark" aria-hidden="true">@initial</span>
+<div>
+<span class="eyebrow">@(Model.CategoryName ?? "TUYỂN DỤNG")</span>
+<p class="job-company">@(Model.CompanyName ?? "Doanh nghiệp tuyển dụng")</p>
+</div>
+</div>
+    <h3>
+<a asp-area="" asp-controller="Job" asp-action="Details" asp-route-id="@Model.Id">@Model.Title</a>
+</h3>
+    <div class="job-tags">
+<span class="job-tag">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#map" />
+</svg> @(Model.JobLocation?.Name ?? "Chưa cập nhật địa điểm")</span>@if (Model.CategoryName != null) { <span class="job-tag">@Model.CategoryName</span> }</div>
+    <div class="job-card-bottom">
+<span class="salary">@(string.IsNullOrWhiteSpace(Model.SalaryRange) ? "Lương thỏa thuận" : Model.SalaryRange)</span>
+<span>@Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+</div>
+</article>

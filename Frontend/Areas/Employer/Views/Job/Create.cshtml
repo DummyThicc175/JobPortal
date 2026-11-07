@@ -1,0 +1,30 @@
+@model JobPortal.Models.JobFormViewModel
+@{ ViewData["Title"] = "Đăng tin tuyển dụng"; ViewData["Description"] = "Một thông tin tuyển dụng rõ ràng giúp bạn tiếp cận đúng ứng viên."; }
+<div class="page-actions">
+<a asp-action="Index" class="small muted">← Về danh sách tin tuyển dụng</a>
+</div>
+<div class="form-layout">
+<form asp-action="Create" method="post" class="panel">
+<partial name="_JobForm" model="Model" />
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Hủy bỏ</a>
+<button class="btn btn-primary" type="submit">Gửi tin để duyệt <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</button>
+</div>
+</form>
+<aside class="aside-tip">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#file" />
+</svg>
+<h3>Để tin tuyển dụng hiệu quả hơn</h3>
+<ul>
+<li>Đặt tên vị trí cụ thể, dễ hiểu.</li>
+<li>Nêu rõ yêu cầu và trách nhiệm.</li>
+<li>Mô tả quyền lợi và địa điểm làm việc.</li>
+</ul>
+<p class="mt-3 mb-0">Tin sẽ hiển thị sau khi được quản trị viên duyệt.</p>
+</aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

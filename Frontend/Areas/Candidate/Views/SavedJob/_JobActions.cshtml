@@ -1,0 +1,26 @@
+<div class="d-grid gap-3">
+    <form asp-area="Candidate" asp-controller="Application" asp-action="Apply" method="post">
+        <input type="hidden" name="jobId" value="@Model.Id" />
+        <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm w-100 mb-3">
+            NỘP HỒ SƠ NGAY
+        </button>
+    </form>
+
+    <form asp-area="Candidate" asp-controller="SavedJob" asp-action="Save" method="post">
+        <input type="hidden" name="jobId" value="@Model.Id" />
+        <button type="submit" class="btn btn-outline-danger btn-lg rounded-pill fw-bold py-3 w-100">
+            <i class="fa-regular fa-heart me-2">
+</i>Lưu tin tuyển dụng
+        </button>
+    </form>
+</div>
+
+@if (TempData["SaveSuccess"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3 rounded-4" role="alert">
+        <i class="fa-solid fa-circle-check me-2">
+</i> @TempData["SaveSuccess"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert">
+</button>
+    </div>
+}

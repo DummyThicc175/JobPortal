@@ -1,0 +1,4 @@
+@{ Layout = "/Views/Shared/_WorkspaceLayout.cshtml"; }
+@RenderBody()
+@section Styles { @await RenderSectionAsync("Styles", required: false) }
+@section Scripts { @await RenderSectionAsync("Scripts", required: false) }

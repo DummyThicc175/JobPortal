@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Local application settings may contain API keys and connection strings.
+appsettings*.json
+!appsettings.example.json
+
+# Private CV files and database backups must stay out of source control.
+Backend/Storage/
+Frontend/wwwroot/uploads/
+*.bak

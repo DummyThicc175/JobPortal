@@ -1,0 +1,73 @@
+@model JobPortal.Models.InterviewRoomViewModel
+@using System.Text.Json
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Phòng phỏng vấn";
+    ViewData["Description"] = Model.JobTitle + " · " + Model.CompanyName;
+    var backUrl = Model.IsEmployer ? "/Employer/Applicant" : "/Candidate/Application";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/interview.css" asp-append-version="true" />
+}
+<section id="interview-room" class="interview-room" data-room-id="@Model.Id" data-polite="@(!Model.IsEmployer ? "true" : "false")" data-call-state="ready">
+    <script type="application/json" id="interview-rtc-config">@Html.Raw(JsonSerializer.Serialize(Model.RtcConfiguration))</script>
+    <div class="interview-heading">
+        <div class="interview-session-label"><span class="interview-live-dot"></span> PHỎNG VẤN TRỰC TUYẾN <span class="muted">/ Hồ sơ #@Model.ApplicationId</span></div>
+        <a href="@backUrl" class="btn btn-light btn-sm">Về danh sách hồ sơ</a>
+    </div>
+    <div id="interview-notice" class="alert alert-info" role="status" hidden></div>
+    <div class="interview-grid">
+        <div class="interview-stage">
+            <video id="interview-remote" autoplay playsinline aria-label="Video của @Model.PartnerName"></video>
+            <div id="interview-remote-placeholder" class="interview-placeholder">
+                <span class="interview-person-mark">@(string.IsNullOrWhiteSpace(Model.PartnerName) ? "U" : Model.PartnerName[..1].ToUpperInvariant())</span>
+                <h2>@Model.PartnerName</h2>
+                <p id="interview-peer-status">Khi cả hai vào phòng, cuộc gọi sẽ bắt đầu.</p>
+            </div>
+            <div class="interview-video-caption"><span>@Model.PartnerName</span><span id="interview-remote-media" hidden></span></div>
+            <button id="interview-play-audio" type="button" class="btn btn-light interview-play-audio" hidden>Bật âm thanh cuộc gọi</button>
+        </div>
+        <aside class="interview-side">
+            <div class="interview-self">
+                <video id="interview-local" autoplay playsinline muted aria-label="Video của bạn"></video>
+                <div id="interview-local-placeholder" class="interview-self-placeholder">
+                    <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#user" /></svg>
+                    <span>Camera của bạn</span>
+                </div>
+                <span class="interview-self-label">Bạn</span>
+            </div>
+            <div class="panel interview-info">
+                <span class="eyebrow">CHUẨN BỊ PHỎNG VẤN</span>
+                <h3>@Model.JobTitle</h3>
+                <p>@Model.CompanyName</p>
+                <div id="interview-preflight">
+                    <label class="interview-device-choice"><input id="interview-use-mic" type="checkbox" checked /> Bật micro khi vào</label>
+                    <label class="interview-device-choice"><input id="interview-use-camera" type="checkbox" checked /> Bật camera khi vào</label>
+                    <p class="small muted">Cho phép trình duyệt dùng thiết bị sau khi bấm vào phòng. Bạn có thể tắt camera và chỉ dùng micro.</p>
+                </div>
+                <div class="interview-privacy"><svg class="icon icon-sm" aria-hidden="true"><use href="/images/icons.svg#shield" /></svg><span>Phòng chỉ dành cho ứng viên và nhà tuyển dụng của hồ sơ này. Website không ghi âm hoặc ghi hình.</span></div>
+            </div>
+        </aside>
+    </div>
+    <div class="interview-controls">
+        <div class="interview-connection"><span id="interview-connection-dot" class="interview-connection-dot"></span><div><strong id="interview-status" role="status" aria-live="polite">Sẵn sàng tham gia</strong><span id="interview-duration" class="subline">Kiểm tra micro và camera trước khi vào.</span></div></div>
+        <div class="interview-control-buttons">
+            <button id="interview-mic" type="button" class="btn btn-light" aria-pressed="true" disabled>Tắt micro</button>
+            <button id="interview-camera" type="button" class="btn btn-light" aria-pressed="true" disabled>Tắt camera</button>
+            <button id="interview-reconnect" type="button" class="btn btn-light" disabled>Kết nối lại</button>
+            <button id="interview-join" type="button" class="btn btn-primary">Vào phòng phỏng vấn</button>
+            <button id="interview-leave" type="button" class="btn btn-danger" hidden>Rời phòng</button>
+        </div>
+    </div>
+    @if (Model.IsEmployer)
+    {
+        <form action="/Interview/End/@Model.Id" method="post" class="interview-end-form" data-confirm="Kết thúc phiên cho cả hai người? Hai bên sẽ không thể vào lại phòng này.">
+            @Html.AntiForgeryToken()
+            <span class="small muted">Rời phòng cho phép quay lại. Kết thúc phiên sẽ đóng phòng cho cả hai người.</span>
+            <button type="submit" class="btn btn-outline-danger btn-sm">Kết thúc phiên cho cả hai</button>
+        </form>
+    }
+</section>
+@section Scripts {
+    <script src="~/js/interview.js" asp-append-version="true" defer></script>
+}

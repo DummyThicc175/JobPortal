@@ -1,0 +1,65 @@
+@page
+@model LoginModel
+@{ ViewData["Title"] = "Đăng nhập"; }
+<div class="auth-shell">
+<aside class="auth-story">
+<div>
+<span class="eyebrow">CHÀO MỪNG ĐẾN VỚI JOBHUB</span>
+<h2>Cơ hội tốt bắt đầu<br />từ một kết nối.</h2>
+<p>Một không gian dành cho hành trình tìm việc và xây dựng đội ngũ của bạn.</p>
+</div>
+<ul>
+<li>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#briefcase" />
+</svg>Khám phá công việc phù hợp</li>
+<li>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#file" />
+</svg>Giới thiệu mình qua một CV chỉn chu</li>
+<li>
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#message" />
+</svg>Kết nối trực tiếp với nhà tuyển dụng</li>
+</ul>
+<span class="small" style="color:#91b8a6">JobHub · Kết nối cơ hội</span>
+</aside>
+<section class="auth-form">
+<span class="eyebrow">TIẾP TỤC HÀNH TRÌNH</span>
+<h1 class="mt-2">Chào mừng trở lại.</h1>
+<p>Đăng nhập để tiếp tục cùng JobHub.</p>
+<form id="account" method="post">
+<div asp-validation-summary="ModelOnly" role="alert">
+</div>
+<div class="mb-3">
+<label asp-for="Input.Email" class="form-label">Địa chỉ email</label>
+<input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="ban@example.com" />
+<span asp-validation-for="Input.Email">
+</span>
+</div>
+<div class="mb-3">
+<label asp-for="Input.Password" class="form-label">Mật khẩu</label>
+<div class="password-field">
+<input asp-for="Input.Password" class="form-control" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn" />
+<button type="button" data-password-toggle="Input_Password" aria-pressed="false" aria-label="Hiện hoặc ẩn mật khẩu">Hiện</button>
+</div>
+<span asp-validation-for="Input.Password">
+</span>
+</div>
+<div class="d-flex justify-content-between align-items-center gap-2 my-4 small">
+<label class="form-check-label d-flex gap-2 align-items-center">
+<input class="form-check-input m-0" asp-for="Input.RememberMe" />Ghi nhớ đăng nhập</label>
+<a asp-page="./ForgotPassword">Quên mật khẩu?</a>
+</div>
+<button id="login-submit" type="submit" class="btn btn-primary w-100">Đăng nhập <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</button>
+</form>
+<div class="auth-bottom">Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">
+<strong>Đăng ký ngay</strong>
+</a>
+</div>
+</section>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

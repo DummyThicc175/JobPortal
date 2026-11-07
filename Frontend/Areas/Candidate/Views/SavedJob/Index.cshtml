@@ -1,0 +1,37 @@
+@model IEnumerable<JobPortal.Models.SavedJob>
+@{ ViewData["Title"] = "Việc đã lưu"; ViewData["Description"] = "Những cơ hội bạn quan tâm, sẵn sàng để xem lại bất cứ lúc nào."; }
+<div class="page-actions">
+<span class="count-chip">
+<strong>@(ViewData["Total"] ?? Model.Count())</strong> công việc đã lưu</span>
+<a href="/Job" class="btn btn-light">Khám phá thêm việc làm</a>
+</div>
+@if (Model.Any()) { @foreach (var item in Model) { <article class="application-item">
+<span class="company-mark">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#bookmark" />
+</svg>
+</span>
+<div class="application-body">
+<h3>@item.JobPost?.Title</h3>
+<p>@item.JobPost?.CompanyName</p>
+<div class="application-meta">
+<span>Lưu ngày @item.SavedDate.ToString("dd/MM/yyyy")</span>
+<span>@item.JobPost?.JobLocation?.Name</span>
+<span class="text-primary">@(item.JobPost?.SalaryRange ?? "Lương thỏa thuận")</span>
+</div>
+</div>
+<div class="application-side">@if (item.JobPost?.IsApproved == true) { <a href="/Job/Details/@item.JobPostId" class="btn btn-outline-primary btn-sm">Xem chi tiết <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</a> } else { <span class="status">Tin đã ngừng hiển thị</span> }</div>
+</article> } } else { <div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#bookmark" />
+</svg>
+</span>
+<h3>Lưu lại cơ hội bạn quan tâm</h3>
+<p>Nhấn Lưu công việc ở trang tuyển dụng để tìm lại những vị trí phù hợp tại đây.</p>
+<a href="/Job" class="btn btn-primary">Khám phá việc làm</a>
+</div> }
+<partial name="_Pagination" />

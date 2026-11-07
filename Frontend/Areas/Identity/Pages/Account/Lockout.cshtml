@@ -1,0 +1,15 @@
+@page
+@model JobPortal.Areas.Identity.Pages.Account.LockoutModel
+@{ ViewData["Title"] = "Tài khoản đang bị khóa"; }
+<div class="public-content">
+<div class="panel empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg>
+</span>
+<h1 style="font-size:26px">Tạm thời chưa thể đăng nhập.</h1>
+<p>Tài khoản đang bị khóa. Nếu bạn vừa nhập sai mật khẩu nhiều lần, vui lòng chờ rồi thử lại. Trường hợp bị quản trị viên khóa, hãy liên hệ người quản trị dự án.</p>
+<a asp-page="./Login" class="btn btn-primary">Quay lại đăng nhập</a>
+</div>
+</div>

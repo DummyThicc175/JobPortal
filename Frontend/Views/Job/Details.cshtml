@@ -1,0 +1,68 @@
+@model JobPortal.Models.JobPost
+@{ ViewData["Title"] = Model.Title; }
+<div class="public-content">
+<a href="/Job" class="small muted d-inline-flex align-items-center gap-2 mb-4">
+<svg class="icon icon-sm" style="transform:rotate(180deg)" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>Tất cả việc làm</a>
+<div class="detail-layout">
+<article class="panel">
+<div class="panel-body">
+<div class="d-flex align-items-center gap-3">
+<span class="company-mark">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#building" />
+</svg>
+</span>
+<div>
+<span class="eyebrow">@(Model.CategoryName ?? "TUYỂN DỤNG")</span>
+<p class="job-company">@Model.CompanyName</p>
+</div>
+</div>
+<h1 class="detail-title">@Model.Title</h1>
+<span class="small muted">Đăng ngày @Model.CreatedAt.ToString("dd/MM/yyyy")</span>
+<div class="detail-meta">
+<div>
+<small>Mức lương</small>
+<strong class="text-primary">@(Model.SalaryRange ?? "Thỏa thuận")</strong>
+</div>
+<div>
+<small>Địa điểm</small>
+<strong>@(Model.JobLocation?.Name ?? "Chưa cập nhật")</strong>
+</div>
+<div>
+<small>Ngành nghề</small>
+<strong>@(Model.CategoryName ?? "Chưa cập nhật")</strong>
+</div>
+</div>
+<h2 class="mt-4 mb-3" style="font-size:18px">Mô tả công việc</h2>
+<div class="description">@Model.Description</div>
+</div>
+</article>
+<aside class="detail-aside">
+<div class="panel panel-body">
+<span class="eyebrow">CƠ HỘI DÀNH CHO BẠN</span>
+<h3 class="mt-3 mb-2">Bắt đầu bước tiếp theo</h3>
+<p class="small mb-4">Giới thiệu bản thân với nhà tuyển dụng qua hồ sơ và CV của bạn.</p>
+<form asp-area="Candidate" asp-controller="Application" asp-action="Apply" method="post" class="mb-2">
+<input type="hidden" name="jobId" value="@Model.Id" />
+<button type="submit" class="btn btn-primary">Ứng tuyển ngay <svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#arrow" />
+</svg>
+</button>
+</form>
+<form asp-area="Candidate" asp-controller="SavedJob" asp-action="Save" method="post">
+<input type="hidden" name="jobId" value="@Model.Id" />
+<button type="submit" class="btn btn-light">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#bookmark" />
+</svg>Lưu công việc</button>
+</form>
+<p class="field-hint mt-4 mb-0">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#shield" />
+</svg> CV chỉ được chia sẻ khi bạn ứng tuyển.</p>
+</div>
+</aside>
+</div>
+</div>

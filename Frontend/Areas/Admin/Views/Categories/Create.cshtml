@@ -1,0 +1,19 @@
+@model JobPortal.Models.Category
+@{ ViewData["Title"] = "Thêm ngành nghề"; ViewData["Description"] = "Bổ sung một lĩnh vực tuyển dụng vào danh mục JobHub."; }
+<div class="form-layout">
+<form asp-action="Create" method="post" class="panel">
+<partial name="_CategoryForm" model="Model" />
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Hủy bỏ</a>
+<button class="btn btn-primary" type="submit">Thêm ngành nghề</button>
+</div>
+</form>
+<aside class="aside-tip">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#tag" />
+</svg>
+<h3>Đặt tên nhất quán</h3>
+<p class="mb-0">Dùng tên lĩnh vực rõ ràng, tránh tạo danh mục trùng lặp hoặc quá giống nhau.</p>
+</aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

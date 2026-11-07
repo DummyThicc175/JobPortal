@@ -1,0 +1,87 @@
+@model JobPortal.Models.CandidateProfileViewModel
+@{ ViewData["Title"] = "Chỉnh sửa hồ sơ"; ViewData["Description"] = "Cập nhật thông tin giúp nhà tuyển dụng dễ dàng liên hệ với bạn."; }
+<div class="page-actions">
+<a asp-action="Index" class="small muted">← Quay lại hồ sơ</a>
+</div>
+<div class="form-layout">
+<form asp-action="SaveProfile" method="post" enctype="multipart/form-data" class="panel">
+<div class="form-section">
+<div asp-validation-summary="All" role="alert">
+</div>
+<h2>Ảnh đại diện</h2>
+<p>Một hình ảnh rõ nét giúp hồ sơ dễ nhận diện hơn.</p>
+<div class="d-flex align-items-center gap-4 flex-wrap">
+<img src="@(string.IsNullOrWhiteSpace(Model.AvatarUrl) || Model.AvatarUrl == "/images/default-avatar.png" ? "/images/avatar-placeholder.svg" : Model.AvatarUrl)" class="avatar lg" alt="Xem trước ảnh đại diện" data-avatar-preview />
+<div style="flex:1;min-width:180px">
+<label asp-for="AvatarFile" class="form-label">Chọn ảnh đại diện</label>
+<input asp-for="AvatarFile" type="file" accept=".png,.jpg,.jpeg" class="form-control" data-avatar-input />
+<div class="field-hint">PNG hoặc JPEG, dung lượng tối đa 2 MB.</div>
+</div>
+</div>
+</div>
+<div class="form-section">
+<h2>Thông tin cá nhân</h2>
+<p>Thông tin chính xác để kết nối thuận tiện hơn.</p>
+<div class="row g-3">
+<div class="col-md-6">
+<label asp-for="FullName" class="form-label">Họ và tên <span class="text-danger">*</span>
+</label>
+<input asp-for="FullName" class="form-control" autocomplete="name" placeholder="Nhập họ và tên" />
+<span asp-validation-for="FullName">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="Phone" class="form-label">Số điện thoại</label>
+<input asp-for="Phone" class="form-control" autocomplete="tel" placeholder="Số điện thoại liên hệ" />
+<span asp-validation-for="Phone">
+</span>
+</div>
+<div class="col-md-6">
+<label asp-for="Gender" class="form-label">Giới tính</label>
+<select asp-for="Gender" class="form-select">
+<option value="">Chưa cập nhật</option>
+<option>Nam</option>
+<option>Nữ</option>
+<option>Khác</option>
+</select>
+</div>
+<div class="col-md-6">
+<label asp-for="Birthday" class="form-label">Ngày sinh</label>
+<input asp-for="Birthday" type="date" class="form-control" />
+</div>
+<div class="col-12">
+<label asp-for="Address" class="form-label">Địa chỉ</label>
+<input asp-for="Address" class="form-control" autocomplete="street-address" placeholder="Quận/huyện, tỉnh/thành phố" />
+</div>
+</div>
+</div>
+<div class="form-section">
+<h2>CV ứng tuyển</h2>
+<p>Tải CV của bạn lên hoặc sử dụng trình tạo CV theo mẫu.</p>
+<div class="upload-zone">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#upload" />
+</svg>
+<label asp-for="CVFile" class="form-label ms-2">Chọn file CV</label>
+<input asp-for="CVFile" type="file" class="form-control" accept=".pdf" />
+<div class="field-hint">Định dạng PDF, tối đa 10 MB. Để trống nếu tiếp tục dùng CV hiện tại.</div>
+</div>@if (!string.IsNullOrEmpty(Model.CVUrl)) { <a href="@Model.CVUrl" class="small d-inline-block mt-3" target="_blank" rel="noopener">Xem CV hiện tại ↗</a> }</div>
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Hủy thay đổi</a>
+<button type="submit" class="btn btn-primary">Lưu hồ sơ</button>
+</div>
+</form>
+<aside class="aside-tip">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#user" />
+</svg>
+<h3>Hồ sơ rõ ràng, kết nối dễ dàng</h3>
+<p>Hãy sử dụng thông tin liên hệ bạn thường xuyên kiểm tra.</p>
+<ul>
+<li>Kiểm tra email và số điện thoại.</li>
+<li>CV nên thể hiện kinh nghiệm gần nhất.</li>
+<li>CV đã nộp trước đó được giữ nguyên khi bạn cập nhật.</li>
+</ul>
+</aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

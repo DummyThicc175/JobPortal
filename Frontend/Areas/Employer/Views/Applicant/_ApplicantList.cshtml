@@ -1,0 +1,71 @@
+@model IEnumerable<JobPortal.Models.EmployerApplicantViewModel>
+<div class="panel">@if (Model.Any()) { <div class="table-responsive">
+<table class="table table-hover">
+<thead>
+<tr>
+<th>Ứng viên</th>
+<th>Vị trí ứng tuyển</th>
+<th>Ngày nộp</th>
+<th>Trạng thái hồ sơ</th>
+<th class="text-end">Kết nối</th>
+</tr>
+</thead>
+<tbody>@foreach (var app in Model) { <tr>
+<td>
+<div class="identity-cell">
+<span class="avatar">@(string.IsNullOrWhiteSpace(app.CandidateName) ? "U" : app.CandidateName[..1].ToUpperInvariant())</span>
+<div>
+<strong>@app.CandidateName</strong>
+<span class="subline">@app.CandidateEmail</span>
+</div>
+</div>
+</td>
+<td>
+<strong>@app.JobTitle</strong>
+<span class="subline">Hồ sơ #@app.Id</span>
+</td>
+<td class="text-nowrap">@app.AppliedDate.ToString("dd/MM/yyyy")<span class="subline">@app.AppliedDate.ToString("HH:mm")</span>
+</td>
+<td>
+<partial name="_ApplicationStatusEditor" model="app" />
+</td>
+<td>
+<div class="table-actions">
+@if (app.Status == "Interview")
+{
+    if (app.InterviewId.HasValue)
+    {
+        <a href="/Interview/Room/@app.InterviewId" class="btn btn-primary btn-sm">Vào phỏng vấn</a>
+    }
+    else
+    {
+        <form action="/Interview/Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="applicationId" value="@app.Id" />
+            <button type="submit" class="btn btn-primary btn-sm">Tạo phiên phỏng vấn</button>
+        </form>
+    }
+}
+@if (!string.IsNullOrEmpty(app.CvUrl) && !string.IsNullOrEmpty(app.CvFileName)) { <a href="@app.CvUrl" class="btn btn-light btn-sm" target="_blank" rel="noopener">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#file" />
+</svg>Xem CV</a> } else { <span class="small muted">Hồ sơ cũ chưa gắn CV</span> }<button type="button" class="icon-button btn-open-chat" data-partner-id="@app.CandidateId" data-partner-name="@app.CandidateName" aria-label="Nhắn tin với @app.CandidateName">
+<svg class="icon icon-sm" aria-hidden="true">
+<use href="/images/icons.svg#message" />
+</svg>
+</button>
+</div>
+</td>
+</tr> }</tbody>
+</table>
+</div> } else { <div class="empty-state">
+<span class="empty-symbol">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#users" />
+</svg>
+</span>
+<h3>Chưa có hồ sơ ứng tuyển</h3>
+<p>Hồ sơ gửi đến các vị trí của bạn sẽ xuất hiện tại đây để xem xét và trao đổi.</p>
+<a href="/Employer/Job" class="btn btn-light">Xem tin tuyển dụng của bạn</a>
+</div> }</div>
+<partial name="_Pagination" />

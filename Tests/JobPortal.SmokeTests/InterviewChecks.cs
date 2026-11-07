@@ -1,0 +1,138 @@
+using System.Net;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using JobPortal.Configuration;
+using JobPortal.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+static class InterviewChecks
+{
+    public static async Task RunAsync(PortalFactory factory, PortalChecks.Actor candidate, PortalChecks.Actor employer,
+        PortalChecks.Actor otherCandidate, PortalChecks.Actor otherEmployer, PortalChecks.Actor admin)
+    {
+        using var scope = factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var applicationId = await db.Applications.Select(a => a.Id).SingleAsync();
+        async Task Status(string status)
+        {
+            using var result = await PortalChecks.Post(employer, "/Employer/Applicant/UpdateStatus", "/Employer/Applicant", new() { ["id"] = applicationId.ToString(), ["status"] = status });
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.Redirect, "Interview status transition: " + status);
+        }
+        await Status("Interview");
+        var room = await db.InterviewSessions.AsNoTracking().SingleAsync(s => s.EndedAt == null);
+        await Status("Interview");
+        PortalChecks.Check(await db.InterviewSessions.CountAsync(s => s.EndedAt == null) == 1, "Repeated Interview status creates only one active room");
+        var path = "/Interview/Room/" + room.Id;
+        await PortalChecks.Page(candidate.Client, path, "interview-room", "interview.js");
+        var employerHtml = await PortalChecks.Page(employer.Client, path, "/Interview/End/");
+        PortalChecks.Check(employerHtml.Contains("data-portal-area=\"Employer\""), "Employer room keeps correct workspace role");
+        await PortalChecks.Page(candidate.Client, "/Candidate/Application", path);
+        await PortalChecks.Page(employer.Client, "/Employer/Applicant", path);
+        foreach (var actor in new[] { otherCandidate, otherEmployer })
+            PortalChecks.Check((await actor.Client.GetAsync(path)).StatusCode == HttpStatusCode.NotFound, "Room ownership cannot be bypassed with its URL");
+        PortalChecks.Check((await admin.Client.GetAsync(path)).StatusCode == HttpStatusCode.Redirect, "Admin has no participant access");
+        using var anonymous = factory.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        PortalChecks.Check((await anonymous.GetAsync(path)).StatusCode == HttpStatusCode.Redirect, "Room requires login");
+        PortalChecks.Check((await anonymous.PostAsync("/interviewHub/negotiate?negotiateVersion=1", new StringContent(""))).StatusCode == HttpStatusCode.Redirect, "Interview signaling requires login");
+        foreach (var action in new[] { "/Interview/Create", "/Interview/End/" + room.Id })
+            PortalChecks.Check((await employer.Client.PostAsync(action, new FormUrlEncodedContent(new Dictionary<string, string>()))).StatusCode == HttpStatusCode.BadRequest, "Interview mutations enforce CSRF");
+        using (var result = await PortalChecks.Post(otherEmployer, "/Interview/Create", "/Employer/Job", new() { ["applicationId"] = applicationId.ToString() }))
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.NotFound, "Other employer cannot create room for an application");
+        using (var result = await PortalChecks.Post(employer, "/Interview/Create", "/Employer/Applicant", new() { ["applicationId"] = applicationId.ToString() }))
+            PortalChecks.Check(result.Headers.Location?.OriginalString == path, "Creating an open session is idempotent");
+
+        await using var host = await Client.Connect(factory, employer);
+        await using var guest = await Client.Connect(factory, candidate);
+        await using var outsider = await Client.Connect(factory, otherCandidate);
+        await using var duplicate = await Client.Connect(factory, candidate);
+        PortalChecks.Check((await outsider.Invoke("Join", room.Id)).TryGetProperty("error", out _), "Unrelated candidate cannot join signaling room");
+        PortalChecks.Check(!(await host.Invoke("Join", room.Id)).TryGetProperty("error", out _), "Employer joins room");
+        var joined = await guest.Invoke("Join", room.Id);
+        PortalChecks.Check(!joined.TryGetProperty("error", out _), "Candidate joins room");
+        var hostId = joined.GetProperty("result").GetProperty("peerId").GetString()!;
+        var guestId = (await host.Event("PeerJoined")).GetProperty("arguments")[0].GetString()!;
+        PortalChecks.Check((await duplicate.Invoke("Join", room.Id)).TryGetProperty("error", out _), "Same account cannot silently join from a second tab");
+        var offer = new { type = "offer", sdp = "v=0\r\nprivate-offer" };
+        PortalChecks.Check(!(await host.Invoke("SendSignal", room.Id, guestId, offer)).TryGetProperty("error", out _), "Authenticated participant can send offer");
+        var delivered = (await guest.Event("Signal")).GetProperty("arguments");
+        PortalChecks.Check(delivered[0].GetString() == hostId && delivered[1].GetProperty("sdp").GetString() == offer.sdp, "Offer delivered only to the registered peer with server-derived sender");
+        PortalChecks.Check((await outsider.Invoke("SendSignal", room.Id, guestId, offer)).TryGetProperty("error", out _), "Nonparticipant cannot inject signaling");
+        PortalChecks.Check((await duplicate.Invoke("SendSignal", room.Id, hostId, offer)).TryGetProperty("error", out _), "An authorized but unjoined connection cannot inject signaling");
+        PortalChecks.Check((await host.Invoke("SendSignal", room.Id, "forged-connection", offer)).TryGetProperty("error", out _), "Signaling cannot target arbitrary connections");
+        PortalChecks.Check((await host.Invoke("SendSignal", room.Id, guestId, new { type = "offer", sdp = new string('x', 24001) })).TryGetProperty("error", out _), "Oversized SDP is rejected");
+        PortalChecks.Check((await host.Invoke("SendSignal", room.Id, guestId, new { type = "unsupported" })).TryGetProperty("error", out _), "Unsupported signal types rejected");
+        PortalChecks.Check(!(await guest.Invoke("Heartbeat", room.Id)).TryGetProperty("error", out _), "Heartbeat validates joined participant");
+        await guest.Invoke("Leave"); await host.Event("PeerLeft");
+        PortalChecks.Check(await db.InterviewSessions.AnyAsync(s => s.Id == room.Id && s.EndedAt == null), "Leaving keeps session open for a rejoin");
+        PortalChecks.Check(!(await guest.Invoke("Join", room.Id)).TryGetProperty("error", out _), "Participant can rejoin after leaving");
+        await host.Event("PeerJoined");
+        var account = await db.Users.SingleAsync(u => u.Id == candidate.Id);
+        account.LockoutEnd = DateTimeOffset.UtcNow.AddHours(1);
+        await db.SaveChangesAsync();
+        PortalChecks.Check((await guest.Invoke("Heartbeat", room.Id)).TryGetProperty("error", out _), "Existing socket loses access after account lock");
+        await guest.Event("AccessRevoked");
+        PortalChecks.Check(true, "Revoked caller is explicitly notified before its presence is removed");
+        account.LockoutEnd = null;
+        await db.SaveChangesAsync();
+        await guest.Invoke("Join", room.Id);
+        await Status("Reviewing");
+        await host.Event("SessionEnded"); await guest.Event("SessionEnded");
+        PortalChecks.Check((await candidate.Client.GetAsync(path)).StatusCode == HttpStatusCode.NotFound, "Status transition invalidates old room URL");
+        PortalChecks.Check((await guest.Invoke("Join", room.Id)).TryGetProperty("error", out _), "Status transition revokes signaling access");
+        await Status("Interview");
+        var next = await db.InterviewSessions.AsNoTracking().SingleAsync(s => s.EndedAt == null);
+        PortalChecks.Check(next.Id != room.Id && await db.InterviewSessions.CountAsync() == 2, "Returning to Interview creates a new session and keeps history");
+        using (var result = await PortalChecks.Post(otherEmployer, "/Interview/End/" + next.Id, "/Employer/Job"))
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.NotFound, "Other employer cannot end session");
+        using (var result = await PortalChecks.Post(candidate, "/Interview/End/" + next.Id, "/Candidate/Application"))
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.Redirect && result.Headers.Location!.OriginalString.Contains("AccessDenied"), "Candidate cannot end session for everyone");
+        using (var result = await PortalChecks.Post(employer, "/Interview/End/" + next.Id, "/Employer/Applicant"))
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.Redirect, "Owning employer can close session");
+        PortalChecks.Check((await candidate.Client.GetAsync("/Interview/Room/" + next.Id)).StatusCode == HttpStatusCode.NotFound, "Ended session URL cannot be reused");
+        await Status("Submitted");
+        using (var result = await PortalChecks.Post(employer, "/Interview/Create", "/Employer/Applicant", new() { ["applicationId"] = applicationId.ToString() }))
+            PortalChecks.Check(result.StatusCode == HttpStatusCode.NotFound, "No room can be created outside Interview status");
+        var settings = new InterviewOptions { TurnUrls = ["turn:turn.example.test:3478"], TurnSharedSecret = "test-shared-secret" };
+        var configuration = JsonSerializer.Serialize(settings.RtcConfiguration(candidate.Id));
+        PortalChecks.Check(configuration.Contains("turn:turn.example.test") && !configuration.Contains(settings.TurnSharedSecret), "TURN uses temporary signed credentials without exposing shared secret");
+        Console.WriteLine("PASS: interview authorization, private signaling, single-tab presence, leave/rejoin, account revocation, status/session lifecycle and TURN credentials");
+    }
+
+    sealed class Client(WebSocket socket) : IAsyncDisposable
+    {
+        private int sequence;
+        private readonly List<JsonElement> pending = [];
+        public static async Task<Client> Connect(PortalFactory factory, PortalChecks.Actor actor)
+        {
+            var transport = factory.Server.CreateWebSocketClient(); transport.ConfigureRequest = r => r.Headers.Cookie = actor.Cookie;
+            var client = new Client(await transport.ConnectAsync(new Uri("ws://localhost/interviewHub"), default));
+            await client.Send(new { protocol = "json", version = 1 });
+            await client.Receive(_ => true); return client;
+        }
+        public async Task<JsonElement> Invoke(string target, params object[] arguments)
+        {
+            var id = (++sequence).ToString();
+            await Send(new { type = 1, invocationId = id, target, arguments });
+            return await Receive(v => v.TryGetProperty("invocationId", out var value) && value.GetString() == id);
+        }
+        public Task<JsonElement> Event(string target) => Receive(v => v.TryGetProperty("target", out var value) && value.GetString() == target);
+        private Task Send(object payload) => socket.SendAsync(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(payload) + '\u001e'), WebSocketMessageType.Text, true, default);
+        private async Task<JsonElement> Receive(Func<JsonElement, bool> predicate)
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+            var buffer = new byte[65536];
+            while (true)
+            {
+                var index = pending.FindIndex(v => predicate(v));
+                if (index >= 0) { var found = pending[index]; pending.RemoveAt(index); return found; }
+                using var memory = new MemoryStream(); WebSocketReceiveResult result;
+                do { result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), timeout.Token); memory.Write(buffer, 0, result.Count); } while (!result.EndOfMessage);
+                foreach (var frame in Encoding.UTF8.GetString(memory.ToArray()).Split('\u001e', StringSplitOptions.RemoveEmptyEntries))
+                { using var parsed = JsonDocument.Parse(frame); pending.Add(parsed.RootElement.Clone()); }
+            }
+        }
+        public ValueTask DisposeAsync() { socket.Dispose(); return ValueTask.CompletedTask; }
+    }
+}

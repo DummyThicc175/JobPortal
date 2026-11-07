@@ -1,0 +1,26 @@
+@model JobPortal.Models.JobFormViewModel
+@{ ViewData["Title"] = "Chỉnh sửa tin tuyển dụng"; ViewData["Description"] = "Cập nhật thông tin để ứng viên hiểu đúng về vị trí đang tuyển."; }
+<div class="page-actions">
+<a asp-action="Index" class="small muted">← Về danh sách tin tuyển dụng</a>
+<span class="count-chip">Mã tin <strong>#@Model.Id</strong>
+</span>
+</div>
+<div class="form-layout">
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post" class="panel">
+<input asp-for="Id" type="hidden" />
+<partial name="_JobForm" model="Model" />
+<div class="form-actions">
+<a asp-action="Index" class="btn btn-light">Hủy thay đổi</a>
+<button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+</div>
+</form>
+<aside class="aside-tip">
+<svg class="icon" aria-hidden="true">
+<use href="/images/icons.svg#clock" />
+</svg>
+<h3>Nội dung thay đổi cần duyệt lại</h3>
+<p>Sau khi bạn sửa thông tin tuyển dụng, tin sẽ trở về chờ duyệt trước khi hiển thị công khai.</p>
+<p class="mb-0">Hồ sơ ứng tuyển trước đó vẫn được giữ lại.</p>
+</aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
