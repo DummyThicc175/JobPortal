@@ -6,7 +6,7 @@ namespace JobPortal.Services;
 
 public sealed class JobService(ApplicationDbContext database)
 {
-    public IQueryable<JobPost> Search(string? keyword, int? locationId)
+    public IQueryable<JobPost> TimKiem(string? keyword, int? locationId)
     {
         var query = database.JobPosts.AsNoTracking().Include(j => j.Company).Include(j => j.Category).Include(j => j.JobLocation)
             .Where(j => j.IsApproved);
@@ -16,7 +16,7 @@ public sealed class JobService(ApplicationDbContext database)
         return query.OrderByDescending(j => j.CreatedAt).ThenByDescending(j => j.Id);
     }
 
-    public async Task<Company> CompanyAsync(string employerId, string name, CancellationToken token)
+    public async Task<Company> LayHoacTaoCongTyAsync(string employerId, string name, CancellationToken token)
     {
         name = name.Trim();
         var normalized = name.ToUpperInvariant();
@@ -27,7 +27,7 @@ public sealed class JobService(ApplicationDbContext database)
         return company;
     }
 
-    public async Task<bool> RemoveOrHideAsync(JobPost job, CancellationToken token)
+    public async Task<bool> XoaHoacAnTinAsync(JobPost job, CancellationToken token)
     {
         var used = await database.Applications.AnyAsync(a => a.JobPostId == job.Id, token) || await database.SavedJobs.AnyAsync(s => s.JobPostId == job.Id, token);
         if (used) job.IsApproved = false;

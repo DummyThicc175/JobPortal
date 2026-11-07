@@ -5,7 +5,7 @@ namespace JobPortal.Services;
 
 public sealed class ChatAccessService(ApplicationDbContext database)
 {
-    public Task<bool> CanChatAsync(string userId, string partnerId, CancellationToken token = default) =>
+    public Task<bool> CoTheNhanTinAsync(string userId, string partnerId, CancellationToken token = default) =>
         userId == partnerId || string.IsNullOrWhiteSpace(partnerId)
             ? Task.FromResult(false)
             : database.Applications.AnyAsync(a =>

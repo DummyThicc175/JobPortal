@@ -16,7 +16,7 @@ public sealed class InterviewService(ApplicationDbContext database, InterviewPre
     public IQueryable<InterviewSession> Sessions => database.InterviewSessions.AsNoTracking()
         .Include(s => s.Application).ThenInclude(a => a.JobPost).ThenInclude(j => j.Company);
 
-    public async Task<InterviewSession?> AuthorizedAsync(Guid id, ClaimsPrincipal user, CancellationToken token = default)
+    public async Task<InterviewSession?> LayPhienCoQuyenAsync(Guid id, ClaimsPrincipal user, CancellationToken token = default)
     {
         var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId == null) return null;
@@ -31,7 +31,7 @@ public sealed class InterviewService(ApplicationDbContext database, InterviewPre
         return hasRole ? session : null;
     }
 
-    public async Task<bool> SetStatusAsync(int id, string employerId, ApplicationStatus status, CancellationToken token)
+    public async Task<bool> CapNhatTrangThaiAsync(int id, string employerId, ApplicationStatus status, CancellationToken token)
     {
         await using var transaction = await database.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
         var application = await database.Applications.SingleOrDefaultAsync(a => a.Id == id && a.JobPost.EmployerId == employerId, token);
@@ -43,11 +43,11 @@ public sealed class InterviewService(ApplicationDbContext database, InterviewPre
         else if (status != ApplicationStatus.Interview && active != null) active.EndedAt = DateTime.UtcNow;
         await database.SaveChangesAsync(token);
         await transaction.CommitAsync(token);
-        if (active?.EndedAt != null) await NotifyClosedAsync(active.Id);
+        if (active?.EndedAt != null) await ThongBaoDongPhienAsync(active.Id);
         return true;
     }
 
-    public async Task<Guid?> CreateAsync(int applicationId, string employerId, CancellationToken token)
+    public async Task<Guid?> TaoPhienAsync(int applicationId, string employerId, CancellationToken token)
     {
         await using var transaction = await database.Database.BeginTransactionAsync(IsolationLevel.Serializable, token);
         if (!await database.Applications.AnyAsync(a => a.Id == applicationId && a.JobPost.EmployerId == employerId && a.Status == ApplicationStatus.Interview, token)) return null;
@@ -58,19 +58,19 @@ public sealed class InterviewService(ApplicationDbContext database, InterviewPre
         return session.Id;
     }
 
-    public async Task<bool> EndAsync(Guid id, string employerId, CancellationToken token)
+    public async Task<bool> KetThucPhienAsync(Guid id, string employerId, CancellationToken token)
     {
         var session = await database.InterviewSessions.SingleOrDefaultAsync(s => s.Id == id && s.Application.JobPost.EmployerId == employerId, token);
         if (session == null) return false;
         session.EndedAt ??= DateTime.UtcNow;
         await database.SaveChangesAsync(token);
-        await NotifyClosedAsync(id);
+        await ThongBaoDongPhienAsync(id);
         return true;
     }
 
-    public async Task NotifyClosedAsync(Guid id)
+    public async Task ThongBaoDongPhienAsync(Guid id)
     {
-        var connections = presence.Close(id);
+        var connections = presence.DongPhong(id);
         if (connections.Length > 0) await hub.Clients.Clients(connections).SendAsync("SessionEnded");
     }
 }

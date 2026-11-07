@@ -13,9 +13,9 @@ public sealed class AiReviewException(string message, int statusCode) : Exceptio
     public int StatusCode { get; } = statusCode;
 }
 
-public sealed class GeminiCvReviewService(HttpClient client, IConfiguration configuration, IMemoryCache cache, ILogger<GeminiCvReviewService> logger)
+public sealed class GeminiCvReviewService(HttpClient client, JobPortal.Configuration.CauHinhGeminiCucBo configuration, IMemoryCache cache, ILogger<GeminiCvReviewService> logger)
 {
-    public static string CacheKey(string userId, EditCVViewModel model)
+    public static string TaoKhoaBoNhoDem(string userId, EditCVViewModel model)
     {
         var text = JsonSerializer.Serialize(new
         {
@@ -25,22 +25,22 @@ public sealed class GeminiCvReviewService(HttpClient client, IConfiguration conf
         return "cv-review:" + userId + ":" + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     }
 
-    public async Task<AiReviewResult> AnalyzeAsync(string userId, EditCVViewModel input, CancellationToken token)
+    public async Task<AiReviewResult> DanhGiaAsync(string userId, EditCVViewModel input, CancellationToken token)
     {
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(token);
         timeout.CancelAfter(TimeSpan.FromSeconds(30));
-        try { return await AnalyzeCoreAsync(userId, input, timeout.Token); }
+        try { return await ThucHienDanhGiaAsync(userId, input, timeout.Token); }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)
         { throw new AiReviewException("AI phản hồi quá lâu. Vui lòng thử lại sau.", 504); }
     }
 
-    private async Task<AiReviewResult> AnalyzeCoreAsync(string userId, EditCVViewModel input, CancellationToken token)
+    private async Task<AiReviewResult> ThucHienDanhGiaAsync(string userId, EditCVViewModel input, CancellationToken token)
     {
-        var cacheKey = CacheKey(userId, input);
+        var cacheKey = TaoKhoaBoNhoDem(userId, input);
         if (cache.TryGetValue(cacheKey, out AiReviewResult? cached) && cached != null) return cached;
-        var apiKey = configuration["Gemini:ApiKey"];
+        var apiKey = configuration.ApiKey;
         if (string.IsNullOrWhiteSpace(apiKey)) throw new AiReviewException("Chưa cấu hình khóa Gemini cho chức năng đánh giá CV.", 503);
-        var model = configuration["Gemini:Model"] ?? "gemini-flash-latest";
+        var model = configuration.Model;
         if (!System.Text.RegularExpressions.Regex.IsMatch(model, "^[a-zA-Z0-9._-]{1,100}$"))
             throw new AiReviewException("Cấu hình model AI không hợp lệ.", 503);
         var cvText = JsonSerializer.Serialize(new
@@ -54,7 +54,8 @@ public sealed class GeminiCvReviewService(HttpClient client, IConfiguration conf
             "Chỉ trả JSON với Score là số nguyên 0..100 và Suggestions là danh sách 1..8 lời khuyên ngắn, không có HTML.\nDữ liệu CV:\n" + cvText;
         using var request = new HttpRequestMessage(HttpMethod.Post, $"v1beta/models/{model}:generateContent");
         request.Headers.Add("x-goog-api-key", apiKey);
-        request.Content = JsonContent.Create(new { contents = new[] { new { parts = new[] { new { text = prompt } } } } });
+        request.Content = JsonContent.Create(new { contents = new[] { new { parts = new[] { new { text = prompt } } } },
+            generationConfig = new { responseMimeType = "application/json", temperature = 0.2 } });
         HttpResponseMessage response;
         try { response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token); }
         catch (OperationCanceledException) when (!token.IsCancellationRequested)

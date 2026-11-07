@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
@@ -40,7 +40,7 @@ namespace JobPortal.Areas.Identity.Pages.Account
         {
             _userManager = userManager;
             _userStore = userStore;
-            _emailStore = GetEmailStore();
+            _emailStore = LayKhoEmail();
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
@@ -135,7 +135,7 @@ namespace JobPortal.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                var user = CreateUser();
+                var user = TaoNguoiDung();
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -202,7 +202,7 @@ namespace JobPortal.Areas.Identity.Pages.Account
 
             return Page();
         }
-        private IdentityUser CreateUser()
+        private IdentityUser TaoNguoiDung()
         {
             try
             {
@@ -216,7 +216,7 @@ namespace JobPortal.Areas.Identity.Pages.Account
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<IdentityUser> LayKhoEmail()
         {
             if (!_userManager.SupportsUserEmail)
             {

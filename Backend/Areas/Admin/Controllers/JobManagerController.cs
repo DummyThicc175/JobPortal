@@ -23,7 +23,8 @@ namespace JobPortal.Areas.Admin.Controllers
         }
 
         // 1. Trang danh sách tin CHƯA DUYỆT
-        public async Task<IActionResult> Pending(int page = 1, CancellationToken token = default)
+        [ActionName("Pending")]
+        public async Task<IActionResult> ChoDuyet(int page = 1, CancellationToken token = default)
         {
             // Thêm Include để hiển thị sơ bộ tên công ty/địa điểm ngoài danh sách nếu cần
             var pendingJobs = await _context.JobPosts
@@ -32,7 +33,7 @@ namespace JobPortal.Areas.Admin.Controllers
                 .Include(j => j.Category)
                 .Where(j => !j.IsApproved)
                 .OrderByDescending(j => j.CreatedAt)
-                .ThenByDescending(j => j.Id).PageAsync(this, page, token);
+                .ThenByDescending(j => j.Id).PhanTrangAsync(this, page, token);
 
             return View(pendingJobs);
         }
@@ -40,7 +41,8 @@ namespace JobPortal.Areas.Admin.Controllers
         // 2. Xử lý Duyệt tin
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Approve(int id)
+        [ActionName("Approve")]
+        public async Task<IActionResult> DuyetTin(int id)
         {
             var job = await _context.JobPosts.FindAsync(id);
             if (job != null)
@@ -49,12 +51,13 @@ namespace JobPortal.Areas.Admin.Controllers
                 await _context.SaveChangesAsync();
                 TempData["Success"] = "Đã duyệt bài đăng thành công!";
             }
-            return RedirectToAction(nameof(Pending));
+            return RedirectToAction("Pending");
         }
 
         // 3. Lấy thông tin CHI TIẾT ĐẦY ĐỦ (Dùng cho Modal)
         [HttpGet]
-        public async Task<IActionResult> GetDetails(int id)
+        [ActionName("GetDetails")]
+        public async Task<IActionResult> LayChiTiet(int id)
         {
             // Phải có .Include để tránh lỗi Null Reference
             var job = await _context.JobPosts
@@ -77,7 +80,8 @@ namespace JobPortal.Areas.Admin.Controllers
             });
         }
         // 1. Xem tất cả bài đăng trên hệ thống
-        public async Task<IActionResult> Index(int? searchId, int page = 1, CancellationToken token = default)
+        [ActionName("Index")]
+        public async Task<IActionResult> DanhSach(int? searchId, int page = 1, CancellationToken token = default)
         {
             var jobPosts = _context.JobPosts.AsNoTracking().Include(j => j.Company).Include(j => j.Category).Include(j => j.JobLocation).AsQueryable();
 
@@ -86,13 +90,14 @@ namespace JobPortal.Areas.Admin.Controllers
                 jobPosts = jobPosts.Where(j => j.Id == searchId.Value);
             }
 
-            return View(await jobPosts.OrderByDescending(j => j.CreatedAt).ThenByDescending(j => j.Id).PageAsync(this, page, token));
+            return View(await jobPosts.OrderByDescending(j => j.CreatedAt).ThenByDescending(j => j.Id).PhanTrangAsync(this, page, token));
         }
 
         // 2. Chức năng Gỡ bài / Duyệt lại (Bật/Tắt trạng thái IsApproved)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ToggleApproval(int id)
+        [ActionName("ToggleApproval")]
+        public async Task<IActionResult> ChuyenTrangThaiDuyet(int id)
         {
             var job = await _context.JobPosts.FindAsync(id);
             if (job == null) return NotFound();
@@ -102,21 +107,22 @@ namespace JobPortal.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = job.IsApproved ? "Đã hiển thị lại bài đăng." : "Đã gỡ bài đăng khỏi trang chủ.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
         // 3. Xóa bài đăng vĩnh viễn
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePost(int id)
+        [ActionName("DeletePost")]
+        public async Task<IActionResult> XoaTin(int id)
         {
             var job = await _context.JobPosts.FindAsync(id);
             if (job != null)
             {
-                var removed = await _jobs.RemoveOrHideAsync(job, HttpContext.RequestAborted);
+                var removed = await _jobs.XoaHoacAnTinAsync(job, HttpContext.RequestAborted);
                 TempData["Success"] = removed ? "Đã xóa tin." : "Tin đã có hồ sơ hoặc được lưu: đã gỡ hiển thị và giữ lịch sử.";
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
     }
 }

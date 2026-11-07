@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 const string previous = "20260527005050_UpdateAi";
 var checks = 0;
-void Check(bool value, string description)
+void KiemTra(bool value, string description)
 {
     if (!value) throw new InvalidOperationException(description);
     checks++;
@@ -43,61 +43,61 @@ foreach (var scenario in new[] { "fresh", "legacy", "guard" })
                 var rejected = false;
                 try { await migrator.MigrateAsync(); }
                 catch (SqlException error) when (error.Number == 51000) { rejected = true; }
-                Check(rejected, "Migration must stop when removed fields contain legacy data");
+                KiemTra(rejected, "Migration must stop when removed fields contain legacy data");
                 await using var sql = new SqlConnection(connection.ConnectionString); await sql.OpenAsync();
                 await using var command = sql.CreateCommand();
                 command.CommandText = "SELECT COUNT(*) FROM dbo.Candidates WHERE Industry=N'legacy information';";
-                Check(Convert.ToInt32(await command.ExecuteScalarAsync()) == 1, "Guard must preserve all original data");
-                Check((await database.Database.GetAppliedMigrationsAsync()).Count() == 26, "Failed migration must not change migration history");
+                KiemTra(Convert.ToInt32(await command.ExecuteScalarAsync()) == 1, "Guard must preserve all original data");
+                KiemTra((await database.Database.GetAppliedMigrationsAsync()).Count() == 26, "Failed migration must not change migration history");
                 Console.WriteLine("PASS: rollback guard");
                 continue;
             }
             await migrator.MigrateAsync();
         }
-        Check(!(await database.Database.GetPendingMigrationsAsync()).Any(), "All migrations applied");
-        Check(!database.Database.HasPendingModelChanges(), "Snapshot must match the runtime SQL Server model");
-        Check(await database.Users.CountAsync() == 3, "Default accounts preserved");
-        Check(await database.CVTemplates.CountAsync() == 2, "Real templates seeded");
-        Check(await database.Users.AllAsync(u => u.LockoutEnabled), "Account lockout enabled");
+        KiemTra(!(await database.Database.GetPendingMigrationsAsync()).Any(), "All migrations applied");
+        KiemTra(!database.Database.HasPendingModelChanges(), "Snapshot must match the runtime SQL Server model");
+        KiemTra(await database.Users.CountAsync() == 3, "Default accounts preserved");
+        KiemTra(await database.CVTemplates.CountAsync() == 6, "Six real templates seeded");
+        KiemTra(await database.Users.AllAsync(u => u.LockoutEnabled), "Account lockout enabled");
         if (scenario == "legacy")
         {
             var room = await database.InterviewSessions.Include(s => s.Application).SingleAsync();
-            Check(room.Application.Status == JobPortal.Models.ApplicationStatus.Interview && room.EndedAt == null,
+            KiemTra(room.Application.Status == JobPortal.Models.ApplicationStatus.Interview && room.EndedAt == null,
                 "Existing interview application receives a usable room during migration");
             var duplicateRoom = new JobPortal.Models.InterviewSession { ApplicationId = room.ApplicationId };
             database.InterviewSessions.Add(duplicateRoom);
             var duplicateRejected = false;
             try { await database.SaveChangesAsync(); }
-            catch (DbUpdateException error) when (JobPortal.Infrastructure.DbErrors.IsUniqueViolation(error)) { duplicateRejected = true; }
+            catch (DbUpdateException error) when (JobPortal.Infrastructure.DbErrors.LaLoiTrungDuLieu(error)) { duplicateRejected = true; }
             database.Entry(duplicateRoom).State = EntityState.Detached;
-            Check(duplicateRejected, "SQL Server rejects two active interview rooms for one application");
+            KiemTra(duplicateRejected, "SQL Server rejects two active interview rooms for one application");
             room.EndedAt = DateTime.UtcNow;
             await database.SaveChangesAsync();
             database.InterviewSessions.Add(new JobPortal.Models.InterviewSession { ApplicationId = room.ApplicationId });
             await database.SaveChangesAsync();
-            Check(await database.InterviewSessions.CountAsync() == 2 && await database.InterviewSessions.CountAsync(s => s.EndedAt == null) == 1,
+            KiemTra(await database.InterviewSessions.CountAsync() == 2 && await database.InterviewSessions.CountAsync(s => s.EndedAt == null) == 1,
                 "Closed room history does not prevent a new active session");
             var profile = await database.Candidates.Include(c => c.DefaultCV).SingleAsync();
-            Check(profile.FullName == "Legacy Candidate" && profile.UserId == "d83b7113-a8f8-4035-99a7-a20dd400f6a4", "Profile is mapped by stable user ID");
-            Check(profile.DefaultCV?.FileName == "legacy-upload.pdf", "Legacy profile PDF preserved");
+            KiemTra(profile.FullName == "Legacy Candidate" && profile.UserId == "d83b7113-a8f8-4035-99a7-a20dd400f6a4", "Profile is mapped by stable user ID");
+            KiemTra(profile.DefaultCV?.FileName == "legacy-upload.pdf", "Legacy profile PDF preserved");
             var json = await database.CVs.Include(c => c.Experiences).Include(c => c.Educations).Include(c => c.Skills).AsSplitQuery().SingleAsync(c => c.Title == "JSON CV" && !c.IsSnapshot);
-            Check(json.FileName == "json-cv.pdf", "Legacy file URL converted to safe key");
-            Check(json.Experiences.Single().Company == "JSON Company" && json.Educations.Single().School == "JSON School" && json.Skills.Count == 2, "JSON sections normalized without losing data");
+            KiemTra(json.FileName == "json-cv.pdf", "Legacy file URL converted to safe key");
+            KiemTra(json.Experiences.Single().Company == "JSON Company" && json.Educations.Single().School == "JSON School" && json.Skills.Count == 2, "JSON sections normalized without losing data");
             var builder = await database.CVs.Include(c => c.Experiences).Include(c => c.Educations).Include(c => c.Skills).Include(c => c.Languages).Include(c => c.References).AsSplitQuery().SingleAsync(c => c.Title == "Builder Developer");
-            Check(builder.Experiences.Single().Company == "Builder Company" && builder.Educations.Single().School == "Builder School", "Old builder education and experience linked to canonical CV");
-            Check(builder.Skills.Single().SkillName == "C#" && builder.Languages.Single().LanguageName == "English" && builder.References.Single().Name == "Referee", "Old builder remaining sections preserved");
+            KiemTra(builder.Experiences.Single().Company == "Builder Company" && builder.Educations.Single().School == "Builder School", "Old builder education and experience linked to canonical CV");
+            KiemTra(builder.Skills.Single().SkillName == "C#" && builder.Languages.Single().LanguageName == "English" && builder.References.Single().Name == "Referee", "Old builder remaining sections preserved");
             var jobs = await database.JobPosts.Include(j => j.Company).Include(j => j.Category).ToListAsync();
-            Check(jobs.All(j => j.Company?.Name == "Legacy Company" && j.Category?.Name == "Legacy Category"), "Text company/category names resolved to foreign keys");
+            KiemTra(jobs.All(j => j.Company?.Name == "Legacy Company" && j.Category?.Name == "Legacy Category"), "Text company/category names resolved to foreign keys");
             var submissions = await database.Applications.Include(a => a.CV).ToListAsync();
-            Check(submissions.Count == 2 && submissions.All(a => a.CV?.IsSnapshot == true), "Historical submissions receive immutable snapshots");
-            Check(submissions.Any(a => a.CV?.FileName == "legacy-upload.pdf") && submissions.Any(a => a.CV?.FileName == "json-cv.pdf"), "Existing and fallback submission CVs preserved");
-            Check(await database.SavedJobs.CountAsync() == 1 && await database.ChatMessages.CountAsync() == 1, "Saved jobs and chat preserved");
+            KiemTra(submissions.Count == 2 && submissions.All(a => a.CV?.IsSnapshot == true), "Historical submissions receive immutable snapshots");
+            KiemTra(submissions.Any(a => a.CV?.FileName == "legacy-upload.pdf") && submissions.Any(a => a.CV?.FileName == "json-cv.pdf"), "Existing and fallback submission CVs preserved");
+            KiemTra(await database.SavedJobs.CountAsync() == 1 && await database.ChatMessages.CountAsync() == 1, "Saved jobs and chat preserved");
             await using var sql = new SqlConnection(connection.ConnectionString); await sql.OpenAsync();
             await using var command = sql.CreateCommand();
             command.CommandText = "SELECT COUNT(*) FROM sys.tables WHERE name LIKE '__CvUpgrade[_]%' OR name='UserCVs';";
-            Check(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Staging and duplicate CV tables removed after success");
+            KiemTra(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Staging and duplicate CV tables removed after success");
             command.CommandText = "SELECT COUNT(*) FROM sys.columns WHERE object_id=OBJECT_ID('dbo.AspNetUsers') AND name IN ('FullName','BirthDate','Gender');";
-            Check(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Unmapped user columns consolidated");
+            KiemTra(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Unmapped user columns consolidated");
         }
         Console.WriteLine("PASS: " + scenario + " SQL Server migration");
     }

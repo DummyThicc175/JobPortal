@@ -7,7 +7,7 @@ public static class LegacyRouteExtensions
 {
     // Keep bookmarked URLs and existing form submissions working after splitting controllers.
     // These routes run after the normal routes so new links use the new controller names.
-    public static IEndpointRouteBuilder MapLegacyFeatureRoutes(this IEndpointRouteBuilder endpoints)
+    public static IEndpointRouteBuilder AnhXaDuongDanCu(this IEndpointRouteBuilder endpoints)
     {
         var routes = new[]
         {

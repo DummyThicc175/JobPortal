@@ -24,7 +24,8 @@ namespace JobPortal.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories
-        public async Task<IActionResult> Index(string? searchTerm, int page = 1, CancellationToken token = default)
+        [ActionName("Index")]
+        public async Task<IActionResult> DanhSach(string? searchTerm, int page = 1, CancellationToken token = default)
         {
             var categories = _context.Categories.AsQueryable();
 
@@ -33,11 +34,12 @@ namespace JobPortal.Areas.Admin.Controllers
                 categories = categories.Where(c => c.Name.Contains(searchTerm));
             }
 
-            return View(await categories.AsNoTracking().OrderBy(c => c.Name).PageAsync(this, page, token));
+            return View(await categories.AsNoTracking().OrderBy(c => c.Name).PhanTrangAsync(this, page, token));
         }
 
         // GET: Admin/Categories/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [ActionName("Details")]
+        public async Task<IActionResult> ChiTiet(int? id)
         {
             if (id == null)
             {
@@ -55,7 +57,8 @@ namespace JobPortal.Areas.Admin.Controllers
         }
 
         // GET: Admin/Categories/Create
-        public IActionResult Create()
+        [ActionName("Create")]
+        public IActionResult TaoMoi()
         {
             return View();
         }
@@ -65,7 +68,8 @@ namespace JobPortal.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        [ActionName("Create")]
+        public async Task<IActionResult> TaoMoi([Bind("Id,Name")] Category category)
         {
             category.Id = 0;
             category.Name = category.Name?.Trim() ?? "";
@@ -74,15 +78,16 @@ namespace JobPortal.Areas.Admin.Controllers
             {
                 _context.Add(category);
                 try { await _context.SaveChangesAsync(); }
-                catch (DbUpdateException exception) when (DbErrors.IsUniqueViolation(exception))
+                catch (DbUpdateException exception) when (DbErrors.LaLoiTrungDuLieu(exception))
                 { ModelState.AddModelError(nameof(category.Name), "Ngành nghề đã tồn tại."); return View(category); }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index");
             }
             return View(category);
         }
 
         // GET: Admin/Categories/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [ActionName("Edit")]
+        public async Task<IActionResult> ChinhSua(int? id)
         {
             if (id == null)
             {
@@ -102,7 +107,8 @@ namespace JobPortal.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Category category)
+        [ActionName("Edit")]
+        public async Task<IActionResult> ChinhSua(int id, [Bind("Id,Name")] Category category)
         {
             category.Name = category.Name?.Trim() ?? "";
             if (await _context.Categories.AnyAsync(c => c.Id != id && c.Name == category.Name)) ModelState.AddModelError(nameof(category.Name), "Ngành nghề đã tồn tại.");
@@ -120,7 +126,7 @@ namespace JobPortal.Areas.Admin.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoryExists(category.Id))
+                    if (!KiemTraNganhNgheTonTai(category.Id))
                     {
                         return NotFound();
                     }
@@ -129,15 +135,16 @@ namespace JobPortal.Areas.Admin.Controllers
                         throw;
                     }
                 }
-                catch (DbUpdateException exception) when (DbErrors.IsUniqueViolation(exception))
+                catch (DbUpdateException exception) when (DbErrors.LaLoiTrungDuLieu(exception))
                 { ModelState.AddModelError(nameof(category.Name), "Ngành nghề đã tồn tại."); return View(category); }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index");
             }
             return View(category);
         }
 
         // GET: Admin/Categories/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [ActionName("Delete")]
+        public async Task<IActionResult> Xoa(int? id)
         {
             if (id == null)
             {
@@ -157,23 +164,23 @@ namespace JobPortal.Areas.Admin.Controllers
         // POST: Admin/Categories/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> XacNhanXoa(int id)
         {
             var category = await _context.Categories.FindAsync(id);
             if (category != null)
             {
                 if (await _context.JobPosts.AnyAsync(j => j.CategoryId == id))
-                { TempData["Error"] = "Ngành nghề đang được tin tuyển dụng sử dụng, không thể xóa."; return RedirectToAction(nameof(Index)); }
+                { TempData["Error"] = "Ngành nghề đang được tin tuyển dụng sử dụng, không thể xóa."; return RedirectToAction("Index"); }
                 _context.Categories.Remove(category);
             }
 
             try { await _context.SaveChangesAsync(); }
             catch (DbUpdateException)
             { TempData["Error"] = "Ngành nghề đang được sử dụng, không thể xóa."; }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
-        private bool CategoryExists(int id)
+        private bool KiemTraNganhNgheTonTai(int id)
         {
             return _context.Categories.Any(e => e.Id == id);
         }

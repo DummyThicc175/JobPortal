@@ -26,11 +26,14 @@ public sealed class EditCVViewModel : IValidatableObject
     public string? ThemeColor { get; set; }
     public string? HeaderColor { get; set; }
     public string? BackgroundColor { get; set; }
+    [MaxLength(9)] public List<CvBlockLayout> BlockLayout { get; set; } = [];
     public int? AiScore { get; set; }
     public List<string> AiSuggestions { get; set; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext context)
     {
+        if (!CvTemplateCatalog.KiemTraBoCuc(TemplateId, BlockLayout))
+            yield return new ValidationResult("Bố cục CV không hợp lệ. Mỗi khối chỉ xuất hiện một lần và phải nằm trong cột của mẫu.", [nameof(BlockLayout)]);
         if (Experiences == null || Educations == null || Languages == null || ITSKills == null || References == null)
             yield return new ValidationResult("Các mục CV phải là danh sách hợp lệ.");
         foreach (var color in new[] { ThemeColor, HeaderColor, BackgroundColor })

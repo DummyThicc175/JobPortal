@@ -32,16 +32,20 @@ sealed class PortalFactory(string root) : WebApplicationFactory<HomeController>
         {
             ["Storage:RootPath"] = Path.Combine(TestStorage, "cvs"),
             ["Storage:AvatarRootPath"] = Path.Combine(TestStorage, "public", "uploads", "avatars"),
-            ["Storage:ImportLegacyFiles"] = "false", ["Gemini:ApiKey"] = "test-key", ["Gemini:Model"] = "test-model"
+            ["Storage:ImportLegacyFiles"] = "false"
         }));
         builder.ConfigureTestServices(services =>
         {
+            var thuMucCauHinh = Path.Combine(TestStorage, "settings"); Directory.CreateDirectory(thuMucCauHinh);
+            File.WriteAllText(Path.Combine(thuMucCauHinh, "appsettings.json"), "{\"Gemini\":{\"ApiKey\":\"test-key\",\"Model\":\"test-model\"}}");
+            services.RemoveAll<JobPortal.Configuration.CauHinhGeminiCucBo>();
+            services.AddSingleton(new JobPortal.Configuration.CauHinhGeminiCucBo(thuMucCauHinh));
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.AddSingleton(new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlite(connection).Options);
             services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
             services.AddScoped(sp => new GeminiCvReviewService(new HttpClient(Gemini, false)
                 { BaseAddress = new Uri("https://generativelanguage.googleapis.com/"), Timeout = TimeSpan.FromSeconds(30) },
-                sp.GetRequiredService<IConfiguration>(), sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(), sp.GetRequiredService<ILogger<GeminiCvReviewService>>()));
+                sp.GetRequiredService<JobPortal.Configuration.CauHinhGeminiCucBo>(), sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(), sp.GetRequiredService<ILogger<GeminiCvReviewService>>()));
             var environment = services.First(d => d.ServiceType == typeof(IWebHostEnvironment)).ImplementationInstance as IWebHostEnvironment;
             if (environment != null)
             {

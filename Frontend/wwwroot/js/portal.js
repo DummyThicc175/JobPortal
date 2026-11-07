@@ -2,14 +2,14 @@
     'use strict';
     const toggle = document.querySelector('[data-sidebar-toggle]');
     const backdrop = document.querySelector('[data-sidebar-backdrop]');
-    function closeSidebar() { const opened = document.body.classList.contains('sidebar-open'); document.body.classList.remove('sidebar-open'); toggle?.setAttribute('aria-expanded', 'false'); if (opened) toggle?.focus(); }
+    function dongThanhDieuHuong() { const opened = document.body.classList.contains('sidebar-open'); document.body.classList.remove('sidebar-open'); toggle?.setAttribute('aria-expanded', 'false'); if (opened) toggle?.focus(); }
     toggle?.addEventListener('click', () => {
         const open = document.body.classList.toggle('sidebar-open'); toggle.setAttribute('aria-expanded', String(open));
         if (open) document.querySelector('.workspace-sidebar a')?.focus();
     });
-    backdrop?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', dongThanhDieuHuong);
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') { closeSidebar(); const chat = document.querySelector('[data-chat-window]'); if (chat) chat.style.display = 'none'; }
+        if (event.key === 'Escape') { dongThanhDieuHuong(); const chat = document.querySelector('[data-chat-window]'); if (chat) chat.style.display = 'none'; }
         if (event.key === 'Tab' && document.body.classList.contains('sidebar-open')) {
             const items = [...document.querySelectorAll('.workspace-sidebar a, .workspace-sidebar button')];
             const first = items[0], last = items[items.length - 1];

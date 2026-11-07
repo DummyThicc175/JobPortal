@@ -265,25 +265,11 @@ namespace JobPortal.Data
                 new Location { Id = 63, Name = "Yên Bái" }
             );
 
-            // Seed dữ liệu mẫu cho CVTemplate (giữ nguyên)
-            modelBuilder.Entity<CVTemplate>().HasData(
-                new CVTemplate
-                {
-                    Id = 1,
-                    Name = "Mẫu Thiết Kế Truyền Thống",
-                    Category = "Popular",
-                    Thumbnail = "images/templates/t1.jpg",
-                    TemplateViewPath = "Template1"
-                },
-                new CVTemplate
-                {
-                    Id = 2,
-                    Name = "Mẫu Công Nghệ Hiện Đại",
-                    Category = "Creative",
-                    Thumbnail = "images/templates/t2.jpg",
-                    TemplateViewPath = "Template2"
-                }
-            );
+            modelBuilder.Entity<CVTemplate>().HasData(CvTemplateCatalog.Templates.Select(m => new CVTemplate
+            {
+                Id = m.Id, Name = m.Name, Category = m.Category,
+                Thumbnail = $"images/templates/cv-{m.Id}.svg", TemplateViewPath = $"Template{m.Id}"
+            }));
         }
     }
 }

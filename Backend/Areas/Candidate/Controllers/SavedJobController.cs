@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using JobPortal.Data;
 using JobPortal.Infrastructure;
 using JobPortal.Models;
@@ -12,16 +12,18 @@ namespace JobPortal.Areas.Candidate.Controllers;
 [Authorize(Roles = "Candidate")]
 public sealed class SavedJobController(ApplicationDbContext database) : Controller
 {
-    public async Task<IActionResult> Index(int page = 1, CancellationToken token = default)
+    [ActionName("Index")]
+    public async Task<IActionResult> DanhSach(int page = 1, CancellationToken token = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return View(await database.SavedJobs.AsNoTracking().Include(s => s.JobPost).ThenInclude(j => j!.Company)
             .Include(s => s.JobPost).ThenInclude(j => j!.JobLocation).Where(s => s.CandidateId == userId)
-            .OrderByDescending(s => s.SavedDate).ThenByDescending(s => s.Id).PageAsync(this, page, token));
+            .OrderByDescending(s => s.SavedDate).ThenByDescending(s => s.Id).PhanTrangAsync(this, page, token));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Save(int jobId, CancellationToken token)
+    [ActionName("Save")]
+    public async Task<IActionResult> LuuViec(int jobId, CancellationToken token)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         if (!await database.JobPosts.AnyAsync(j => j.Id == jobId && j.IsApproved, token)) return NotFound();
@@ -29,7 +31,7 @@ public sealed class SavedJobController(ApplicationDbContext database) : Controll
         {
             database.SavedJobs.Add(new SavedJob { JobPostId = jobId, CandidateId = userId, SavedDate = DateTime.UtcNow });
             try { await database.SaveChangesAsync(token); }
-            catch (DbUpdateException exception) when (DbErrors.IsUniqueViolation(exception)) { }
+            catch (DbUpdateException exception) when (DbErrors.LaLoiTrungDuLieu(exception)) { }
         }
         TempData["SaveSuccess"] = "Đã lưu tin tuyển dụng.";
         return RedirectToAction("Details", "Job", new { area = "", id = jobId });

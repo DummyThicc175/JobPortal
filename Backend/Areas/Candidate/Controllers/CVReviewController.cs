@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using JobPortal.Models;
 using JobPortal.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -14,13 +14,14 @@ public sealed class CVReviewController(GeminiCvReviewService reviews) : Controll
     [HttpPost]
     [EnableRateLimiting("cv-ai")]
     [RequestSizeLimit(100000)]
-    public async Task<IActionResult> Analyze([FromBody] EditCVViewModel? model, CancellationToken token)
+    [ActionName("Analyze")]
+    public async Task<IActionResult> DanhGiaCV([FromBody] EditCVViewModel? model, CancellationToken token)
     {
         if (model == null || !ModelState.IsValid)
             return BadRequest(new { success = false, message = "Kiểm tra lại các thông tin CV trước khi đánh giá." });
         try
         {
-            var result = await reviews.AnalyzeAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!, model, token);
+            var result = await reviews.DanhGiaAsync(User.FindFirstValue(ClaimTypes.NameIdentifier)!, model, token);
             return Json(new { success = true, score = result.Score, suggestions = result.Suggestions });
         }
         catch (AiReviewException exception)

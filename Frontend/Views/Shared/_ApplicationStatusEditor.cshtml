@@ -1,6 +1,6 @@
 @model JobPortal.Models.EmployerApplicantViewModel
 <form asp-area="Employer" asp-controller="Applicant" asp-action="UpdateStatus" method="post" class="status-editor">
 <input type="hidden" name="id" value="@Model.Id" />
-<select name="status" class="form-select form-select-sm" aria-label="Trạng thái hồ sơ của @Model.CandidateName">@foreach (var state in Enum.GetValues<JobPortal.Models.ApplicationStatus>()) { <option value="@state" selected="@(Model.Status == state.ToString())">@JobPortal.Models.ApplicationStatusLabels.For(state)</option> }</select>
+<select name="status" class="form-select form-select-sm" aria-label="Trạng thái hồ sơ của @Model.CandidateName">@foreach (var state in Enum.GetValues<JobPortal.Models.ApplicationStatus>()) { <option value="@state" selected="@(Model.Status == state.ToString())">@JobPortal.Models.ApplicationStatusLabels.LayNhan(state)</option> }</select>
 <button type="submit" class="btn btn-outline-primary btn-sm">Lưu</button>
 </form>

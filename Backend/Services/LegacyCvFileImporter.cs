@@ -6,7 +6,7 @@ public sealed class LegacyCvFileImporter(IServiceScopeFactory scopes, IConfigura
     {
         if (!configuration.GetValue("Storage:ImportLegacyFiles", true)) return Task.CompletedTask;
         using var scope = scopes.CreateScope();
-        scope.ServiceProvider.GetRequiredService<PrivateFileStorage>().ImportLegacyFiles();
+        scope.ServiceProvider.GetRequiredService<PrivateFileStorage>().NhapTepCu();
         return Task.CompletedTask;
     }
     public Task StopAsync(CancellationToken token) => Task.CompletedTask;

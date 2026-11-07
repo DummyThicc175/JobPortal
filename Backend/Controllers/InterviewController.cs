@@ -17,9 +17,10 @@ public sealed class InterviewController(InterviewService interviews, Application
 {
     [HttpGet("Room/{id:guid}")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public async Task<IActionResult> Room(Guid id, CancellationToken token)
+    [ActionName("Room")]
+    public async Task<IActionResult> PhongPhongVan(Guid id, CancellationToken token)
     {
-        var session = await interviews.AuthorizedAsync(id, User, token);
+        var session = await interviews.LayPhienCoQuyenAsync(id, User, token);
         if (session == null) return NotFound();
         Response.Headers["Permissions-Policy"] = "camera=(self), microphone=(self)";
         Response.Headers["Referrer-Policy"] = "same-origin";
@@ -30,27 +31,29 @@ public sealed class InterviewController(InterviewService interviews, Application
         ViewData["WorkspaceArea"] = isEmployer ? "Employer" : "Candidate";
         ViewData["WorkspaceController"] = isEmployer ? "Applicant" : "Application";
         return View(new InterviewRoomViewModel(id, application.Id, application.JobPost.Title, application.JobPost.CompanyName ?? "Nhà tuyển dụng",
-            isEmployer ? candidateName ?? "Ứng viên" : application.JobPost.CompanyName ?? "Nhà tuyển dụng", isEmployer, options.Value.RtcConfiguration(userId)));
+            isEmployer ? candidateName ?? "Ứng viên" : application.JobPost.CompanyName ?? "Nhà tuyển dụng", isEmployer, options.Value.TaoCauHinhKetNoi(userId)));
     }
 
     [Authorize(Roles = "Employer")]
     [HttpPost("Create")]
-    public async Task<IActionResult> Create(int applicationId, CancellationToken token)
+    [ActionName("Create")]
+    public async Task<IActionResult> TaoPhien(int applicationId, CancellationToken token)
     {
         try
         {
-            var id = await interviews.CreateAsync(applicationId, User.FindFirstValue(ClaimTypes.NameIdentifier)!, token);
-            return id == null ? NotFound() : RedirectToAction(nameof(Room), new { id });
+            var id = await interviews.TaoPhienAsync(applicationId, User.FindFirstValue(ClaimTypes.NameIdentifier)!, token);
+            return id == null ? NotFound() : RedirectToAction("Room", new { id });
         }
-        catch (DbUpdateException error) when (DbErrors.IsUniqueViolation(error))
+        catch (DbUpdateException error) when (DbErrors.LaLoiTrungDuLieu(error))
         { return Conflict("Phòng vừa được tạo ở cửa sổ khác. Vui lòng tải lại danh sách hồ sơ."); }
     }
 
     [Authorize(Roles = "Employer")]
     [HttpPost("End/{id:guid}")]
-    public async Task<IActionResult> End(Guid id, CancellationToken token)
+    [ActionName("End")]
+    public async Task<IActionResult> KetThucPhien(Guid id, CancellationToken token)
     {
-        if (!await interviews.EndAsync(id, User.FindFirstValue(ClaimTypes.NameIdentifier)!, token)) return NotFound();
+        if (!await interviews.KetThucPhienAsync(id, User.FindFirstValue(ClaimTypes.NameIdentifier)!, token)) return NotFound();
         TempData["Success"] = "Đã kết thúc phiên phỏng vấn. Bạn có thể tạo phiên mới nếu cần trao đổi thêm.";
         return RedirectToAction("Index", "Applicant", new { area = "Employer" });
     }

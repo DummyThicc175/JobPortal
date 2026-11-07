@@ -8,14 +8,14 @@
 </div>
 <span class="small muted">@Model.Count() mẫu sẵn sàng sử dụng</span>
 </div>
-<div class="template-grid">@foreach (var template in Model) { var image = Url.Content("~/" + (template.Thumbnail ?? "images/templates/t1.jpg").TrimStart('/')); <article class="template-card" data-template-category="@template.Category">
+<div class="template-grid">@foreach (var template in Model) { var style = JobPortal.Models.CvTemplateCatalog.LayMau(template.Id)!; var image = Url.Content("~/" + (template.Thumbnail ?? "images/templates/cv-1.svg").TrimStart('/')); <article class="template-card" data-template-category="@template.Category">
 <div class="template-preview">
 <img src="@image" alt="Xem trước @template.Name" />
 </div>
 <div class="template-info">
 <span class="eyebrow">@(template.Category == "Creative" ? "SÁNG TẠO" : "PHỔ BIẾN")</span>
 <h3>@template.Name</h3>
-<p>@(template.Id == 2 ? "Bố cục hai cột, điểm nhấn nhẹ nhàng và phân chia nội dung rõ ràng." : "Trình bày gọn gàng, nhấn mạnh kinh nghiệm và kỹ năng của bạn.")</p>
+<p>@style.Description</p>
 <div class="template-actions">
 <button type="button" class="btn btn-light btn-sm" data-template-preview="@image" data-template-name="@template.Name">Xem mẫu</button>
 <a asp-action="Create" asp-route-templateId="@template.Id" class="btn btn-primary btn-sm">Sử dụng mẫu này <svg class="icon icon-sm" aria-hidden="true">
@@ -25,6 +25,7 @@
 </div>
 </div>
 </article> }</div>
+<p class="small muted mt-3">Các mẫu hỗ trợ chỉnh màu và sắp xếp từng khối nội dung. Chuyển mẫu sẽ giữ lại nội dung CV của bạn.</p>
 <div class="banner">
 <div>
 <h3>Đã có CV của riêng bạn?</h3>

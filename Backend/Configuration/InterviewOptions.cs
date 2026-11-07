@@ -11,7 +11,7 @@ public sealed class InterviewOptions
     public string TurnSharedSecret { get; set; } = "";
     public bool ForceRelay { get; set; }
 
-    public object RtcConfiguration(string userId)
+    public object TaoCauHinhKetNoi(string userId)
     {
         var servers = new List<object>();
         var stun = StunUrls.Where(u => u.StartsWith("stun:", StringComparison.OrdinalIgnoreCase) || u.StartsWith("stuns:", StringComparison.OrdinalIgnoreCase)).ToArray();

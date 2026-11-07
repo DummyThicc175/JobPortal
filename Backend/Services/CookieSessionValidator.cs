@@ -11,13 +11,13 @@ namespace JobPortal.Services;
 
 public sealed class CookieSessionValidator(ApplicationDbContext database, IMemoryCache cache, IOptions<IdentityOptions> options)
 {
-    public static string Key(string id) => "account-session:" + id;
+    public static string TaoKhoaPhien(string id) => "account-session:" + id;
 
-    public async Task ValidateAsync(CookieValidatePrincipalContext context)
+    public async Task KiemTraPhienAsync(CookieValidatePrincipalContext context)
     {
         var id = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (id == null) { context.RejectPrincipal(); return; }
-        var state = await cache.GetOrCreateAsync(Key(id), async entry =>
+        var state = await cache.GetOrCreateAsync(TaoKhoaPhien(id), async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30);
             return await database.Users.AsNoTracking().Where(u => u.Id == id)

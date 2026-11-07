@@ -10,6 +10,27 @@ hướng dẫn sử dụng và cấu hình HTTPS/TURN trong [INTERVIEWS.md](INTE
 Chưa triển khai AI phỏng vấn tự xây.
 Phạm vi hiện tại chỉ phát triển website, ưu tiên máy tính; chưa phát triển app mobile.
 
+## Quy ước đặt tên hàm
+
+Các hàm do dự án tự viết dùng tiếng Việt không dấu: PascalCase cho C# và camelCase
+cho JavaScript. Hàm bất đồng bộ C# giữ hậu tố `Async`. Quy ước áp dụng cho các phần
+viết tiếp theo và được lưu trong [AGENTS.md](AGENTS.md).
+
+| Ví dụ tên cũ | Tên trong mã nguồn hiện tại |
+|---|---|
+| `GetProfileAsync` | `LayHoSoAsync` |
+| `SaveBuilderAsync` | `LuuCVTuTrinhTaoAsync` |
+| `UpdateStatus` | `CapNhatTrangThai` |
+| `SendMessage` | `GuiTinNhan` ở C#, `guiTinNhan` ở JavaScript |
+| `addExperienceField` | `themMucKinhNghiem` |
+| `join` trong phòng phỏng vấn | `vaoPhong` |
+
+Các tên bắt buộc của framework như `OnGetAsync`, `OnPostAsync`, `OnModelCreating`,
+`ExecuteAsync`, `Validate`, `DisposeAsync` và phương thức migration tự sinh giữ
+nguyên. Tên action trong URL và tên hàm truyền qua SignalR được giữ tương thích
+bằng `ActionName`/`HubMethodName`; không phải tên hàm C# trong mã nguồn. Đợt đổi tên
+không đổi bảng/cột dữ liệu và không yêu cầu migration mới.
+
 ## Cấu trúc mã nguồn
 
 ```text
@@ -97,9 +118,21 @@ dotnet build JobPortal.csproj
 dotnet run --project JobPortal.csproj
 ```
 
-Chỉ sao chép file mẫu khi chưa có `appsettings.json`. Điền khóa vào `Gemini:ApiKey`
-trong file cục bộ. Các file `appsettings*.json` được bỏ qua trong Git, ngoại trừ
-`appsettings.example.json` không chứa khóa. Controller AI đọc khóa qua cấu hình.
+Chỉ sao chép file mẫu khi chưa có `appsettings.json`. Gemini **chỉ đọc khóa và model
+từ `appsettings.json` tại thư mục gốc ứng dụng**, qua `CauHinhGeminiCucBo`;
+không lấy từ biến môi trường, User Secrets hoặc `appsettings.Development.json`.
+Điền vào mục có sẵn, không tạo thêm mục `Gemini` trùng tên:
+
+```json
+"Gemini": {
+  "ApiKey": "DAN_KHOA_CUA_BAN_TAI_DAY",
+  "Model": "gemini-flash-latest"
+}
+```
+
+File được đọc lại khi thay đổi. Các file `appsettings*.json` được bỏ qua trong Git,
+ngoại trừ `appsettings.example.json` luôn để khóa trống. Không đưa khóa vào mã C#,
+JavaScript hoặc file mẫu. Bản publish dùng `appsettings.json` tại thư mục triển khai.
 
 Ứng dụng tiếp tục dùng các profile trong `Properties/launchSettings.json`.
 Trong Visual Studio, mở `JobPortal.sln` và chọn project `JobPortal` để chạy.
@@ -126,6 +159,8 @@ JSON CV vào các bảng chi tiết có khóa ngoại `CVId`, liên kết hồ s
 bỏ các cột tên công ty/ngành nghề trùng lặp và bổ sung ràng buộc/index.
 Migration `20261104182819_AddInterviewSessions` bổ sung phiên phỏng vấn và tạo
 phòng cho các hồ sơ đã ở trạng thái Phỏng vấn; giữ nguyên dữ liệu ứng tuyển/CV.
+Migration `20261107180945_CompleteCvTemplatesAndLayout` thêm `CVs.LayoutJson` và
+bốn mẫu mới, giữ nguyên hai ID mẫu cũ. CV cũ chưa có bố cục dùng mặc định của mẫu.
 
 Sao lưu SQL Server trước khi cập nhật database cũ. Migration chuyển dữ liệu hồ sơ,
 CV và đơn ứng tuyển trong cùng giao dịch; dừng nếu email chủ sở hữu không xác định,
@@ -166,8 +201,15 @@ Bootstrap, SignalR và html2pdf được phục vụ từ thư viện cục bộ
 
 ## Hành vi các chức năng đã sửa
 
-- CV builder lưu nội dung, các mục chi tiết, màu sắc và PDF thật. Mở lại sẽ tải
-  dữ liệu đã lưu. Nút tải PDF thực hiện lưu trước; không có CV mặc định giả.
+- Trình tạo CV có sáu mẫu: Chuyên nghiệp, Thanh lịch, Công nghệ, Tối giản,
+  Hiện đại và Cổ điển. Đổi mẫu ngay trong trình sửa giữ nguyên nội dung và áp dụng
+  màu/bố cục mặc định của mẫu mới. Form có website, chứng chỉ, hoạt động và sở thích.
+- Tab **Bố cục & màu sắc** hỗ trợ kéo thả chín khối nội dung, đổi thứ tự và chuyển
+  cột ở mẫu hai cột; có nút lên/xuống/chuyển cột. Lưu cả dữ liệu, bố cục, màu và PDF;
+  mở lại giữ thay đổi. Khối trống không xuất hiện trên giấy; khôi phục bố cục không xóa nội dung.
+- Xem trước theo trang A4, tự chuyển trang cho nội dung dài, hỗ trợ tiếng Việt,
+  phóng to/thu nhỏ. PDF tối đa sáu trang, tối đa 10 MB; vượt giới hạn sẽ có thông báo
+  để rút gọn nội dung. Nút tải PDF thực hiện lưu trước; không dùng CV giả.
 - Ứng tuyển chỉ nhận tin đã duyệt và CV có file thật. Mỗi đơn giữ một bản CV tại
   thời điểm nộp; cập nhật CV hiện tại không đổi hồ sơ đã gửi. Đơn cũ thiếu CV không
   được tự gán file mẫu.
@@ -182,9 +224,10 @@ Bootstrap, SignalR và html2pdf được phục vụ từ thư viện cục bộ
   thiết bị và rời/vào lại; kết thúc phiên hoặc đổi trạng thái đóng quyền vào phòng.
   Lịch sử phiên được lưu, website không ghi hình/ghi âm. Gọi khác mạng cần cấu hình
   HTTPS/TURN và kiểm chứng trên hạ tầng thực tế.
-- AI đọc khóa/model từ cấu hình, giới hạn 3 yêu cầu/phút/tài khoản, có timeout và
+- Đánh giá CV bằng Gemini đọc khóa/model chỉ từ `appsettings.json`, giới hạn 3 yêu cầu/phút/tài khoản, có timeout và
   kiểm tra kết quả. Điểm lưu lấy từ kết quả đã xác thực phía server; chỉnh nội dung
-  CV sẽ xóa điểm cũ. Khóa API không xuất hiện trong URL hoặc mã giao diện.
+  CV sẽ xóa điểm cũ. Đổi mẫu, màu hoặc bố cục giữ lại điểm đã xác thực, kể cả khi
+  cache hết hạn. Khóa API không xuất hiện trong URL hoặc mã giao diện.
 
 ## Kiểm tra tích hợp
 
@@ -206,7 +249,8 @@ dotnet run --project Tests/JobPortal.BrowserTests --configuration Fixes -- --int
 Hai bộ bổ sung cần SQL Server Express cục bộ và quyền tạo/xóa database tạm
 `JobPortal_Verify_<GUID>`. DatabaseTests kiểm tra cả nâng cấp có dữ liệu cũ và
 rollback khi bị chặn. BrowserTests cần Chrome hoặc Edge trên Windows, chạy ẩn
-để kiểm tra tạo PDF thật từ hai mẫu và chat giữa hai phiên riêng; kiểm tra các trang
+để kiểm tra tạo PDF thật từ sáu mẫu, PDF nhiều trang, lưu/kéo thả bố cục,
+giao diện đánh giá AI giả lập và chat giữa hai phiên riêng; kiểm tra các trang
 của ba vai trò ở chiều rộng 1440/390 px, menu điện thoại, modal và ảnh bị lỗi; chạy ứng dụng
 từ bản build `Fixes`. File kiểm tra và ảnh chụp nằm trong `artifacts/browser-tests`.
 Không bộ kiểm tra nào gọi Gemini thật. Kết nối/hạn mức Gemini thực tế cần khóa hợp lệ.

@@ -10,7 +10,7 @@ namespace JobPortal.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(ReadScript("Before"));
+            migrationBuilder.Sql(DocScript("Before"));
             migrationBuilder.DropForeignKey(
                 name: "FK_Applications_CVs_CVId",
                 table: "Applications");
@@ -948,7 +948,7 @@ namespace JobPortal.Migrations
                 principalTable: "JobPosts",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-            migrationBuilder.Sql(ReadScript("After"));
+            migrationBuilder.Sql(DocScript("After"));
         }
 
         /// <inheritdoc />
@@ -957,7 +957,7 @@ namespace JobPortal.Migrations
             throw new InvalidOperationException("This data consolidation cannot be downgraded safely. Restore the pre-upgrade SQL Server backup instead.");
         }
 
-        private static string ReadScript(string phase)
+        private static string DocScript(string phase)
         {
             using var stream = typeof(ConsolidateCvAndIntegrity).Assembly.GetManifestResourceStream($"JobPortal.Migrations.ConsolidateCv.{phase}.sql")
                 ?? throw new InvalidOperationException("Migration SQL resource missing.");

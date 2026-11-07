@@ -125,6 +125,10 @@ namespace JobPortal.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("LayoutJson")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
@@ -200,17 +204,49 @@ namespace JobPortal.Migrations
                         {
                             Id = 1,
                             Category = "Popular",
-                            Name = "Mẫu Thiết Kế Truyền Thống",
+                            Name = "Chuyên nghiệp",
                             TemplateViewPath = "Template1",
-                            Thumbnail = "images/templates/t1.jpg"
+                            Thumbnail = "images/templates/cv-1.svg"
                         },
                         new
                         {
                             Id = 2,
                             Category = "Creative",
-                            Name = "Mẫu Công Nghệ Hiện Đại",
+                            Name = "Thanh lịch",
                             TemplateViewPath = "Template2",
-                            Thumbnail = "images/templates/t2.jpg"
+                            Thumbnail = "images/templates/cv-2.svg"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "Creative",
+                            Name = "Công nghệ",
+                            TemplateViewPath = "Template3",
+                            Thumbnail = "images/templates/cv-3.svg"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Popular",
+                            Name = "Tối giản",
+                            TemplateViewPath = "Template4",
+                            Thumbnail = "images/templates/cv-4.svg"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "Creative",
+                            Name = "Hiện đại",
+                            TemplateViewPath = "Template5",
+                            Thumbnail = "images/templates/cv-5.svg"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "Popular",
+                            Name = "Cổ điển",
+                            TemplateViewPath = "Template6",
+                            Thumbnail = "images/templates/cv-6.svg"
                         });
                 });
 

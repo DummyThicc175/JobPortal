@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using JobPortal.Data;
 using JobPortal.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +12,8 @@ namespace JobPortal.Controllers;
 public sealed class ChatController(ApplicationDbContext database, ChatAccessService access) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> GetChatPartners(CancellationToken token)
+    [ActionName("GetChatPartners")]
+    public async Task<IActionResult> LayDanhSachDoiThoai(CancellationToken token)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var latest = database.ChatMessages.AsNoTracking().Where(m => m.SenderId == userId || m.ReceiverId == userId)
@@ -32,10 +33,11 @@ public sealed class ChatController(ApplicationDbContext database, ChatAccessServ
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetChatHistory(string partnerId, int? beforeId, CancellationToken token)
+    [ActionName("GetChatHistory")]
+    public async Task<IActionResult> LayLichSuTinNhan(string partnerId, int? beforeId, CancellationToken token)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        if (!await access.CanChatAsync(userId, partnerId, token)) return NotFound();
+        if (!await access.CoTheNhanTinAsync(userId, partnerId, token)) return NotFound();
         var query = database.ChatMessages.AsNoTracking().Where(m =>
             (m.SenderId == userId && m.ReceiverId == partnerId) || (m.SenderId == partnerId && m.ReceiverId == userId));
         if (beforeId.HasValue) query = query.Where(m => m.Id < beforeId.Value);

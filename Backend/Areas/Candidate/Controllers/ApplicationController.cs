@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using JobPortal.Data;
 using JobPortal.Infrastructure;
 using JobPortal.Models;
@@ -13,18 +13,20 @@ namespace JobPortal.Areas.Candidate.Controllers;
 [Authorize(Roles = "Candidate")]
 public sealed class ApplicationController(ApplicationDbContext database, CvService cvs) : Controller
 {
-    public async Task<IActionResult> Index(int page = 1, CancellationToken token = default)
+    [ActionName("Index")]
+    public async Task<IActionResult> DanhSach(int page = 1, CancellationToken token = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         return View(await database.Applications.AsNoTracking().Include(a => a.JobPost).ThenInclude(j => j.Company)
             .Include(a => a.JobPost).ThenInclude(j => j.JobLocation).Include(a => a.CV)
             .Include(a => a.InterviewSessions.Where(s => s.EndedAt == null))
             .Where(a => a.CandidateId == userId).OrderByDescending(a => a.AppliedDate).ThenByDescending(a => a.Id)
-            .PageAsync(this, page, token));
+            .PhanTrangAsync(this, page, token));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Apply(int jobId, CancellationToken token)
+    [ActionName("Apply")]
+    public async Task<IActionResult> UngTuyen(int jobId, CancellationToken token)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         if (!await database.JobPosts.AnyAsync(j => j.Id == jobId && j.IsApproved, token)) return NotFound();
@@ -34,7 +36,7 @@ public sealed class ApplicationController(ApplicationDbContext database, CvServi
             return RedirectToAction("Details", "Job", new { area = "", id = jobId });
         }
         var currentCv = await database.Candidates.Where(c => c.UserId == userId).Select(c => c.DefaultCVId).SingleOrDefaultAsync(token);
-        var snapshot = currentCv.HasValue ? await cvs.CreateSnapshotAsync(userId, currentCv.Value, token) : null;
+        var snapshot = currentCv.HasValue ? await cvs.TaoBanChupAsync(userId, currentCv.Value, token) : null;
         if (snapshot == null)
         {
             TempData["Error"] = "Bạn cần tải lên hoặc lưu CV trước khi ứng tuyển.";
@@ -51,7 +53,7 @@ public sealed class ApplicationController(ApplicationDbContext database, CvServi
             await database.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
         }
-        catch (DbUpdateException exception) when (DbErrors.IsUniqueViolation(exception))
+        catch (DbUpdateException exception) when (DbErrors.LaLoiTrungDuLieu(exception))
         {
             await transaction.RollbackAsync(token);
             TempData["Message"] = "Bạn đã ứng tuyển công việc này rồi.";

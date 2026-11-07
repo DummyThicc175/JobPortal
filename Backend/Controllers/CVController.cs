@@ -12,7 +12,8 @@ namespace JobPortal.Controllers;
 public sealed class CVController(ApplicationDbContext database, PrivateFileStorage files) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Download(int id, CancellationToken token)
+    [ActionName("Download")]
+    public async Task<IActionResult> XemCV(int id, CancellationToken token)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var cv = await database.CVs.AsNoTracking().SingleOrDefaultAsync(c => c.Id == id, token);
@@ -20,7 +21,7 @@ public sealed class CVController(ApplicationDbContext database, PrivateFileStora
         var permitted = cv.CandidateId == userId || User.IsInRole("Admin") ||
             (User.IsInRole("Employer") && await database.Applications.AnyAsync(a => a.CVId == id && a.JobPost.EmployerId == userId, token));
         if (!permitted) return NotFound();
-        var path = files.GetPdfPath(cv.FileName);
+        var path = files.LayDuongDanPDF(cv.FileName);
         if (path == null) return NotFound();
         Response.Headers.CacheControl = "private, no-store";
         Response.Headers.XContentTypeOptions = "nosniff";
@@ -32,7 +33,8 @@ public sealed class CVController(ApplicationDbContext database, PrivateFileStora
     }
 
     [HttpGet]
-    public async Task<IActionResult> LegacyDownload(string fileName, CancellationToken token)
+    [ActionName("LegacyDownload")]
+    public async Task<IActionResult> XemCVTheoDuongDanCu(string fileName, CancellationToken token)
     {
         if (fileName != Path.GetFileName(fileName)) return NotFound();
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
@@ -40,6 +42,6 @@ public sealed class CVController(ApplicationDbContext database, PrivateFileStora
             (c.CandidateId == userId || User.IsInRole("Admin") ||
                 (User.IsInRole("Employer") && database.Applications.Any(a => a.CVId == c.Id && a.JobPost.EmployerId == userId))));
         var id = await accessible.Select(c => (int?)c.Id).FirstOrDefaultAsync(token);
-        return id.HasValue ? await Download(id.Value, token) : NotFound();
+        return id.HasValue ? await XemCV(id.Value, token) : NotFound();
     }
 }

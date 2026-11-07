@@ -17,7 +17,8 @@ namespace JobPortal.Areas.Admin.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        [ActionName("Index")]
+        public IActionResult TongQuan()
         {
             // Lấy số liệu thật từ các bảng trong Database
             ViewBag.TotalJobs = _context.JobPosts.Count();

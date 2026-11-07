@@ -32,7 +32,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.AccessDeniedPath = "/Identity/Account/AccessDenied";
     options.Events.OnValidatePrincipal = context => context.HttpContext.RequestServices
-        .GetRequiredService<CookieSessionValidator>().ValidateAsync(context);
+        .GetRequiredService<CookieSessionValidator>().KiemTraPhienAsync(context);
 });
 
 builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
@@ -55,6 +55,7 @@ builder.Services.Configure<JobPortal.Configuration.InterviewOptions>(builder.Con
 builder.Services.AddScoped<InterviewService>();
 builder.Services.AddSingleton<InterviewPresence>();
 builder.Services.AddHostedService<LegacyCvFileImporter>();
+builder.Services.AddSingleton(_ => new JobPortal.Configuration.CauHinhGeminiCucBo(builder.Environment.ContentRootPath));
 builder.Services.AddHttpClient<GeminiCvReviewService>(client =>
 {
     client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
@@ -101,7 +102,7 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-app.MapLegacyFeatureRoutes();
+app.AnhXaDuongDanCu();
 app.MapRazorPages();
 
 app.Run();

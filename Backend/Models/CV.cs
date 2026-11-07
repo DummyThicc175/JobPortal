@@ -40,6 +40,7 @@ namespace JobPortal.Models
         [MaxLength(7)] public string? ThemeColor { get; set; }
         [MaxLength(7)] public string? HeaderColor { get; set; }
         [MaxLength(7)] public string? BackgroundColor { get; set; }
+        [MaxLength(4000)] public string? LayoutJson { get; set; }
 
         // Các mục chi tiết dùng chung khóa ngoại CVId.
         public List<CvExperience> Experiences { get; set; } = [];

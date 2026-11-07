@@ -7,7 +7,8 @@ namespace JobPortal.Areas.Employer.Controllers
     public class ChatController : Controller
     {
 
-        public IActionResult Index()
+        [ActionName("Index")]
+        public IActionResult TinNhan()
         {
             ViewData["Title"] = "Quản lý tin nhắn";
             return View();

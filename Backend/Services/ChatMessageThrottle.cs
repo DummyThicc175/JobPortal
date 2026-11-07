@@ -5,7 +5,7 @@ namespace JobPortal.Services;
 public sealed class ChatMessageThrottle(IMemoryCache cache)
 {
     private readonly object _gate = new();
-    public bool TrySend(string userId)
+    public bool ThuGuiTin(string userId)
     {
         lock (_gate)
         {

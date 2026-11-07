@@ -12,31 +12,31 @@ public sealed class InterviewPresence
         public int Signals { get; set; }
     }
 
-    public (bool Accepted, string? Peer) Join(Guid roomId, string userId, string connectionId)
+    public (bool Accepted, string? Peer) ThamGia(Guid roomId, string userId, string connectionId)
     {
         lock (gate)
         {
-            Prune();
+            DonKetNoiHetHan();
             if (members.TryGetValue(connectionId, out var current))
-                return (current.RoomId == roomId, Peer(current)?.ConnectionId);
+                return (current.RoomId == roomId, TimNguoiConLai(current)?.ConnectionId);
             if (members.Values.Any(m => m.RoomId == roomId && m.UserId == userId)) return (false, null);
             if (members.Values.Count(m => m.RoomId == roomId) >= 2) return (false, null);
             var member = new Member(roomId, userId, connectionId);
             members.Add(connectionId, member);
-            return (true, Peer(member)?.ConnectionId);
+            return (true, TimNguoiConLai(member)?.ConnectionId);
         }
     }
 
-    public Member? Find(string connectionId)
+    public Member? TimKetNoi(string connectionId)
     {
-        lock (gate) { Prune(); return members.GetValueOrDefault(connectionId); }
+        lock (gate) { DonKetNoiHetHan(); return members.GetValueOrDefault(connectionId); }
     }
 
-    public string? Touch(string connectionId, Guid roomId, bool signal = false)
+    public string? CapNhatHoatDong(string connectionId, Guid roomId, bool signal = false)
     {
         lock (gate)
         {
-            Prune();
+            DonKetNoiHetHan();
             if (!members.TryGetValue(connectionId, out var member) || member.RoomId != roomId)
                 throw new InvalidOperationException("Bạn chưa tham gia phòng hoặc phiên kết nối đã hết hạn.");
             member.SeenAt = DateTime.UtcNow;
@@ -45,20 +45,20 @@ public sealed class InterviewPresence
                 if (member.WindowAt < DateTime.UtcNow.AddSeconds(-10)) { member.WindowAt = DateTime.UtcNow; member.Signals = 0; }
                 if (++member.Signals > 160) throw new InvalidOperationException("Tín hiệu gửi quá nhanh. Vui lòng vào lại phòng.");
             }
-            return Peer(member)?.ConnectionId;
+            return TimNguoiConLai(member)?.ConnectionId;
         }
     }
 
-    public string? Leave(string connectionId)
+    public string? RoiPhong(string connectionId)
     {
         lock (gate)
         {
             if (!members.Remove(connectionId, out var member)) return null;
-            return Peer(member)?.ConnectionId;
+            return TimNguoiConLai(member)?.ConnectionId;
         }
     }
 
-    public string[] Close(Guid roomId)
+    public string[] DongPhong(Guid roomId)
     {
         lock (gate)
         {
@@ -68,8 +68,8 @@ public sealed class InterviewPresence
         }
     }
 
-    private Member? Peer(Member member) => members.Values.FirstOrDefault(m => m.RoomId == member.RoomId && m.ConnectionId != member.ConnectionId);
-    private void Prune()
+    private Member? TimNguoiConLai(Member member) => members.Values.FirstOrDefault(m => m.RoomId == member.RoomId && m.ConnectionId != member.ConnectionId);
+    private void DonKetNoiHetHan()
     {
         foreach (var stale in members.Values.Where(m => m.SeenAt < DateTime.UtcNow.AddSeconds(-70)).ToArray()) members.Remove(stale.ConnectionId);
     }

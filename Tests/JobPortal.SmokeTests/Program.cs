@@ -1,1 +1,1 @@
-try { await PortalChecks.RunAsync(); } catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
+try { await PortalChecks.ChayKiemTraAsync(); } catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
