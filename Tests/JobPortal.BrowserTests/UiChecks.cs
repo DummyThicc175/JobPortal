@@ -30,11 +30,14 @@ static class UiChecks
             KiemTraBoCuc(page.Errors.Count == 0, name + " has unhandled browser errors: " + string.Join("; ", page.Errors));
             await ChupManHinhAsync(page, name);
         }
-        foreach (var width in new[] { 1440, 390 })
+        foreach (var width in new[] { 1440, 768, 390, 360 })
         {
             foreach (var page in new[] { anonymous, candidate, employer, admin })
-                await page.GoiLenhAsync("Emulation.setDeviceMetricsOverride", new { width, height = width == 1440 ? 1000 : 844, deviceScaleFactor = 1, mobile = false });
-            var prefix = width == 1440 ? "desktop-" : "mobile-";
+            {
+                await page.GoiLenhAsync("Emulation.setDeviceMetricsOverride", new { width, height = width == 1440 ? 1000 : width == 768 ? 1024 : 844, deviceScaleFactor = 1, mobile = width < 992 });
+                await page.GoiLenhAsync("Emulation.setTouchEmulationEnabled", new { enabled = width < 992 });
+            }
+            var prefix = width == 1440 ? "desktop-" : "mobile-" + width + "-";
             foreach (var (name, path) in new[] { ("home", "/"), ("jobs", "/Job"), ("job-details", "/Job/Details/" + jobId), ("login", "/Identity/Account/Login"), ("register", "/Identity/Account/Register"), ("privacy", "/Home/Privacy"), ("access-denied", "/Identity/Account/AccessDenied"), ("lockout", "/Identity/Account/Lockout") })
                 await KiemTraTrangAsync(anonymous, prefix + name, path, false);
             foreach (var (name, path) in new[] { ("candidate-profile", "/Candidate/Profile"), ("candidate-edit", "/Candidate/Profile/Edit"), ("candidate-applications", "/Candidate/Application"), ("candidate-saved", "/Candidate/SavedJob"), ("candidate-templates", "/Candidate/CV/SelectTemplate"), ("candidate-editor", "/Candidate/CV/Create?templateId=1"), ("candidate-editor-two", "/Candidate/CV/Create?templateId=2") })

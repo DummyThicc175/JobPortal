@@ -39,3 +39,35 @@
 .interview-room[data-call-state=connecting] .interview-connection-dot { background: #b78022; }
 @media (max-width: 1199px) { .interview-grid { grid-template-columns: minmax(0, 1fr) 250px; } .interview-stage { min-height: 380px; } }
 @media (max-width: 900px) { .interview-grid { grid-template-columns: minmax(0, 1fr); } .interview-side { display: grid; grid-template-columns: 220px minmax(0, 1fr); } .interview-stage { min-height: 300px; } .interview-heading { flex-wrap: wrap; } }
+@media (max-width: 900px) {
+    .interview-room { display:flex; flex-direction:column; }
+    .interview-heading { order:0; gap:12px; }
+    #interview-notice { order:1; }
+    .interview-controls { order:2; position:sticky; top:68px; z-index:30; margin:0 0 16px; padding:14px; gap:12px; box-shadow:0 4px 16px #172a320a; }
+    .interview-connection { min-width:0; width:100%; font-size:13px; }
+    .interview-control-buttons { display:grid; grid-template-columns:1fr 1fr; width:100%; }
+    .interview-control-buttons .btn { min-height:44px; padding:10px 8px; font-size:13px; }
+    .interview-room[data-call-state=ready] .interview-control-buttons .btn:disabled { display:none; }
+    #interview-join { grid-column:1/-1; }
+    .interview-grid { order:3; grid-template-columns:minmax(0,1fr); gap:14px; }
+    .interview-stage { min-height:230px; aspect-ratio:4/3; border-radius:14px; }
+    .interview-placeholder { padding:18px; }
+    .interview-person-mark { width:68px; height:68px; font-size:26px; margin-bottom:14px; border-width:5px; }
+    .interview-placeholder h2 { font-size:19px; overflow-wrap:anywhere; max-width:100%; }
+    .interview-video-caption { left:10px; right:10px; bottom:10px; font-size:11px; flex-wrap:wrap; }
+    .interview-video-caption span { max-width:100%; overflow-wrap:anywhere; }
+    .interview-side { grid-template-columns:minmax(0,1fr); gap:14px; }
+    .interview-self { width:150px; max-width:55%; justify-self:end; }
+    .interview-info { padding:18px; }
+    .interview-info>p,.interview-device-choice,.interview-privacy { font-size:13px; }
+    .interview-device-choice { min-height:44px; margin:4px 0; }
+    .interview-device-choice input { width:20px; height:20px; }
+    .interview-end-form { order:4; padding:0; margin-top:18px; justify-content:flex-start; }
+    .interview-end-form .btn { width:100%; }
+    .interview-play-audio { max-width:calc(100% - 24px); top:12px; right:12px; }
+}
+@media (max-width:991px) and (max-height:500px) {
+    .interview-controls { position:static; }
+    .interview-stage { min-height:220px; max-height:70svh; }
+    .interview-control-buttons { display:flex; flex-wrap:wrap; }
+}

@@ -11,7 +11,8 @@
   Duy trì các URL và giao thức SignalR hiện có bằng `ActionName`/`HubMethodName`;
   không đổi chuỗi tên endpoint chỉ để khớp với tên hàm mới trong C#.
 - Không đổi tên bảng, cột, property dữ liệu hoặc thêm migration chỉ vì đổi tên hàm.
-- Dự án chỉ phát triển website, ưu tiên máy tính. AI phỏng vấn làm sau phần CV.
+- Dự án chỉ phát triển website, hỗ trợ cả máy tính, máy tính bảng và điện thoại;
+  không làm ứng dụng mobile riêng. AI phỏng vấn làm sau phần giao diện responsive và CV.
 - Cấu hình chứa khóa API và dữ liệu riêng tư không đưa vào Git hoặc log công khai.
 - Khóa và model Gemini chỉ đọc từ `appsettings.json` tại thư mục gốc ứng dụng qua
   `CauHinhGeminiCucBo`; không chuyển khóa sang biến môi trường, User Secrets,

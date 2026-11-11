@@ -1,4 +1,8 @@
 .cv-studio { min-width:0; }
+.cv-mobile-views { display:none; }
+.cv-drag-handle { border:0; background:transparent; color:var(--muted); padding:0; font-size:20px; cursor:grab; touch-action:none; flex-shrink:0; }
+.cv-layout-block>span { flex:1; min-width:0; }
+.cv-studio-preview.cv-measuring { display:block!important; position:fixed; left:-12000px; top:0; width:210mm; visibility:hidden; pointer-events:none; }
 .cv-studio [hidden] { display:none!important; }
 .cv-studio-toolbar { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:17px 20px; margin-bottom:14px; position:sticky; top:0; z-index:20; }
 .cv-studio-template,.cv-studio-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -103,4 +107,40 @@
 .cv-export .cv-page { margin:0!important; box-shadow:none; }
 @media(max-width:1199px) { .cv-studio-grid { grid-template-columns:minmax(300px,350px) minmax(0,1fr); gap:15px; } .cv-studio-toolbar { flex-wrap:wrap; } }
 @media(max-width:900px) { .cv-studio-grid { grid-template-columns:minmax(0,1fr); } .cv-studio-inspector-body { height:600px; min-height:0; } .cv-preview-viewport { height:650px; min-height:0; } }
+@media(max-width:900px) {
+    .cv-mobile-views { display:flex; background:#e7eeeb; padding:4px; border-radius:11px; margin-bottom:16px; gap:4px; }
+    .cv-mobile-views button { flex:1; min-height:44px; border:0; border-radius:8px; background:transparent; color:var(--muted); font-size:14px; font-weight:650; }
+    .cv-mobile-views button[aria-pressed=true] { background:white; color:var(--brand); box-shadow:0 2px 6px #17352b0d; }
+    .cv-studio[data-mobile-view=edit] .cv-studio-preview,.cv-studio[data-mobile-view=preview] .cv-studio-inspector { display:none; }
+    .cv-studio-toolbar { position:static; padding:14px; gap:12px; }
+    .cv-studio-template { width:100%; gap:8px; }
+    .cv-studio-template select { flex:1; min-width:0; width:auto; }
+    #cvDirtyStatus { width:100%; }
+    .cv-studio-actions { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    #btnCheckAI { grid-column:1/-1; }
+    .cv-studio-actions .btn { padding:10px; font-size:13px; min-height:44px; }
+    .cv-form-section-body input,.cv-form-section-body textarea,.cv-studio-template select { font-size:16px; min-height:44px; }
+    .cv-studio-inspector-body { height:auto; min-height:0; overflow:visible; overscroll-behavior:auto; padding:0 12px 16px; }
+    .cv-studio-tabs { position:sticky; top:68px; z-index:10; background:white; padding:0 12px; gap:18px; }
+    .cv-studio-tabs button { min-height:48px; font-size:13px; }
+    .cv-form-section summary { padding:18px 0; font-size:14px; }
+    .cv-form-section-body .form-label,.cv-edit-entry label { font-size:13px; }
+    .cv-edit-entry .cv-remove-entry { min-height:44px; padding:6px 10px; font-size:13px; }
+    .cv-avatar-control { align-items:flex-start; }
+    .cv-avatar-control img { width:48px; height:60px; }
+    .cv-avatar-control small { font-size:12px; }
+    .cv-layout-block { display:grid; grid-template-columns:36px minmax(0,1fr); gap:4px 8px; padding:8px; }
+    .cv-layout-block>.cv-drag-handle { width:36px; height:44px; }
+    .cv-layout-block>span { font-size:13px; }
+    .cv-layout-block>div { grid-column:2; justify-content:flex-end; gap:6px; }
+    .cv-layout-block>div button { min-width:44px; min-height:44px; font-size:16px; }
+    .cv-layout-intro p,.cv-color-controls label,.cv-ai-review ul { font-size:14px; }
+    .cv-ai-heading { flex-wrap:wrap; font-size:14px; }
+    .cv-ai-review p { font-size:12px; }
+    .cv-color-controls input { width:48px; height:44px; }
+    .cv-preview-topline { flex-wrap:wrap; gap:8px; }
+    .cv-preview-topline>div { width:100%; justify-content:space-between; }
+    .cv-preview-viewport { padding:12px; height:65svh; min-height:360px; max-height:750px; }
+    .cv-studio-saved { font-size:13px; }
+}
 @media print { body * { visibility:hidden; } #cvSheet,#cvSheet * { visibility:visible; } #cvSheet { position:absolute; left:0; top:0; transform:none!important; } .cv-page { margin:0; box-shadow:none; break-after:page; } }

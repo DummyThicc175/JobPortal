@@ -8,7 +8,8 @@ Lộ trình nâng cấp đồ án chuyên ngành nằm trong [ROADMAP.md](ROADMA
 trang công khai và tài khoản. Đã triển khai phỏng vấn video gắn với hồ sơ;
 hướng dẫn sử dụng và cấu hình HTTPS/TURN trong [INTERVIEWS.md](INTERVIEWS.md).
 Chưa triển khai AI phỏng vấn tự xây.
-Phạm vi hiện tại chỉ phát triển website, ưu tiên máy tính; chưa phát triển app mobile.
+Website hỗ trợ máy tính, máy tính bảng và điện thoại trên cùng đường dẫn;
+không phát triển ứng dụng mobile riêng.
 
 ## Quy ước đặt tên hàm
 
@@ -187,6 +188,14 @@ CSS chính nằm tại `Frontend/wwwroot/css/portal.css`, tương tác giao di�
 và `_WorkspaceLayout.cshtml` (ba vai trò); các layout cũ được giữ làm lớp tương thích.
 Icon dùng SVG cục bộ; bộ Bootstrap Icons dùng trong mẫu CV cũng được lưu cục bộ.
 
+Giao diện màn hình nhỏ dùng `Frontend/wwwroot/css/portal-mobile.css` và các quy tắc
+riêng trong `cv-studio.css`, `interview.css`. Menu bên có nút đóng, khóa cuộn nền
+và quản lý focus. Các bảng được trình bày thành thẻ có nhãn trên điện thoại;
+biểu mẫu/nút thao tác dùng kích thước phù hợp cảm ứng. Ô nhập dùng cỡ chữ 16px
+để tránh Safari tự phóng to khi nhập. Khung chat thích ứng với visual viewport.
+Trong trình tạo CV, dùng **Chỉnh sửa / Xem CV** để chuyển chế độ trên màn hình nhỏ;
+có thể kéo tay nắm hoặc dùng nút sắp xếp. Bản PDF vẫn dùng khổ A4.
+
 Publish từ thư mục gốc:
 
 ```powershell
@@ -244,6 +253,7 @@ phân trang, khóa tài khoản và SignalR qua WebSocket. Không ghi vào datab
 dotnet run --project Tests/JobPortal.DatabaseTests
 dotnet run --project Tests/JobPortal.BrowserTests --configuration Fixes
 dotnet run --project Tests/JobPortal.BrowserTests --configuration Fixes -- --interview-only
+dotnet run --project Tests/JobPortal.BrowserTests --configuration Fixes -- --mobile-only
 ```
 
 Hai bộ bổ sung cần SQL Server Express cục bộ và quyền tạo/xóa database tạm
@@ -251,6 +261,8 @@ Hai bộ bổ sung cần SQL Server Express cục bộ và quyền tạo/xóa da
 rollback khi bị chặn. BrowserTests cần Chrome hoặc Edge trên Windows, chạy ẩn
 để kiểm tra tạo PDF thật từ sáu mẫu, PDF nhiều trang, lưu/kéo thả bố cục,
 giao diện đánh giá AI giả lập và chat giữa hai phiên riêng; kiểm tra các trang
-của ba vai trò ở chiều rộng 1440/390 px, menu điện thoại, modal và ảnh bị lỗi; chạy ứng dụng
+của ba vai trò ở chiều rộng 1440/768/390/360 px, menu điện thoại, modal và ảnh bị lỗi;
+kiểm tra thêm 320/430 px, điện thoại xoay ngang 844×390, cử chỉ chạm/kéo CV,
+khung chat khi vùng nhìn thu hẹp và lưu PDF khi xem trước bị ẩn; chạy ứng dụng
 từ bản build `Fixes`. File kiểm tra và ảnh chụp nằm trong `artifacts/browser-tests`.
 Không bộ kiểm tra nào gọi Gemini thật. Kết nối/hạn mức Gemini thực tế cần khóa hợp lệ.

@@ -83,6 +83,19 @@ try
         Console.WriteLine($"PASS: {checks} real Chrome interview assertions. Synthetic camera/microphone; isolated accounts and disposable SQL database.");
         return;
     }
+    if (args.Contains("--mobile-only"))
+    {
+        database.Applications.Add(new Application { CandidateId=candidateId, JobPostId=job.Id });
+        database.ChatMessages.Add(new ChatMessage { SenderId=employerId, ReceiverId=candidateId, Content="Mời bạn trao đổi về vị trí ứng tuyển.", Timestamp=DateTime.UtcNow });
+        database.JobPosts.Add(new JobPost { Title="Tin chờ duyệt", Description="Tin tuyển dụng", Company=company, Category=category, EmployerId=employerId, LocationId=1 });
+        await database.SaveChangesAsync();
+        await using var ungVien=await TaoTrangAsync(); await DangNhapAsync(ungVien,"candidate@jobhub.com","Candidate@123");
+        await using var nhaTuyenDung=await TaoTrangAsync(); await DangNhapAsync(nhaTuyenDung,"employer@jobhub.com","Employer@123");
+        await using var quanTri=await TaoTrangAsync(); await DangNhapAsync(quanTri,"admin@jobhub.com","Admin@123");
+        await using var khach=await TaoTrangAsync();
+        await MobileBrowserChecks.ChayKiemTraAsync(storage,origin,database,job.Id,khach,ungVien,nhaTuyenDung,quanTri,KiemTra);
+        Console.WriteLine($"PASS: {checks} phone browser assertions. Touch emulation and disposable SQL database."); return;
+    }
     await using var candidate = await TaoTrangAsync(); await DangNhapAsync(candidate, "candidate@jobhub.com", "Candidate@123");
     await candidate.MoTrangAsync(origin + "/Candidate/CV/Create?templateId=1");
     await candidate.ChoDieuKienAsync("typeof html2pdf === 'function' && typeof themMucKinhNghiem === 'function'");
@@ -134,6 +147,7 @@ try
     await using var anonymous = await TaoTrangAsync();
     await using var admin = await TaoTrangAsync(); await DangNhapAsync(admin, "admin@jobhub.com", "Admin@123");
     await UiChecks.ChayKiemTraAsync(storage, origin, job.Id, category.Id, anonymous, candidate, employer, admin, KiemTra);
+    await MobileBrowserChecks.ChayKiemTraAsync(storage,origin,database,job.Id,anonymous,candidate,employer,admin,KiemTra);
     KiemTra(candidate.Errors.Count == 0 && employer.Errors.Count == 0, "Browser pages have no unhandled JavaScript errors: " + string.Join("; ", candidate.Errors.Concat(employer.Errors)));
     Console.WriteLine($"PASS: {checks} Chrome browser assertions: six CV templates, exact multipage PDFs, layout persistence, mocked AI UI, submission, private realtime chat and safe DOM rendering.");
 }

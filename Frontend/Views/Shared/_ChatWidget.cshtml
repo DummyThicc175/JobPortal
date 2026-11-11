@@ -1,7 +1,7 @@
 @using System.Security.Claims
 @if (User.IsInRole("Candidate") || User.IsInRole("Employer"))
 {
-    <button class="chat-launcher" id="chat-bubble" type="button" onclick="batTatKhungChat()" aria-label="Mở tin nhắn">
+    <button class="chat-launcher" id="chat-bubble" type="button" onclick="batTatKhungChat()" aria-label="Mở tin nhắn" aria-controls="chat-window" aria-expanded="false">
 <svg class="icon" aria-hidden="true">
 <use href="/images/icons.svg#message" />
 </svg>

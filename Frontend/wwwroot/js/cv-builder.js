@@ -76,8 +76,11 @@
             const danhSach = layPhanTu('cv-layout-' + cot); danhSach.replaceChildren();
             const cacKhoi = boCuc.filter(m => m.Zone === cot);
             for (const [viTri, khoi] of cacKhoi.entries()) {
-                const muc = taoPhanTu('li', '', 'cv-layout-block'); muc.draggable = true; muc.dataset.blockKey = khoi.Key;
-                muc.append(taoPhanTu('span', '⠿ ' + tenKhoi[khoi.Key])); const nutDieuKhien = document.createElement('div');
+                const muc = taoPhanTu('li', '', 'cv-layout-block'); muc.draggable = matchMedia('(pointer:fine)').matches; muc.dataset.blockKey = khoi.Key;
+                // Chuột dùng HTML drag/drop, cảm ứng dùng Pointer Events để không tranh chấp cử chỉ.
+                muc.addEventListener('pointerdown',suKien => { if(suKien.pointerType==='mouse' && !muc.draggable) muc.draggable=true; },true);
+                const tayKeo = taoPhanTu('button','⠿','cv-drag-handle'); tayKeo.type='button'; tayKeo.setAttribute('aria-label','Kéo để sắp xếp ' + tenKhoi[khoi.Key]);
+                ganKeoCamUng(tayKeo,khoi.Key); muc.append(tayKeo,taoPhanTu('span', tenKhoi[khoi.Key])); const nutDieuKhien = document.createElement('div');
                 for (const [lenh, chu, nhan, voHieu] of [['up','↑','Đưa lên',viTri === 0],['down','↓','Đưa xuống',viTri === cacKhoi.length-1],['zone','⇄','Chuyển cột',!layMau().TwoColumns]]) {
                     const nut = taoPhanTu('button', chu); nut.type = 'button'; nut.disabled = voHieu; nut.dataset.layoutAction = lenh; nut.setAttribute('aria-label', nhan + ' ' + tenKhoi[khoi.Key]);
                     nut.addEventListener('click', () => {
@@ -95,6 +98,34 @@
                 danhSach.append(muc);
             }
         }
+    }
+    function ganKeoCamUng(tayKeo,khoa) {
+        let conTro = null, toaDoDau = null, daKeo = false;
+        function donDep() {
+            conTro=null; toaDoDau=null; daKeo=false; khoiDangKeo=null;
+            document.querySelectorAll('.cv-drag-over,.cv-dragging').forEach(nut => nut.classList.remove('cv-drag-over','cv-dragging'));
+        }
+        tayKeo.addEventListener('pointerdown',suKien => {
+            if (suKien.pointerType === 'mouse' || dangXuLy || !suKien.isPrimary) return;
+            suKien.preventDefault(); conTro=suKien.pointerId; toaDoDau={x:suKien.clientX,y:suKien.clientY};
+            tayKeo.closest('li').draggable=false;
+            tayKeo.setPointerCapture(conTro);
+        });
+        tayKeo.addEventListener('pointermove',suKien => {
+            if (suKien.pointerId !== conTro) return;
+            if (!daKeo && Math.hypot(suKien.clientX-toaDoDau.x,suKien.clientY-toaDoDau.y)<6) return;
+            daKeo=true; khoiDangKeo=khoa; tayKeo.closest('li').classList.add('cv-dragging');
+            document.querySelectorAll('.cv-drag-over').forEach(nut => nut.classList.remove('cv-drag-over'));
+            document.elementFromPoint(suKien.clientX,suKien.clientY)?.closest('[data-drop-zone]')?.classList.add('cv-drag-over');
+            if (suKien.clientY > innerHeight-60) window.scrollBy(0,18); else if (suKien.clientY<100) window.scrollBy(0,-18);
+        });
+        tayKeo.addEventListener('pointerup',suKien => {
+            if (suKien.pointerId !== conTro) return;
+            const dich=document.elementFromPoint(suKien.clientX,suKien.clientY), cot=dich?.closest('[data-drop-zone]'), truoc=dich?.closest('[data-block-key]')?.dataset.blockKey;
+            const canChuyen=daKeo && cot; tayKeo.releasePointerCapture(conTro); donDep();
+            if (canChuyen) requestAnimationFrame(() => chuyenKhoi(khoa,cot.dataset.dropZone,truoc));
+        });
+        tayKeo.addEventListener('pointercancel',donDep);
     }
     function capNhatBoCuc(khoa, lenh = '') {
         hienThiBoCuc(); danhDauThayDoi();
@@ -122,6 +153,11 @@
         for (const nut of goc.querySelectorAll('[data-cv-tab]')) { const chon = nut.dataset.cvTab === ten; nut.setAttribute('aria-selected', String(chon)); nut.tabIndex = chon ? 0 : -1; layPhanTu('cv-panel-' + nut.dataset.cvTab).hidden = !chon; }
     }
     for (const nut of goc.querySelectorAll('[data-cv-tab]')) { nut.addEventListener('click', () => chonTab(nut.dataset.cvTab)); nut.addEventListener('keydown', suKien => { if (['ArrowLeft','ArrowRight','Home','End'].includes(suKien.key)) { suKien.preventDefault(); const ten = suKien.key === 'Home' ? 'content' : suKien.key === 'End' ? 'layout' : nut.dataset.cvTab === 'content' ? 'layout' : 'content'; chonTab(ten); layPhanTu('cv-tab-' + ten).focus(); } }); }
+    for (const nut of goc.querySelectorAll('[data-cv-mobile-view]')) nut.addEventListener('click',() => {
+        goc.dataset.mobileView=nut.dataset.cvMobileView;
+        goc.querySelectorAll('[data-cv-mobile-view]').forEach(muc => muc.setAttribute('aria-pressed',String(muc===nut)));
+        if (nut.dataset.cvMobileView==='preview') requestAnimationFrame(() => { veCV(); vuaKhung(); });
+    });
     layPhanTu('cv-reset-layout').addEventListener('click', () => { boCuc = taoBoCucMacDinh(); hienThiBoCuc(); danhDauThayDoi(); layPhanTu('cv-layout-message').textContent = 'Đã khôi phục bố cục của mẫu.'; });
     layPhanTu('cvTemplateSelect').addEventListener('change', () => {
         maMau = Number(layPhanTu('cvTemplateSelect').value); const mau = layMau(); boCuc = taoBoCucMacDinh();
@@ -155,6 +191,8 @@
     }
     function veCV() {
         clearTimeout(henVe); const duLieu = thuThapDuLieu(), mau = layMau(), giay = layPhanTu('cvSheet');
+        const khungXem = goc.querySelector('.cv-studio-preview'), dangAn = !khungXem.getClientRects().length;
+        if (dangAn) khungXem.classList.add('cv-measuring');
         giay.style.transform = 'none'; giay.style.setProperty('--cv-accent', duLieu.ThemeColor); giay.style.setProperty('--cv-header', duLieu.HeaderColor); giay.style.setProperty('--cv-paper', duLieu.BackgroundColor); giay.replaceChildren();
         const cacTrang = []; const idDaGan = new Set(); loiPhanTrang = false;
         function taoTrang() {
@@ -210,15 +248,18 @@
         layPhanTu('cvPageCount').textContent = soTrang + ' trang';
         layPhanTu('cv-pagination-note').textContent = loiPhanTrang ? 'Một mục quá dài để trình bày. Hãy chia nội dung thành các đoạn ngắn hơn.' : soTrang > 6 ? 'CV đang vượt 6 trang. Hãy rút gọn nội dung trước khi lưu PDF.' : 'Các trang xem trước cũng là các trang được xuất PDF.';
         capNhatThuPhong();
+        if (dangAn) khungXem.classList.remove('cv-measuring');
     }
     function capNhatThuPhong() {
         const giay = layPhanTu('cvSheet'); giay.style.transform = 'scale(' + mucThuPhong + ')';
         layPhanTu('cv-preview-scaler').style.width = (giay.offsetWidth * mucThuPhong) + 'px'; layPhanTu('cv-preview-scaler').style.height = (giay.offsetHeight * mucThuPhong) + 'px'; layPhanTu('cvZoomValue').textContent = Math.round(mucThuPhong*100) + '%';
     }
-    function vuaKhung() { mucThuPhong = Math.max(.25, Math.min(1, (layPhanTu('cv-preview-viewport').clientWidth - 46) / (210 * 96/25.4))); capNhatThuPhong(); }
+    function vuaKhung() { const khung=layPhanTu('cv-preview-viewport'); if (!khung.clientWidth) return; const kieu=getComputedStyle(khung); mucThuPhong = Math.max(.2, Math.min(1, (khung.clientWidth-parseFloat(kieu.paddingLeft)-parseFloat(kieu.paddingRight)-2) / (210 * 96/25.4))); capNhatThuPhong(); }
     layPhanTu('cv-zoom-out').addEventListener('click', () => { mucThuPhong = Math.max(.25, mucThuPhong-.1); capNhatThuPhong(); });
     layPhanTu('cv-zoom-in').addEventListener('click', () => { mucThuPhong = Math.min(1.5, mucThuPhong+.1); capNhatThuPhong(); });
     window.addEventListener('resize', vuaKhung);
+    let chieuRongCu=0;
+    new ResizeObserver(() => { const rong=layPhanTu('cv-preview-viewport').clientWidth; if (rong>0 && rong!==chieuRongCu) { chieuRongCu=rong; vuaKhung(); } }).observe(layPhanTu('cv-preview-viewport'));
     function kiemTraNoiDung(duLieu) {
         if (!duLieu.FullName || !duLieu.JobTitle || !duLieu.Email || !layPhanTu('inEmail').checkValidity()) throw new Error('Điền họ tên, vị trí công việc và email hợp lệ trước khi tiếp tục.');
         if (duLieu.ITSKills.length > 20 || duLieu.Languages.length > 20) throw new Error('Kỹ năng và ngoại ngữ tối đa 20 dòng mỗi mục.');

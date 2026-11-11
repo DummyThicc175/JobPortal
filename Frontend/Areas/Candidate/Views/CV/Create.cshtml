@@ -2,7 +2,7 @@
 @using JobPortal.Models
 @{ ViewData["Title"] = "Thiết kế CV"; ViewData["Description"] = "Nội dung của bạn, bố cục phù hợp và một bản CV sẵn sàng ứng tuyển."; var mau = CvTemplateCatalog.LayMau(Model.TemplateId)!; }
 @section Styles { <link rel="stylesheet" href="~/css/cv-studio.css" asp-append-version="true" /> }
-<div id="cv-studio" class="cv-studio">
+<div id="cv-studio" class="cv-studio" data-mobile-view="edit">
     @Html.AntiForgeryToken()
     <div class="cv-studio-toolbar panel">
         <div class="cv-studio-template"><label for="cvTemplateSelect">Mẫu đang dùng</label><select id="cvTemplateSelect" class="form-select form-select-sm">@foreach (var m in CvTemplateCatalog.Templates) { <option value="@m.Id" selected="@(m.Id == Model.TemplateId)">@m.Name</option> }</select><span id="cvDirtyStatus" class="small muted" role="status">Sẵn sàng chỉnh sửa</span></div>
@@ -10,6 +10,7 @@
     </div>
     <div id="cvSaveStatus" class="alert alert-info" role="status" hidden></div>
     <div class="cv-studio-saved"><a id="cvStoredDownload" href="@(Model.Id > 0 ? "/CV/Download/" + Model.Id : "#")" target="_blank" rel="noopener" hidden="@(Model.Id <= 0)">Xem PDF đã lưu ↗</a><span class="small muted">CV đã nộp trước đây vẫn giữ nguyên bản tại thời điểm ứng tuyển.</span></div>
+    <div class="cv-mobile-views" role="group" aria-label="Chế độ trình tạo CV"><button type="button" data-cv-mobile-view="edit" aria-pressed="true">Chỉnh sửa</button><button type="button" data-cv-mobile-view="preview" aria-pressed="false">Xem CV</button></div>
     <div class="cv-studio-grid">
         <div class="cv-studio-inspector panel">
             <div class="cv-studio-tabs" role="tablist" aria-label="Chỉnh sửa CV"><button type="button" id="cv-tab-content" role="tab" aria-selected="true" aria-controls="cv-panel-content" data-cv-tab="content">Nội dung</button><button type="button" id="cv-tab-layout" role="tab" aria-selected="false" aria-controls="cv-panel-layout" data-cv-tab="layout" tabindex="-1">Bố cục & màu sắc</button></div>

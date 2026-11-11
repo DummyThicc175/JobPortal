@@ -2,21 +2,52 @@
     'use strict';
     const toggle = document.querySelector('[data-sidebar-toggle]');
     const backdrop = document.querySelector('[data-sidebar-backdrop]');
-    function dongThanhDieuHuong() { const opened = document.body.classList.contains('sidebar-open'); document.body.classList.remove('sidebar-open'); toggle?.setAttribute('aria-expanded', 'false'); if (opened) toggle?.focus(); }
+    const thanhDieuHuong = document.querySelector('.workspace-sidebar');
+    const manHinhNho = matchMedia('(max-width:991px)');
+    function capNhatThanhDieuHuong() {
+        const dangMo = manHinhNho.matches && document.body.classList.contains('sidebar-open');
+        if (thanhDieuHuong) thanhDieuHuong.inert = manHinhNho.matches && !dangMo;
+        document.querySelectorAll('.workspace-main,.chat-launcher,.chat-widget').forEach(nut => { nut.inert = dangMo; });
+        toggle?.setAttribute('aria-expanded', String(dangMo));
+    }
+    function dongThanhDieuHuong(traFocus = true) { const opened = document.body.classList.contains('sidebar-open'); document.body.classList.remove('sidebar-open'); capNhatThanhDieuHuong(); if (opened && traFocus) toggle?.focus(); }
     toggle?.addEventListener('click', () => {
-        const open = document.body.classList.toggle('sidebar-open'); toggle.setAttribute('aria-expanded', String(open));
-        if (open) document.querySelector('.workspace-sidebar a')?.focus();
+        const open = document.body.classList.toggle('sidebar-open'); capNhatThanhDieuHuong();
+        if (open) thanhDieuHuong?.querySelector('[data-sidebar-close]')?.focus();
     });
-    backdrop?.addEventListener('click', dongThanhDieuHuong);
+    backdrop?.addEventListener('click', () => dongThanhDieuHuong());
+    document.querySelector('[data-sidebar-close]')?.addEventListener('click', () => dongThanhDieuHuong());
+    thanhDieuHuong?.addEventListener('click', suKien => { if (manHinhNho.matches && suKien.target.closest('a')) dongThanhDieuHuong(false); });
+    manHinhNho.addEventListener('change', () => { dongThanhDieuHuong(false); }); capNhatThanhDieuHuong();
     document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') { dongThanhDieuHuong(); const chat = document.querySelector('[data-chat-window]'); if (chat) chat.style.display = 'none'; }
+        if (event.key === 'Escape') { dongThanhDieuHuong(); window.dongKhungChat?.(); }
         if (event.key === 'Tab' && document.body.classList.contains('sidebar-open')) {
-            const items = [...document.querySelectorAll('.workspace-sidebar a, .workspace-sidebar button')];
+            const items = [...document.querySelectorAll('.workspace-sidebar a, .workspace-sidebar button')].filter(nut => nut.getClientRects().length && !nut.disabled);
             const first = items[0], last = items[items.length - 1];
             if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
             else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
         }
     });
+    // Giữ ngữ nghĩa bảng cho trình đọc màn hình, thêm nhãn cho cách trình bày dạng thẻ.
+    document.querySelectorAll('.table-responsive table').forEach(bang => {
+        const tieuDe = [...bang.querySelectorAll('thead th')].map(nut => nut.textContent.trim());
+        if (!tieuDe.length || [...bang.querySelectorAll('tbody tr')].some(dong => dong.cells.length !== tieuDe.length)) return;
+        bang.classList.add('table-mobile-cards'); bang.setAttribute('role','table');
+        bang.querySelectorAll('thead,tbody').forEach(nut => nut.setAttribute('role','rowgroup'));
+        bang.querySelectorAll('tr').forEach(nut => nut.setAttribute('role','row'));
+        bang.querySelectorAll('th').forEach(nut => { nut.setAttribute('role','columnheader'); nut.scope='col'; });
+        bang.querySelectorAll('tbody tr').forEach(dong => [...dong.cells].forEach((o,viTri) => { o.dataset.label=tieuDe[viTri]; o.setAttribute('role','cell'); }));
+    });
+    document.body.classList.toggle('has-chat-workspace',!!document.querySelector('.chat-workspace'));
+    document.body.classList.toggle('has-interview-room',!!document.querySelector('#interview-room'));
+    function capNhatKhungNhinChat() {
+        const khungNhin = window.visualViewport;
+        document.documentElement.style.setProperty('--chat-height',(khungNhin?.height || innerHeight)+'px');
+        document.documentElement.style.setProperty('--chat-top',(khungNhin?.offsetTop || 0)+'px');
+    }
+    window.visualViewport?.addEventListener('resize',capNhatKhungNhinChat);
+    window.visualViewport?.addEventListener('scroll',capNhatKhungNhinChat);
+    window.addEventListener('resize',capNhatKhungNhinChat); capNhatKhungNhinChat();
     document.querySelectorAll('[data-confirm]').forEach(form => form.addEventListener('submit', event => { if (!window.confirm(form.dataset.confirm)) event.preventDefault(); }));
     const fileInput = document.querySelector('[data-avatar-input]');
     let previousAvatar;

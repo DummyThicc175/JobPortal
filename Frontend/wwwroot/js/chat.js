@@ -98,13 +98,18 @@
     connection.onreconnecting(() => panels.forEach(state => { state.send.disabled = true; state.notice.textContent = 'Đang kết nối lại...'; }));
     connection.onreconnected(() => { panels.forEach(state => { state.send.disabled = !state.partner.value; state.input.disabled = !state.partner.value; if (state.partner.value) taiLichSu(state); }); taiDanhSachDoiThoai(); });
     connection.onclose(() => panels.forEach(state => { state.send.disabled = true; state.notice.textContent = 'Kết nối đã đóng. Tải lại trang để tiếp tục.'; }));
-    window.batTatKhungChat = () => {
+    function hienThiKhungChat(mo, traFocus = false) {
         const chat = layPhanTu('chat-window'); if (!chat) return;
-        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex'; if (chat.style.display === 'flex') taiDanhSachDoiThoai();
-    };
+        chat.style.display = mo ? 'flex' : 'none'; document.body.classList.toggle('chat-open',mo);
+        layPhanTu('chat-bubble')?.setAttribute('aria-expanded',String(mo));
+        if (mo) { taiDanhSachDoiThoai(); chat.querySelector('button[aria-label="Đóng tin nhắn"]')?.focus(); }
+        else if (traFocus) layPhanTu('chat-bubble')?.focus();
+    }
+    window.batTatKhungChat = () => hienThiKhungChat(layPhanTu('chat-window')?.style.display !== 'flex',true);
+    window.dongKhungChat = () => { if (layPhanTu('chat-window')?.style.display === 'flex') hienThiKhungChat(false,true); };
     document.addEventListener('click', async event => {
         const button = event.target.closest('.btn-open-chat'); if (!button || !widget) return;
-        layPhanTu('chat-window').style.display = 'flex'; await chonDoiThoai(widget, button.dataset.partnerId, button.dataset.partnerName || 'Hội thoại');
+        hienThiKhungChat(true); await chonDoiThoai(widget, button.dataset.partnerId, button.dataset.partnerName || 'Hội thoại');
     });
     connection.start().then(() => { panels.forEach(state => { state.notice.textContent = ''; state.input.disabled = !state.partner.value; state.send.disabled = !state.partner.value; }); taiDanhSachDoiThoai(); })
         .catch(() => panels.forEach(state => { state.notice.textContent = 'Không kết nối được tin nhắn. Vui lòng tải lại trang.'; }));

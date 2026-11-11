@@ -27,7 +27,16 @@ static class InterviewBrowserChecks
             await actor.ChoDieuKienAsync("document.getElementById('interview-join') !== null && typeof signalR !== 'undefined'");
             await actor.ThucThiJavaScriptAsync("(()=>{const build=signalR.HubConnectionBuilder.prototype.build;signalR.HubConnectionBuilder.prototype.build=function(){const h=build.call(this);if(h.baseUrl.endsWith('/interviewHub'))window.__testInterviewHub=h;return h;};return true})()");
             check((await actor.ThucThiJavaScriptAsync("document.getElementById('interview-local').srcObject === null && __testStreams.length===0")).GetBoolean(), "Page does not acquire devices before Join");
+            foreach (var (rong,cao) in new[] { (320,740),(390,844),(844,390),(768,1024) })
+            {
+                await actor.GoiLenhAsync("Emulation.setDeviceMetricsOverride",new { width=rong,height=cao,deviceScaleFactor=1,mobile=true });
+                await actor.ThucThiJavaScriptAsync("scrollTo(0,0)");
+                check((await actor.ThucThiJavaScriptAsync("document.documentElement.scrollWidth<=innerWidth+1 && document.getElementById('interview-join').getBoundingClientRect().height>=43.9")).GetBoolean(),"Interview preflight fits phone/tablet and has a large join target: "+rong+"x"+cao);
+                check((await actor.ThucThiJavaScriptAsync("document.querySelector('.interview-controls').getBoundingClientRect().top < document.querySelector('.interview-stage').getBoundingClientRect().top")).GetBoolean(),"Phone interview controls come before video and preparation details");
+            }
+            await actor.GoiLenhAsync("Emulation.setDeviceMetricsOverride",new { width=1440,height=1000,deviceScaleFactor=1,mobile=false });
         }
+        await candidate.GoiLenhAsync("Emulation.setDeviceMetricsOverride",new { width=390,height=844,deviceScaleFactor=1,mobile=true });
         await candidate.ThucThiJavaScriptAsync("document.getElementById('interview-use-camera').checked=false;document.getElementById('interview-join').click()");
         await candidate.ChoDieuKienAsync("document.getElementById('interview-room').dataset.callState==='waiting'");
         check((await candidate.ThucThiJavaScriptAsync("__testStreams[0].getAudioTracks().length===1 && __testStreams[0].getVideoTracks().length===0")).GetBoolean(), "Candidate can join audio-only without camera");
@@ -75,7 +84,7 @@ static class InterviewBrowserChecks
         var screenshotFolder = Path.Combine(storage, "screenshots"); Directory.CreateDirectory(screenshotFolder);
         foreach (var (actor, label) in new[] { (employer, "employer"), (candidate, "candidate") })
         {
-            check((await actor.ThucThiJavaScriptAsync("document.documentElement.scrollWidth<=innerWidth+1 && document.querySelectorAll('main').length===1")).GetBoolean(), "Interview desktop layout fits viewport: " + label);
+            check((await actor.ThucThiJavaScriptAsync("document.documentElement.scrollWidth<=innerWidth+1 && document.querySelectorAll('main').length===1")).GetBoolean(), "Connected interview desktop/phone layout fits viewport: " + label);
             await actor.GoiLenhAsync("Page.bringToFront");
             await actor.ThucThiJavaScriptAsync("new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>r(true))))");
             var shot = await actor.GoiLenhAsync("Page.captureScreenshot", new { format = "png" });
