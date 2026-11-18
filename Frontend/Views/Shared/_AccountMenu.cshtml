@@ -21,12 +21,32 @@
         </button>
         <ul class="dropdown-menu dropdown-menu-end">
             <li class="px-3 py-2 small text-muted text-break">@User.Identity?.Name</li>
-            <li>
+            @if (User.IsInRole("Candidate") && !User.IsInRole("Admin") && !User.IsInRole("Employer"))
+            {
+                @foreach (var (controller, action, icon, label) in new[] {
+                    ("Profile", "Index", "user", "Hồ sơ của tôi"),
+                    ("CV", "SelectTemplate", "layout", "Tạo & chỉnh sửa CV"),
+                    ("Application", "Index", "briefcase", "Việc đã ứng tuyển"),
+                    ("AiInterview", "Index", "spark", "Luyện phỏng vấn AI"),
+                    ("SavedJob", "Index", "bookmark", "Việc đã lưu")
+                })
+                {
+                    <li>
+                        <a class="dropdown-item" asp-area="Candidate" asp-controller="@controller" asp-action="@action">
+                            <svg class="icon" aria-hidden="true"><use href="/images/icons.svg#@icon" /></svg>@label
+                        </a>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>
 <a class="dropdown-item" href="@destination">
 <svg class="icon" aria-hidden="true">
 <use href="/images/icons.svg#grid" />
 </svg>Không gian của tôi</a>
 </li>
+            }
             <li>
 <hr class="dropdown-divider" />
 </li>

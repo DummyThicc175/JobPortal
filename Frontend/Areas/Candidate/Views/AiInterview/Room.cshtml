@@ -1,0 +1,28 @@
+@model JobPortal.ViewModels.Candidate.AiInterviewRoomViewModel
+@{ ViewData["Title"] = "Phòng luyện phỏng vấn"; ViewData["Description"] = Model.JobTitle + " · " + Model.CategoryName; }
+@section Styles { <link rel="stylesheet" href="~/css/ai-interview.css" asp-append-version="true" /> }
+<div class="ai-room" data-ai-room data-session="@Model.Id" data-number="@Model.Number"
+     data-submit-url="@Url.Action("Submit", "AiInterviewAnswer", new { id = Model.Id })"
+     data-speech-url="@Url.Action("Transcribe", "AiInterviewSpeech", new { id = Model.Id })">
+    <section class="panel ai-question-panel">
+        <div class="ai-question-top"><span class="count-chip">Câu @Model.Number / @Model.QuestionCount</span><span class="small muted">@Model.CompanyName</span></div>
+        <div class="ai-interviewer"><span class="ai-avatar" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#spark" /></svg></span><strong>Người phỏng vấn AI</strong><span class="small muted">Sẵn sàng lắng nghe bạn</span></div>
+        <p class="ai-question" data-ai-question>@Model.Question</p>
+        <p class="small muted">Dựa trên chuyên ngành và nội dung tin tuyển dụng@(Model.HasCvContext ? ", kết hợp nội dung CV đã nộp." : ".")</p>
+        @if (!Model.HasCvContext) { <p class="ai-notice">Chưa đọc được nội dung CV của hồ sơ này (có thể là PDF dạng ảnh). Phiên này sẽ hỏi theo công việc; AI không suy đoán kinh nghiệm trong CV.</p> }
+        <div class="ai-room-links"><a asp-controller="AiInterviewReport" asp-action="Details" asp-route-id="@Model.Id">Xem các câu đã trả lời</a><a asp-action="Index">Tạm rời phòng</a></div>
+    </section>
+    <section class="panel ai-answer-panel">
+        <h2>Câu trả lời của bạn</h2><p class="muted">Nói tự nhiên, sau đó kiểm tra bản chữ trước khi gửi.</p>
+        <div class="ai-mic-box"><button type="button" class="ai-mic-button" data-ai-record aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="/images/icons.svg#mic" /></svg><span data-ai-record-label>Bắt đầu ghi âm</span></button><span data-ai-timer aria-label="Thời gian ghi âm">00:00 / 02:00</span></div>
+        <audio controls data-ai-playback hidden aria-label="Nghe lại câu trả lời"></audio>
+        <button class="btn btn-light btn-sm" type="button" data-ai-retry hidden>Nhận giọng nói lại</button>
+        <label for="ai-answer">Bản chữ câu trả lời <span class="muted small">(có thể chỉnh sửa)</span></label>
+        <textarea id="ai-answer" class="form-control" rows="8" maxlength="4000" data-ai-answer placeholder="Bản chữ sẽ xuất hiện sau khi bạn dừng ghi âm. Bạn cũng có thể nhập trực tiếp khi không dùng được micro."></textarea>
+        <div class="ai-answer-footer"><span class="small muted" data-ai-count>0 / 4.000 ký tự</span><button type="button" class="btn btn-primary" data-ai-submit>Gửi câu trả lời <span aria-hidden="true">→</span></button></div>
+        <p class="ai-status" data-ai-status role="status" aria-live="polite">Bấm ghi âm khi bạn sẵn sàng.</p>
+        <form asp-action="End" asp-route-id="@Model.Id" method="post" data-ai-end><button type="submit" class="btn btn-quiet btn-sm">Kết thúc và xem kết quả hiện tại</button></form>
+        <p class="small muted">Âm thanh chỉ dùng để nhận giọng nói và không được lưu vào lịch sử. Lịch sử lưu bản chữ cùng góp ý của AI.</p>
+    </section>
+</div>
+@section Scripts { <script src="~/js/ai-interview.js" asp-append-version="true"></script> }

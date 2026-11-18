@@ -7,7 +7,9 @@ Lộ trình nâng cấp đồ án chuyên ngành nằm trong [ROADMAP.md](ROADMA
 Đợt giao diện dùng hệ thống thiết kế chung cho cả Admin, Employer, Candidate,
 trang công khai và tài khoản. Đã triển khai phỏng vấn video gắn với hồ sơ;
 hướng dẫn sử dụng và cấu hình HTTPS/TURN trong [INTERVIEWS.md](INTERVIEWS.md).
-Chưa triển khai AI phỏng vấn tự xây.
+Đã bổ sung luyện phỏng vấn AI theo hướng dùng model cục bộ có sẵn: câu hỏi hiện
+bằng chữ, ứng viên trả lời bằng micro và xem lại bản chữ trước khi gửi.
+Hướng dẫn cài model trên ổ dự án và chạy trong [AI_INTERVIEWS.md](AI_INTERVIEWS.md).
 Website hỗ trợ máy tính, máy tính bảng và điện thoại trên cùng đường dẫn;
 không phát triển ứng dụng mobile riêng.
 

@@ -1,0 +1,43 @@
+@model JobPortal.ViewModels.Candidate.AiInterviewIndexViewModel
+@{ ViewData["Title"] = "Luyện phỏng vấn AI"; ViewData["Description"] = "Chuẩn bị cho buổi phỏng vấn bằng câu hỏi theo công việc bạn đã ứng tuyển."; }
+@section Styles { <link rel="stylesheet" href="~/css/ai-interview.css" asp-append-version="true" /> }
+<div class="ai-intro panel">
+    <span class="ai-avatar" aria-hidden="true"><svg class="icon"><use href="/images/icons.svg#spark" /></svg></span>
+    <div><span class="eyebrow">KHÔNG GIAN LUYỆN TẬP RIÊNG</span><h2>Tập trả lời, tự tin hơn mỗi ngày</h2>
+    <p>AI hiện từng câu hỏi. Bạn trả lời bằng micro, xem lại bản chữ rồi gửi. Mỗi phiên có 5 câu hỏi dựa trên chuyên ngành, tin tuyển dụng và CV đã nộp.</p>
+    <p class="small muted">Kết quả chỉ dành cho bạn, không gửi tới nhà tuyển dụng. Điểm và góp ý của AI mang tính tham khảo.</p></div>
+</div>
+@if (Model.Sessions.Any(s => !s.Completed))
+{
+    <section class="panel ai-section"><h2>Tiếp tục luyện tập</h2>
+    @foreach (var item in Model.Sessions.Where(s => !s.Completed))
+    { <div class="ai-list-row"><div><strong>@item.Title</strong><p>Bắt đầu lúc @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.Answered / @item.Total câu đã trả lời</p></div><a class="btn btn-primary" asp-action="Room" asp-route-id="@item.Id">Tiếp tục</a></div> }
+    <p class="small muted">Các câu đã trả lời và nhận xét đã lưu được giữ nguyên khi bạn tiếp tục phiên.</p>
+    </section>
+}
+<section class="panel ai-section"><h2>Chọn công việc để bắt đầu</h2>
+@if (Model.Applications.Count == 0)
+{ <p>Bạn chưa có hồ sơ ứng tuyển. Hãy ứng tuyển một công việc để luyện tập theo đúng chuyên ngành và CV của mình.</p><a href="/Job" class="btn btn-primary">Khám phá việc làm</a> }
+else
+{
+    <form asp-action="Start" method="post" data-ai-start>
+        <label for="ai-application">Công việc đã ứng tuyển</label>
+        <select id="ai-application" name="applicationId" class="form-select" required>
+            @foreach (var item in Model.Applications)
+            { <option value="@item.Id">@item.Title · @item.Category · @item.Company</option> }
+        </select>
+        @if (Model.Sessions.Any(s => !s.Completed))
+        {
+            <p class="small muted">Nếu công việc này có phiên chưa kết thúc, nút bên dưới sẽ mở tiếp phiên đó. Để luyện một phiên mới, hãy vào phòng cũ và chọn “Kết thúc và xem kết quả hiện tại”, rồi quay lại đây bắt đầu.</p>
+        }
+        <div class="ai-start-actions"><p class="small muted">Bạn cần cho phép trình duyệt dùng micro. AI có thể cần ít thời gian chuẩn bị câu hỏi đầu tiên.</p><button class="btn btn-primary" type="submit">Bắt đầu luyện tập <span aria-hidden="true">→</span></button></div>
+        <p role="status" data-ai-start-status></p>
+    </form>
+}
+</section>
+<section class="panel ai-section"><h2>Lịch sử luyện tập</h2>
+@if (!Model.Sessions.Any(s => s.Completed)) { <p class="muted">Kết quả các phiên đã kết thúc sẽ xuất hiện ở đây.</p> }
+@foreach (var item in Model.Sessions.Where(s => s.Completed))
+{ <div class="ai-list-row"><div><strong>@item.Title</strong><p>@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm") · @item.Answered / @item.Total câu</p></div><a class="btn btn-light" asp-controller="AiInterviewReport" asp-action="Details" asp-route-id="@item.Id">Xem kết quả</a></div> }
+</section>
+@section Scripts { <script src="~/js/ai-interview-start.js" asp-append-version="true"></script> }

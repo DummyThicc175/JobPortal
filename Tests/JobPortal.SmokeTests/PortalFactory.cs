@@ -6,6 +6,7 @@ using JobPortal.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +15,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 
 sealed class PortalFactory(string root) : WebApplicationFactory<HomeController>
 {
     public const string TestPassword = "SmokeTest@123";
     private readonly SqliteConnection connection = new("Data Source=:memory:");
     public readonly FakeGeminiHandler Gemini = new();
+    public readonly FakeOllamaHandler Ollama = new();
+    public readonly FakeInterviewSpeech Speech = new();
     public string TestStorage { get; } = Path.Combine(root, "artifacts", "test-storage", Guid.NewGuid().ToString("N"));
     private PhysicalFileProvider? provider;
 
@@ -36,6 +42,26 @@ sealed class PortalFactory(string root) : WebApplicationFactory<HomeController>
         }));
         builder.ConfigureTestServices(services =>
         {
+            // Model calls finish instantly in tests; the bulk suite exceeds a human-paced minute.
+            // Keep production limits unchanged and preserve the CV/speech limits in this test host.
+            services.RemoveAll<IConfigureOptions<RateLimiterOptions>>();
+            services.Configure<RateLimiterOptions>(options =>
+            {
+                options.RejectionStatusCode = 429;
+                options.OnRejected = async (context, token) =>
+                {
+                    context.HttpContext.Response.Headers.RetryAfter = "60";
+                    await Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(context.HttpContext.Response,
+                        new { success = false, message = "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau một phút." }, token);
+                };
+                void ThemGioiHan(string name, int limit) => options.AddPolicy(name, context => RateLimitPartition.GetFixedWindowLimiter(
+                    context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = limit, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+                ThemGioiHan("cv-ai", 3); ThemGioiHan("interview-ai", 100); ThemGioiHan("interview-speech", 10);
+            });
+            services.RemoveAll<IInterviewSpeechService>();
+            services.AddSingleton<IInterviewSpeechService>(Speech);
+            services.AddHttpClient<OllamaInterviewClient>().ConfigurePrimaryHttpMessageHandler(() => Ollama);
             var thuMucCauHinh = Path.Combine(TestStorage, "settings"); Directory.CreateDirectory(thuMucCauHinh);
             File.WriteAllText(Path.Combine(thuMucCauHinh, "appsettings.json"), "{\"Gemini\":{\"ApiKey\":\"test-key\",\"Model\":\"test-model\"}}");
             services.RemoveAll<JobPortal.Configuration.CauHinhGeminiCucBo>();
@@ -63,6 +89,12 @@ sealed class PortalFactory(string root) : WebApplicationFactory<HomeController>
         if (!Path.GetFullPath(TestStorage).StartsWith(allowed, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("Unexpected test storage path");
         if (Directory.Exists(TestStorage)) Directory.Delete(TestStorage, true);
     }
+}
+
+sealed class FakeInterviewSpeech : IInterviewSpeechService
+{
+    public TaskCompletionSource<string> Result = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public Task<string> ChuyenThanhVanBanAsync(Stream wav, CancellationToken token) => Result.Task.WaitAsync(token);
 }
 
 sealed class FakeGeminiHandler : HttpMessageHandler

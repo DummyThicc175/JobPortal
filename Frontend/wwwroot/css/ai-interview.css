@@ -1,0 +1,26 @@
+.ai-intro,.ai-report-summary{display:flex;align-items:center;gap:1.5rem;padding:1.75rem;margin-bottom:1.5rem}
+.ai-intro h2,.ai-section h2,.ai-answer-panel h2,.ai-report-summary h2{font-size:1.25rem;margin:0 0 .75rem;line-height:1.5}
+.ai-avatar{display:inline-flex;flex:none;align-items:center;justify-content:center;width:76px;height:76px;border-radius:50%;background:#e1f4ed;color:#087f67;box-shadow:0 0 0 9px #f3faf7}
+.ai-avatar .icon{width:32px;height:32px}.ai-section{padding:1.5rem;margin:1.25rem 0}
+.ai-list-row{display:flex;gap:1rem;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--border,#e2e8e5)}
+.ai-list-row:last-child{border-bottom:0}.ai-list-row p{margin:.25rem 0 0;color:var(--muted,#687971)}
+.ai-list-row>div,.ai-intro>div{min-width:0;overflow-wrap:anywhere}.ai-list-row a{flex:none}
+.ai-start-actions{display:flex;gap:1rem;align-items:center;justify-content:space-between;margin-top:1rem}.ai-start-actions p{max-width:570px;margin:0}
+.ai-room{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:1.5rem;align-items:start}
+.ai-question-panel,.ai-answer-panel{padding:1.75rem;min-width:0}.ai-question-top{display:flex;gap:1rem;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.ai-interviewer{display:flex;align-items:center;flex-direction:column;gap:.65rem;padding:2rem 0 1rem}.ai-interviewer .ai-avatar{margin-bottom:.75rem}
+.ai-question{font-size:1.3rem;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:600;margin:1.5rem 0}
+.ai-notice{background:#fff7e5;padding:1rem;border-radius:12px;font-size:.875rem;line-height:1.6;color:#75531c}
+.ai-room-links{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.5rem;font-size:.875rem}.ai-mic-box{border:1px dashed #b5d4ca;background:#f4faf7;border-radius:16px;padding:1.25rem;display:flex;gap:1rem;align-items:center;justify-content:space-between;margin:1rem 0}
+.ai-mic-button{display:flex;align-items:center;gap:.6rem;background:#087f67;color:white;border:0;border-radius:999px;padding:.85rem 1.1rem;cursor:pointer;font:inherit;font-weight:600;min-height:48px}
+.ai-mic-button[aria-pressed=true]{background:#b63441;animation:ai-nhip 1.5s infinite}.ai-mic-button:disabled{opacity:.6;cursor:wait}
+.ai-mic-box>span{font-size:.85rem;font-variant-numeric:tabular-nums}.ai-answer-panel audio{width:100%;margin:0 0 1rem;max-width:100%}
+.ai-answer-panel label{display:block;margin:1rem 0 .5rem;font-weight:600}.ai-answer-panel textarea{resize:vertical;min-height:180px;max-height:500px;width:100%}
+.ai-answer-footer{display:flex;gap:1rem;justify-content:space-between;align-items:center;margin-top:1rem}.ai-status{min-height:1.5rem;margin:1rem 0;font-size:.9rem;line-height:1.6}.ai-status[data-error=true]{color:#a52636}
+.ai-room[data-busy=true] .ai-avatar{animation:ai-nhip 1.5s infinite}.ai-score{display:flex;align-items:center;flex-direction:column;flex:none;color:#087f67;min-width:110px}.ai-score strong{font-size:3.5rem;line-height:1.2}
+.ai-report-turn h3{font-size:1rem;margin:1.5rem 0 .5rem}.ai-preserve{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8}.ai-report-turn summary{cursor:pointer;color:#087f67;margin-top:1.5rem}.ai-report-turn h2{margin-top:1rem;overflow-wrap:anywhere}
+@keyframes ai-nhip{50%{box-shadow:0 0 0 12px #0e8f6e18}}
+@media(max-width:1100px){.ai-room{grid-template-columns:1fr}.ai-interviewer{padding-top:1rem}.ai-question{margin:1rem 0}}
+@media(max-width:600px){.ai-intro,.ai-report-summary{padding:1.25rem;gap:1rem;align-items:flex-start}.ai-intro{flex-direction:column}.ai-intro .ai-avatar{width:52px;height:52px;margin:.5rem}.ai-section,.ai-question-panel,.ai-answer-panel{padding:1rem}.ai-list-row,.ai-start-actions{align-items:stretch;flex-direction:column}.ai-room{gap:1rem}.ai-question{font-size:1.1rem}.ai-mic-box{padding:1rem;flex-direction:column}.ai-answer-footer{align-items:stretch;flex-direction:column}.ai-answer-footer button{width:100%}.ai-score{min-width:75px}.ai-score strong{font-size:2.5rem}.ai-report-summary{gap:.75rem}.ai-report-summary h2{font-size:1.1rem}.ai-start-actions button{white-space:normal}}
+@media(max-width:600px){.ai-report-summary{flex-direction:column;align-items:stretch}.ai-score{flex-direction:row;align-items:baseline;gap:.5rem;min-width:0}}
+@media(prefers-reduced-motion:reduce){.ai-mic-button[aria-pressed=true],.ai-room[data-busy=true] .ai-avatar{animation:none}}

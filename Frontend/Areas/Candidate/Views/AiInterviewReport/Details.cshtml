@@ -1,0 +1,16 @@
+@model JobPortal.ViewModels.Candidate.AiInterviewReportViewModel
+@{ ViewData["Title"] = "Kết quả luyện phỏng vấn"; ViewData["Description"] = Model.JobTitle + " · " + Model.CategoryName; }
+@section Styles { <link rel="stylesheet" href="~/css/ai-interview.css" asp-append-version="true" /> }
+<div class="panel ai-report-summary"><div><span class="eyebrow">@(Model.EndedAt.HasValue ? "PHIÊN ĐÃ KẾT THÚC" : "PHIÊN ĐANG LUYỆN TẬP")</span><h2>@Model.Turns.Count / @Model.QuestionCount câu đã trả lời</h2><p class="muted">Điểm luyện tập do AI ước lượng, chỉ để tham khảo và tự cải thiện. Nhà tuyển dụng không nhận được kết quả này.</p></div><div class="ai-score"><strong>@(Model.Score?.ToString() ?? "—")</strong><span>/ 100 điểm</span></div></div>
+<p class="small muted">Phiên bắt đầu lúc @Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm"). Báo cáo hiển thị nhận xét đã lưu khi bạn gửi từng câu trả lời.</p>
+<div class="page-actions"><a class="btn btn-light" asp-controller="AiInterview" asp-action="Index">Về danh sách luyện tập</a>@if (!Model.EndedAt.HasValue) { <a class="btn btn-primary" asp-controller="AiInterview" asp-action="Room" asp-route-id="@Model.Id">Tiếp tục luyện tập</a> }</div>
+@if (Model.Turns.Count == 0) { <div class="panel ai-section"><p>Chưa có câu trả lời được đánh giá trong phiên này.</p></div> }
+@foreach (var item in Model.Turns)
+{
+    <article class="panel ai-section ai-report-turn"><div class="ai-question-top"><span class="count-chip">Câu @item.Number</span><strong>@item.Score / 100</strong></div><h2>@item.Question</h2>
+        <h3>Câu trả lời của bạn</h3><p class="ai-preserve">@item.Answer</p>
+        <h3>Nhận xét</h3><p class="ai-preserve">@item.Feedback</p>
+        <h3>Cần cải thiện</h3><p class="ai-preserve">@item.Improvement</p>
+        <details><summary>Các ý cần đề cập</summary><p class="ai-preserve">@item.ExpectedPoints</p></details>
+    </article>
+}

@@ -18,8 +18,14 @@ var logs = new List<string>();
 var checks = 0;
 void KiemTra(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); checks++; }
 int LayCongTrong() { var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start(); var port = ((IPEndPoint)listener.LocalEndpoint).Port; listener.Stop(); return port; }
+FakeOllamaServer? aiServer = null;
+var daKhoiTaoDatabase = false;
 try
 {
+    // Startup failures must be reported in the console, not as an unhandled CLR dialog.
+    aiServer = args.Contains("--ai-only") ? new FakeOllamaServer(LayCongTrong()) : null;
+    daKhoiTaoDatabase = true;
+    database.Database.SetCommandTimeout(120);
     await database.Database.MigrateAsync();
     const string employerId = "c9284cfc-2dc1-460d-8521-396c0966a4f1";
     const string candidateId = "d83b7113-a8f8-4035-99a7-a20dd400f6a4";
@@ -38,6 +44,7 @@ try
     appStart.Environment["Gemini__ApiKey"] = "";
     appStart.Environment["Interview__TurnSharedSecret"] = "";
     appStart.Environment["Interview__ForceRelay"] = "false";
+    if (aiServer != null) appStart.Environment["AiInterview__BaseUrl"] = aiServer.Address;
     appStart.Environment["Logging__LogLevel__Default"] = "Warning";
     app = Process.Start(appStart)!;
     app.OutputDataReceived += (_, e) => { if (e.Data != null) lock (logs) logs.Add(e.Data); };
@@ -75,6 +82,14 @@ try
         await page.MoTrangAsync(origin + "/Identity/Account/Login");
         var status = await page.ThucThiJavaScriptAsync("(async()=>{const f=document.querySelector('form');const d=new FormData(f);d.set('Input.Email'," + JsonSerializer.Serialize(email) + ");d.set('Input.Password'," + JsonSerializer.Serialize(password) + ");return (await fetch(f.action,{method:'POST',body:d})).status})()");
         KiemTra(status.GetInt32() == 200, "Browser login completes");
+    }
+    if (args.Contains("--ai-only"))
+    {
+        var cv = new CV { CandidateId = candidateId, IsSnapshot = true, Summary = "Phát triển ứng dụng C# và tối ưu truy vấn SQL trong dự án tuyển dụng." };
+        database.Applications.Add(new Application { CandidateId = candidateId, JobPostId = job.Id, CV = cv }); await database.SaveChangesAsync();
+        await using var trang = await TaoTrangAsync(); await DangNhapAsync(trang, "candidate@jobhub.com", "Candidate@123");
+        await AiInterviewBrowserChecks.ChayKiemTraAsync(storage, origin, trang, database, aiServer!, KiemTra);
+        Console.WriteLine($"PASS: {checks} AI interview Chrome assertions. Real browser recording/WAV encoding; deterministic test AI endpoint; disposable SQL database."); return;
     }
     if (args.Contains("--interview-only"))
     {
@@ -154,9 +169,14 @@ try
 catch (Exception error) { Console.Error.WriteLine(error); Environment.ExitCode = 1; }
 finally
 {
-    if (chrome is { HasExited: false }) { chrome.Kill(true); await chrome.WaitForExitAsync(); }
-    if (app is { HasExited: false }) { app.Kill(true); await app.WaitForExitAsync(); }
-    await File.WriteAllLinesAsync(Path.Combine(storage, "app.log"), logs);
-    if (!name.StartsWith("JobPortal_Verify_", StringComparison.Ordinal) || !Guid.TryParseExact(name[17..], "N", out _)) throw new InvalidOperationException("Unexpected database name");
-    await database.Database.EnsureDeletedAsync();
+    try
+    {
+        if (chrome is { HasExited: false }) { chrome.Kill(true); await chrome.WaitForExitAsync(); }
+        if (app is { HasExited: false }) { app.Kill(true); await app.WaitForExitAsync(); }
+        if (aiServer != null) await aiServer.DisposeAsync();
+        await File.WriteAllLinesAsync(Path.Combine(storage, "app.log"), logs);
+        if (!name.StartsWith("JobPortal_Verify_", StringComparison.Ordinal) || !Guid.TryParseExact(name[17..], "N", out _)) throw new InvalidOperationException("Unexpected database name");
+        if (daKhoiTaoDatabase) await database.Database.EnsureDeletedAsync();
+    }
+    catch (Exception error) { Console.Error.WriteLine("Browser test cleanup: " + error.GetType().Name); Environment.ExitCode = 1; }
 }

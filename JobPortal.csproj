@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**;artifacts\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);Tests\**;artifacts\**;Backend\Storage\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,9 +19,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Backend\Scripts\NhanGiongNoi.py" />
+    <Content Include="Backend\Scripts\NhanGiongNoi.py" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <!-- Preserve MVC/Identity virtual paths while keeping all views in Frontend. -->
     <Content Remove="Frontend\**\*.cshtml" />
     <Content Include="Frontend\**\*.cshtml" Link="%(RecursiveDir)%(Filename)%(Extension)" />

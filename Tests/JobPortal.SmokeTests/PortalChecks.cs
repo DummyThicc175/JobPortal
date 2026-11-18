@@ -195,6 +195,7 @@ static class PortalChecks
         await KiemTraTuyenDungVaQuanTriAsync(factory, employer, otherEmployer, candidate, admin);
         await ChatChecks.ChayKiemTraAsync(factory, candidate, employer, otherEmployer);
         await InterviewChecks.ChayKiemTraAsync(factory, candidate, employer, otherCandidate, otherEmployer, admin);
+        await AiInterviewChecks.ChayKiemTraAsync(factory, candidate, otherCandidate, employer);
         await KiemTraTaiKhoanAsync(factory, admin);
         await KiemTraPhanTrangAsync(factory, anonymous);
         await KiemTraRangBuocDuyNhatAsync(factory, candidate);

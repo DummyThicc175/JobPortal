@@ -59,6 +59,7 @@ foreach (var scenario in new[] { "fresh", "legacy", "guard" })
         KiemTra(await database.Users.CountAsync() == 3, "Default accounts preserved");
         KiemTra(await database.CVTemplates.CountAsync() == 6, "Six real templates seeded");
         KiemTra(await database.Users.AllAsync(u => u.LockoutEnabled), "Account lockout enabled");
+        KiemTra(!await database.AiInterviewSessions.AnyAsync() && !await database.AiInterviewTurns.AnyAsync(), "AI tables migrate without creating fake interviews");
         if (scenario == "legacy")
         {
             var room = await database.InterviewSessions.Include(s => s.Application).SingleAsync();
@@ -98,6 +99,24 @@ foreach (var scenario in new[] { "fresh", "legacy", "guard" })
             KiemTra(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Staging and duplicate CV tables removed after success");
             command.CommandText = "SELECT COUNT(*) FROM sys.columns WHERE object_id=OBJECT_ID('dbo.AspNetUsers') AND name IN ('FullName','BirthDate','Gender');";
             KiemTra(Convert.ToInt32(await command.ExecuteScalarAsync()) == 0, "Unmapped user columns consolidated");
+            var aiSession = new JobPortal.Models.AiInterviewSession { ApplicationId = submissions[0].Id, CandidateId = submissions[0].CandidateId };
+            aiSession.Turns.Add(new JobPortal.Models.AiInterviewTurn { Number = 1, Question = "SQL?", ExpectedPoints = "Index", Score = 70 });
+            database.Add(aiSession); await database.SaveChangesAsync();
+            var duplicateAi = new JobPortal.Models.AiInterviewSession { ApplicationId = submissions[0].Id, CandidateId = submissions[0].CandidateId };
+            database.Add(duplicateAi);
+            var aiRejected = false;
+            try { await database.SaveChangesAsync(); } catch (DbUpdateException) { aiRejected = true; }
+            database.Entry(duplicateAi).State = EntityState.Detached;
+            KiemTra(aiRejected, "SQL Server rejects two active AI sessions for one application");
+            var turn = aiSession.Turns.Single(); turn.Score = 101;
+            var scoreRejected = false;
+            try { await database.SaveChangesAsync(); } catch (DbUpdateException) { scoreRejected = true; }
+            KiemTra(scoreRejected, "SQL Server rejects invalid AI scores");
+            turn.Score = 70; aiSession.EndedAt = DateTime.UtcNow;
+            await database.SaveChangesAsync();
+            database.Add(new JobPortal.Models.AiInterviewSession { ApplicationId = submissions[0].Id, CandidateId = submissions[0].CandidateId });
+            await database.SaveChangesAsync();
+            KiemTra(await database.AiInterviewSessions.CountAsync() == 2, "Ended AI history permits a new practice session");
         }
         Console.WriteLine("PASS: " + scenario + " SQL Server migration");
     }

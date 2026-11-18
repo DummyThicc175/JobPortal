@@ -25,6 +25,7 @@
 <span>@app.JobPost?.JobLocation?.Name</span>@if (app.CVId.HasValue) { <a href="/CV/Download/@app.CVId" target="_blank" rel="noopener">Xem CV đã nộp ↗</a> }</div>
 </div>
 <div class="application-side">
+<a asp-controller="AiInterview" asp-action="Index" asp-route-applicationId="@app.Id" class="btn btn-light btn-sm">Luyện phỏng vấn AI</a>
 @if (app.Status == JobPortal.Models.ApplicationStatus.Interview)
 {
     var interview = app.InterviewSessions.FirstOrDefault(s => s.EndedAt == null);

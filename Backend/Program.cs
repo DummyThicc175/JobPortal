@@ -53,6 +53,25 @@ builder.Services.AddScoped<CookieSessionValidator>();
 builder.Services.AddSingleton<ChatMessageThrottle>();
 builder.Services.Configure<JobPortal.Configuration.InterviewOptions>(builder.Configuration.GetSection("Interview"));
 builder.Services.AddScoped<InterviewService>();
+builder.Services.Configure<JobPortal.Configuration.AiInterviewOptions>(builder.Configuration.GetSection("AiInterview"));
+builder.Services.AddSingleton<AiInterviewRuntime>();
+builder.Services.AddScoped<AiInterviewContextService>();
+builder.Services.AddScoped<AiInterviewService>();
+builder.Services.AddScoped<IInterviewSpeechService, InterviewSpeechService>();
+builder.Services.AddSingleton<InterviewSpeechJobs>();
+builder.Services.AddHostedService(services => services.GetRequiredService<InterviewSpeechJobs>());
+builder.Services.AddSingleton<AiInterviewAnswerJobs>();
+builder.Services.AddHostedService(services => services.GetRequiredService<AiInterviewAnswerJobs>());
+builder.Services.AddHttpClient<OllamaInterviewClient>((services, client) =>
+{
+    var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<JobPortal.Configuration.AiInterviewOptions>>().Value;
+    if (!Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var address) ||
+        address.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(address.UserInfo) ||
+        !string.IsNullOrEmpty(address.Query) || !string.IsNullOrEmpty(address.Fragment))
+        throw new InvalidOperationException("AiInterview:BaseUrl không hợp lệ.");
+    client.BaseAddress = new Uri(address.ToString().TrimEnd('/') + "/");
+    client.Timeout = Timeout.InfiniteTimeSpan;
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddSingleton<InterviewPresence>();
 builder.Services.AddHostedService<LegacyCvFileImporter>();
 builder.Services.AddSingleton(_ => new JobPortal.Configuration.CauHinhGeminiCucBo(builder.Environment.ContentRootPath));
@@ -72,6 +91,12 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("cv-ai", context => RateLimitPartition.GetFixedWindowLimiter(
         context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 3, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("interview-ai", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 12, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    options.AddPolicy("interview-speech", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "anonymous",
+        _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
 });
 
 var app = builder.Build();

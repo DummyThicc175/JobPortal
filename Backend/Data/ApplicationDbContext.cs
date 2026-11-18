@@ -18,6 +18,8 @@ namespace JobPortal.Data
         public DbSet<CV> CVs { get; set; }
         public DbSet<Application> Applications { get; set; }
         public DbSet<InterviewSession> InterviewSessions { get; set; }
+        public DbSet<AiInterviewSession> AiInterviewSessions { get; set; }
+        public DbSet<AiInterviewTurn> AiInterviewTurns { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<CVTemplate> CVTemplates { get; set; }
         public DbSet<Category> Categories { get; set; }
@@ -90,6 +92,24 @@ namespace JobPortal.Data
                 entity.HasOne(s => s.Application).WithMany(a => a.InterviewSessions)
                     .HasForeignKey(s => s.ApplicationId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasIndex(s => s.ApplicationId).IsUnique().HasFilter("[EndedAt] IS NULL");
+            });
+            modelBuilder.Entity<AiInterviewSession>(entity =>
+            {
+                entity.HasOne(s => s.Application).WithMany().HasForeignKey(s => s.ApplicationId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne<IdentityUser>().WithMany().HasForeignKey(s => s.CandidateId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(s => new { s.CandidateId, s.CreatedAt });
+                entity.HasIndex(s => s.ApplicationId).IsUnique().HasFilter("[EndedAt] IS NULL");
+                entity.ToTable("AiInterviewSessions", t => t.HasCheckConstraint("CK_AiInterviewSessions_QuestionCount", "[QuestionCount] BETWEEN 1 AND 5"));
+            });
+            modelBuilder.Entity<AiInterviewTurn>(entity =>
+            {
+                entity.HasOne(t => t.Session).WithMany(s => s.Turns).HasForeignKey(t => t.SessionId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(t => new { t.SessionId, t.Number }).IsUnique();
+                entity.ToTable("AiInterviewTurns", t =>
+                {
+                    t.HasCheckConstraint("CK_AiInterviewTurns_Score", "[Score] IS NULL OR [Score] BETWEEN 0 AND 100");
+                    t.HasCheckConstraint("CK_AiInterviewTurns_Number", "[Number] BETWEEN 1 AND 5");
+                });
             });
             modelBuilder.Entity<SavedJob>(entity =>
             {
